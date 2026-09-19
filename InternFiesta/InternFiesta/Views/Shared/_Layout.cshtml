@@ -3,129 +3,226 @@
 <head>
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+
     <title>@ViewData["Title"] - InternFiesta</title>
 
-    <script type="importmap"></script>
+    <link rel="stylesheet"
+          href="~/lib/bootstrap/dist/css/bootstrap.min.css" />
 
-    <link rel="stylesheet" href="~/lib/bootstrap/dist/css/bootstrap.min.css" />
-    <link rel="stylesheet" href="~/css/site.css" asp-append-version="true" />
-    <link rel="stylesheet" href="~/InternFiesta.styles.css" asp-append-version="true" />
+    <link rel="stylesheet"
+          href="~/css/site.css"
+          asp-append-version="true" />
+
+    <link rel="stylesheet"
+          href="~/InternFiesta.styles.css"
+          asp-append-version="true" />
 </head>
 
 <body>
-    <header>
-        <nav class="navbar navbar-expand-sm navbar-toggleable-sm navbar-light bg-white border-bottom box-shadow mb-3">
-            <div class="container-fluid">
 
-                <a class="navbar-brand"
-                   asp-area=""
-                   asp-controller="Home"
-                   asp-action="Index">
-                    InternFiesta
+@if (User.Identity != null && User.Identity.IsAuthenticated)
+{
+    <div class="app-shell">
+
+        <!-- SIDEBAR -->
+        <aside class="sidebar">
+
+            <div class="sidebar-brand">
+                <div class="brand-icon">IF</div>
+
+                <div>
+                    <h4>InternFiesta</h4>
+                    <small>Career Platform</small>
+                </div>
+            </div>
+
+            <nav class="sidebar-nav">
+
+                <a asp-controller="Dashboard"
+                   asp-action="Index"
+                   class="sidebar-link">
+                    <span class="sidebar-icon">⌂</span>
+                    Dashboard
                 </a>
 
-                <button class="navbar-toggler"
-                        type="button"
-                        data-bs-toggle="collapse"
-                        data-bs-target=".navbar-collapse"
-                        aria-controls="navbarSupportedContent"
-                        aria-expanded="false"
-                        aria-label="Toggle navigation">
-                    <span class="navbar-toggler-icon"></span>
-                </button>
 
-                <div class="navbar-collapse collapse d-sm-inline-flex justify-content-between">
+                @if (User.IsInRole("Student"))
+                {
+                    <a asp-controller="StudentProfile"
+                       asp-action="Index"
+                       class="sidebar-link">
+                        <span class="sidebar-icon">◉</span>
+                        My Profile
+                    </a>
 
-                    <ul class="navbar-nav flex-grow-1">
+                    <a asp-controller="CV"
+                       asp-action="Preview"
+                       class="sidebar-link">
+                        <span class="sidebar-icon">▣</span>
+                        My CV
+                    </a>
+                }
 
-                        <li class="nav-item">
-                            <a class="nav-link text-dark"
-                               asp-area=""
-                               asp-controller="Home"
-                               asp-action="Index">
-                                Home
-                            </a>
-                        </li>
 
-                        <li class="nav-item">
-                            <a class="nav-link text-dark"
-                               asp-area=""
-                               asp-controller="Home"
-                               asp-action="Privacy">
-                                Privacy
-                            </a>
-                        </li>
+                @if (User.IsInRole("Company"))
+                {
+                    <a asp-controller="Internships"
+                       asp-action="Index"
+                       class="sidebar-link">
+                        <span class="sidebar-icon">▤</span>
+                        Internships
+                    </a>
+                }
 
-                    </ul>
+            </nav>
 
-                    @if (User.Identity != null && User.Identity.IsAuthenticated)
+
+            <div class="sidebar-bottom">
+
+                <div class="sidebar-user">
+                    <div class="user-avatar">
+                        @(
+                            string.IsNullOrWhiteSpace(User.Identity.Name)
+                            ? "U"
+                            : User.Identity.Name.Substring(0, 1).ToUpper()
+                        )
+                    </div>
+
+                    <div class="sidebar-user-info">
+                        <span>Signed in as</span>
+                        <strong>@User.Identity.Name</strong>
+                    </div>
+                </div>
+
+
+                <form asp-controller="Account"
+                      asp-action="Logout"
+                      method="post">
+
+                    <button type="submit"
+                            class="logout-button">
+                        Logout
+                    </button>
+
+                </form>
+
+            </div>
+
+        </aside>
+
+
+        <!-- MAIN AREA -->
+        <div class="main-area">
+
+            <header class="topbar">
+
+                <div>
+                    <h5 class="mb-0">
+                        @ViewData["Title"]
+                    </h5>
+                </div>
+
+                <div class="topbar-right">
+
+                    @if (User.IsInRole("Student"))
                     {
-                        <div class="d-flex align-items-center gap-2">
-
-                            <span class="text-muted small">
-                                @User.Identity.Name
-                            </span>
-
-                            <form asp-controller="Account"
-                                  asp-action="Logout"
-                                  method="post"
-                                  class="d-inline">
-
-                                <button type="submit"
-                                        class="btn btn-outline-danger btn-sm">
-                                    Logout
-                                </button>
-
-                            </form>
-
-                        </div>
+                        <span class="role-badge">
+                            Student
+                        </span>
                     }
-                    else
+                    else if (User.IsInRole("Company"))
                     {
-                        <div class="d-flex gap-2">
-
-                            <a class="btn btn-outline-primary btn-sm"
-                               asp-controller="Account"
-                               asp-action="Login">
-                                Login
-                            </a>
-
-                            <a class="btn btn-primary btn-sm"
-                               asp-controller="Account"
-                               asp-action="Register">
-                                Register
-                            </a>
-
-                        </div>
+                        <span class="role-badge">
+                            Company
+                        </span>
+                    }
+                    else if (User.IsInRole("Alumni"))
+                    {
+                        <span class="role-badge">
+                            Alumni
+                        </span>
+                    }
+                    else if (User.IsInRole("FacultySupervisor"))
+                    {
+                        <span class="role-badge">
+                            Faculty
+                        </span>
+                    }
+                    else if (User.IsInRole("UniversityCoordinator"))
+                    {
+                        <span class="role-badge">
+                            Coordinator
+                        </span>
+                    }
+                    else if (User.IsInRole("Administrator"))
+                    {
+                        <span class="role-badge">
+                            Administrator
+                        </span>
                     }
 
                 </div>
+
+            </header>
+
+
+            <main class="main-content">
+                @RenderBody()
+            </main>
+
+        </div>
+
+    </div>
+}
+else
+{
+    <!-- PUBLIC / LOGIN / REGISTER LAYOUT -->
+
+    <header class="public-header">
+
+        <div class="container d-flex justify-content-between align-items-center">
+
+            <a asp-controller="Home"
+               asp-action="Index"
+               class="public-brand">
+                InternFiesta
+            </a>
+
+            <div class="d-flex gap-2">
+
+                <a asp-controller="Account"
+                   asp-action="Login"
+                   class="btn btn-outline-primary">
+                    Login
+                </a>
+
+                <a asp-controller="Account"
+                   asp-action="Register"
+                   class="btn btn-primary">
+                    Register
+                </a>
+
             </div>
-        </nav>
+
+        </div>
+
     </header>
 
-    <div class="container">
-        <main role="main" class="pb-3">
-            @RenderBody()
-        </main>
-    </div>
 
-    <footer class="border-top footer text-muted">
-        <div class="container">
-            &copy; 2026 - InternFiesta -
-            <a asp-area=""
-               asp-controller="Home"
-               asp-action="Privacy">
-                Privacy
-            </a>
-        </div>
-    </footer>
+    <main class="public-content">
+        @RenderBody()
+    </main>
+}
 
-    <script src="~/lib/jquery/dist/jquery.min.js"></script>
-    <script src="~/lib/bootstrap/dist/js/bootstrap.bundle.min.js"></script>
-    <script src="~/js/site.js" asp-append-version="true"></script>
 
-    @await RenderSectionAsync("Scripts", required: false)
+<script src="~/lib/jquery/dist/jquery.min.js"></script>
+
+<script src="~/lib/bootstrap/dist/js/bootstrap.bundle.min.js"></script>
+
+<script src="~/js/site.js"
+        asp-append-version="true"></script>
+
+@await RenderSectionAsync("Scripts", required: false)
 
 </body>
 </html>

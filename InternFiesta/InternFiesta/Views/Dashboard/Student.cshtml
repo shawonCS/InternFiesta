@@ -2,5 +2,92 @@
     ViewData["Title"] = "Student Dashboard";
 }
 
-<h2>Student Dashboard</h2>
-<p>Welcome to InternFiesta.</p>
+<div class="page-heading">
+
+    <h2>Welcome to InternFiesta</h2>
+
+    <p>
+        Manage your profile, prepare your CV and explore career opportunities.
+    </p>
+
+</div>
+
+
+<div class="row g-4">
+
+    <div class="col-md-6 col-xl-4">
+
+        <div class="dashboard-card">
+
+            <div class="dashboard-card-icon">
+                👤
+            </div>
+
+            <h5>My Profile</h5>
+
+            <p>
+                Add your academic information, skills,
+                projects and experience.
+            </p>
+
+            <a asp-controller="StudentProfile"
+               asp-action="Index"
+               class="dashboard-action">
+                Manage Profile →
+            </a>
+
+        </div>
+
+    </div>
+
+
+    <div class="col-md-6 col-xl-4">
+
+        <div class="dashboard-card">
+
+            <div class="dashboard-card-icon">
+                📄
+            </div>
+
+            <h5>My CV</h5>
+
+            <p>
+                Preview your information in CV format
+                and save it as a PDF.
+            </p>
+
+            <a asp-controller="CV"
+               asp-action="Preview"
+               class="dashboard-action">
+                View CV →
+            </a>
+
+        </div>
+
+    </div>
+
+
+    <div class="col-md-6 col-xl-4">
+
+        <div class="dashboard-card">
+
+            <div class="dashboard-card-icon">
+                💼
+            </div>
+
+            <h5>Internship Opportunities</h5>
+
+            <p>
+                Internship discovery and application
+                features will appear here.
+            </p>
+
+            <span class="text-muted small">
+                Coming soon
+            </span>
+
+        </div>
+
+    </div>
+
+</div>

@@ -1,8 +1,45 @@
 ﻿@{
-    ViewData["Title"] = "Home Page";
+    ViewData["Title"] = "Home";
 }
 
-<div class="text-center">
-    <h1 class="display-4">Welcome</h1>
-    <p>Learn about <a href="https://learn.microsoft.com/aspnet/core">building Web apps with ASP.NET Core</a>.</p>
-</div>
+<section class="simple-home">
+
+    <div class="container">
+
+        <div class="simple-home-content">
+
+            <span class="hero-label">
+                Internship & Career Platform
+            </span>
+
+            <h1>
+                Welcome to
+                <span>InternFiesta</span>
+            </h1>
+
+            <p>
+                A simple platform for students, companies and universities
+                to manage internships, career opportunities and professional profiles.
+            </p>
+
+            <div class="d-flex flex-wrap gap-3 justify-content-center mt-4">
+
+                <a asp-controller="Account"
+                   asp-action="Register"
+                   class="btn btn-primary btn-lg px-4">
+                    Get Started
+                </a>
+
+                <a asp-controller="Account"
+                   asp-action="Login"
+                   class="btn btn-outline-primary btn-lg px-4">
+                    Login
+                </a>
+
+            </div>
+
+        </div>
+
+    </div>
+
+</section>

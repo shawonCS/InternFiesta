@@ -2,5 +2,66 @@
     ViewData["Title"] = "Company Dashboard";
 }
 
-<h2>Company Dashboard</h2>
-<p>Welcome to InternFiesta.</p>
+<div class="page-heading">
+
+    <h2>Company Dashboard</h2>
+
+    <p>
+        Create and manage internship opportunities through InternFiesta.
+    </p>
+
+</div>
+
+
+<div class="row g-4">
+
+    <div class="col-md-6 col-xl-4">
+
+        <div class="dashboard-card">
+
+            <div class="dashboard-card-icon">
+                💼
+            </div>
+
+            <h5>Internship Postings</h5>
+
+            <p>
+                Create, edit and manage your company's
+                internship opportunities.
+            </p>
+
+            <a asp-controller="Internships"
+               asp-action="Index"
+               class="dashboard-action">
+                Manage Internships →
+            </a>
+
+        </div>
+
+    </div>
+
+
+    <div class="col-md-6 col-xl-4">
+
+        <div class="dashboard-card">
+
+            <div class="dashboard-card-icon">
+                👥
+            </div>
+
+            <h5>Applications</h5>
+
+            <p>
+                Candidate applications will be available
+                here in a later sprint.
+            </p>
+
+            <span class="text-muted small">
+                Coming soon
+            </span>
+
+        </div>
+
+    </div>
+
+</div>
