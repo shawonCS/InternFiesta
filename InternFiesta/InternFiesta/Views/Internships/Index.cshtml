@@ -1,0 +1,139 @@
+@model IEnumerable<InternFiesta.Models.InternshipPosting>
+
+@{
+    ViewData["Title"] = "Internship Postings";
+}
+
+<div class="page-heading d-flex justify-content-between align-items-center">
+    <div>
+        <h2>Internship Postings</h2>
+        <p>Create and manage your company's internship opportunities.</p>
+    </div>
+
+    <a asp-action="Create"
+       class="btn btn-primary">
+        Create Internship
+    </a>
+</div>
+
+@if (TempData["SuccessMessage"] != null)
+{
+    <div class="alert alert-success">
+        @TempData["SuccessMessage"]
+    </div>
+}
+
+@if (Model == null || !Model.Any())
+{
+    <div class="card">
+        <div class="card-body text-center py-5">
+
+            <h5 class="fw-bold">
+                No internship postings yet
+            </h5>
+
+            <p class="text-muted">
+                Create your first internship opportunity.
+            </p>
+
+            <a asp-action="Create"
+               class="btn btn-primary">
+                Create Internship
+            </a>
+
+        </div>
+    </div>
+}
+else
+{
+    <div class="row g-4">
+
+        @foreach (var internship in Model)
+        {
+            <div class="col-md-6 col-xl-4">
+
+                <div class="dashboard-card">
+
+                    <div class="d-flex justify-content-between align-items-start mb-3">
+
+                        <div class="dashboard-card-icon">
+                            💼
+                        </div>
+
+                        @if (internship.IsActive)
+                        {
+                            <span class="badge bg-success">
+                                Active
+                            </span>
+                        }
+                        else
+                        {
+                            <span class="badge bg-secondary">
+                                Closed
+                            </span>
+                        }
+
+                    </div>
+
+                    <h5>@internship.Title</h5>
+
+                    <p>@internship.Description</p>
+
+                    <div class="small text-muted mb-3">
+
+                        <div class="mb-1">
+                            <strong>Location:</strong>
+                            @internship.Location
+                        </div>
+
+                        <div class="mb-1">
+                            <strong>Positions:</strong>
+                            @internship.Positions
+                        </div>
+
+                        <div class="mb-1">
+                            <strong>Deadline:</strong>
+                            @internship.Deadline.ToString("dd MMM yyyy")
+                        </div>
+
+                        <div>
+                            <strong>Skills:</strong>
+                            @(string.IsNullOrWhiteSpace(internship.RequiredSkills)
+                                ? "Not specified"
+                                : internship.RequiredSkills)
+                        </div>
+
+                    </div>
+
+                    <div class="d-flex gap-2">
+
+                        <a asp-action="Edit"
+                           asp-route-id="@internship.Id"
+                           class="btn btn-outline-primary btn-sm">
+                            Edit
+                        </a>
+
+                        @if (internship.IsActive)
+                        {
+                            <form asp-action="Close"
+                                  asp-route-id="@internship.Id"
+                                  method="post">
+
+                                <button type="submit"
+                                        class="btn btn-outline-danger btn-sm"
+                                        onclick="return confirm('Are you sure you want to close this internship?');">
+                                    Close
+                                </button>
+
+                            </form>
+                        }
+
+                    </div>
+
+                </div>
+
+            </div>
+        }
+
+    </div>
+}
