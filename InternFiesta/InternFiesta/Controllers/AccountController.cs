@@ -130,7 +130,7 @@ namespace InternFiesta.Controllers
                 await _signInManager.PasswordSignInAsync(
                     model.Email,
                     model.Password,
-                    model.RememberMe,
+                    model.RememberMe ?? false,
                     lockoutOnFailure: false);
 
             if (result.Succeeded)

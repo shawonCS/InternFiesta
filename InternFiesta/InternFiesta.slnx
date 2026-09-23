@@ -1,3 +1,4 @@
 <Solution>
+  <Project Path="InternFiesta.SeleniumTests/InternFiesta.SeleniumTests.csproj" Id="f23b4440-896a-4c28-b533-6d14707ee1dd" />
   <Project Path="InternFiesta/InternFiesta.csproj" />
 </Solution>
