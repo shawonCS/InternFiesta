@@ -17,10 +17,36 @@ namespace InternFiesta.Controllers
         }
 
         [HttpGet]
-        public async Task<IActionResult> Index()
+        public async Task<IActionResult> Index(string? search,string? location,string? skills)
         {
-            var internships = await _context.InternshipPostings
+            search = search?.Trim();
+            location = location?.Trim();
+            skills = skills?.Trim();
+            var query = _context.InternshipPostings
                 .Where(i => i.IsActive)
+                .AsQueryable();
+
+            if (!string.IsNullOrWhiteSpace(search))
+            {
+                query = query.Where(i =>
+                    i.Title.Contains(search));
+            }
+
+            if (!string.IsNullOrWhiteSpace(location))
+            {
+                query = query.Where(i =>
+                    i.Location != null &&
+                    i.Location.Contains(location));
+            }
+
+            if (!string.IsNullOrWhiteSpace(skills))
+            {
+                query = query.Where(i =>
+                    i.RequiredSkills != null &&
+                    i.RequiredSkills.Contains(skills));
+            }
+
+            var internships = await query
                 .OrderByDescending(i => i.CreatedAt)
                 .ToListAsync();
 
