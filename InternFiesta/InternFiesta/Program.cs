@@ -68,5 +68,12 @@ using (var scope = app.Services.CreateScope())
         }
     }
 }
+// Seed test accounts into the database
+using (var scope = app.Services.CreateScope())
+{
+    var services = scope.ServiceProvider;
+
+    await SeedData.InitializeAsync(services);
+}
 
 app.Run();
