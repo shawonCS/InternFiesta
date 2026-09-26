@@ -56,7 +56,7 @@ namespace InternFiesta.UnitTests
             await context.SaveChangesAsync();
 
             var controller =
-                new StudentInternshipsController(context);
+                new StudentInternshipsController(context,null!);
 
             // Act
             var result =
@@ -118,7 +118,7 @@ namespace InternFiesta.UnitTests
             await context.SaveChangesAsync();
 
             var controller =
-                new StudentInternshipsController(context);
+                new StudentInternshipsController(context, null!);
 
             // Act
             var result =
