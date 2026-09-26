@@ -1,4 +1,6 @@
 ﻿using InternFiesta.Data;
+using InternFiesta.Models;
+using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
@@ -10,10 +12,13 @@ namespace InternFiesta.Controllers
     {
         private readonly ApplicationDbContext _context;
 
+        private readonly UserManager<ApplicationUser> _userManager;
+
         public StudentInternshipsController(
-            ApplicationDbContext context)
+            ApplicationDbContext context, UserManager<ApplicationUser> userManager)
         {
             _context = context;
+            _userManager = userManager;
         }
 
         [HttpGet]
@@ -51,6 +56,38 @@ namespace InternFiesta.Controllers
                 .ToListAsync();
 
             return View(internships);
+        }
+
+        [HttpPost]
+        [ValidateAntiForgeryToken]
+        public async Task<IActionResult> Apply(int id)
+        {
+            var studentUserId = _userManager.GetUserId(User);
+
+            if (studentUserId == null)
+            {
+                return Challenge();
+            }
+
+            var internship = await _context.InternshipPostings
+                .FirstOrDefaultAsync(i => i.Id == id && i.IsActive);
+
+            if (internship == null)
+            {
+                return NotFound();
+            }
+
+            var application = new InternshipApplication
+            {
+                InternshipPostingId = internship.Id,
+                StudentUserId = studentUserId,
+                AppliedAt = DateTime.Now
+            };
+
+            _context.InternshipApplications.Add(application);
+            await _context.SaveChangesAsync();
+
+            return RedirectToAction(nameof(Index));
         }
     }
 }
