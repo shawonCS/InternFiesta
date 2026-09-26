@@ -15,5 +15,7 @@ namespace InternFiesta.Data
         public DbSet<StudentProfile> StudentProfiles { get; set; }
 
         public DbSet<InternshipPosting> InternshipPostings { get; set; }
+
+        public DbSet<InternshipApplication> InternshipApplications { get; set; }
     }
 }
