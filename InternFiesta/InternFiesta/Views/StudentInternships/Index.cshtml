@@ -8,7 +8,12 @@
     <h2>Internship Opportunities</h2>
     <p>Browse available internship opportunities.</p>
 </div>
-
+@if (TempData["ApplicationError"] != null)
+{
+    <div class="alert alert-warning">
+        @TempData["ApplicationError"]
+    </div>
+}
 <div class="card mb-4">
     <div class="card-body">
 

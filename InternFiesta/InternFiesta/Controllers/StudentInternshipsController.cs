@@ -71,15 +71,27 @@ namespace InternFiesta.Controllers
 
             var internship = await _context.InternshipPostings
                 .FirstOrDefaultAsync(i => i.Id == id && i.IsActive);
-
             if (internship == null)
             {
                 return NotFound();
             }
 
+            var alreadyApplied = await _context.InternshipApplications
+                .AnyAsync(a =>
+                a.InternshipPostingId == id &&
+                a.StudentUserId == studentUserId);
+
+            if (alreadyApplied)
+            {
+                TempData["ApplicationError"] =
+                    "You have already applied for this internship.";
+
+                return RedirectToAction(nameof(Index));
+            }
+
             var application = new InternshipApplication
             {
-                InternshipPostingId = internship.Id,
+                InternshipPostingId = id,
                 StudentUserId = studentUserId,
                 AppliedAt = DateTime.Now
             };
