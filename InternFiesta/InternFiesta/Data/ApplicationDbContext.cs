@@ -17,6 +17,7 @@ namespace InternFiesta.Data
         public DbSet<InternshipPosting> InternshipPostings { get; set; }
 
         public DbSet<InternshipApplication> InternshipApplications { get; set; }
+        public DbSet<SavedInternship> SavedInternships { get; set; }
         protected override void OnModelCreating(ModelBuilder builder)
         {
             base.OnModelCreating(builder);
