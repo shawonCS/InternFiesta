@@ -1,6 +1,7 @@
 ﻿using NUnit.Framework;
 using OpenQA.Selenium;
 using OpenQA.Selenium.Chrome;
+using OpenQA.Selenium.Support.UI;
 
 namespace InternFiesta.SeleniumTests.Tests
 {
@@ -58,7 +59,12 @@ namespace InternFiesta.SeleniumTests.Tests
             driver.FindElement(
                 By.CssSelector("button[type='submit']"))
                 .Click();
-
+            var wait = new WebDriverWait(
+            driver,
+                TimeSpan.FromSeconds(10));
+    
+            wait.Until(d =>
+                d.Url.Contains("/Dashboard"));
             Assert.That(
                 driver.Url,
                 Does.Contain("/Dashboard"));

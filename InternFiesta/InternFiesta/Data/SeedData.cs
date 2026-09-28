@@ -1,6 +1,6 @@
 ﻿using InternFiesta.Models;
 using Microsoft.AspNetCore.Identity;
-
+using Microsoft.EntityFrameworkCore;
 namespace InternFiesta.Data
 {
     public static class SeedData
@@ -9,7 +9,8 @@ namespace InternFiesta.Data
         {
             var userManager =
                 services.GetRequiredService<UserManager<ApplicationUser>>();
-
+            var context =
+                services.GetRequiredService<ApplicationDbContext>();
             // -------------------------
             // Company test account
             // -------------------------
@@ -71,6 +72,58 @@ namespace InternFiesta.Data
                     await userManager.AddToRoleAsync(
                         student,
                         "Student");
+                }
+            }
+            // -------------------------
+            // Application status test data
+            // -------------------------
+
+            if (company != null && student != null)
+            {
+                var statusInternship =
+                    await context.InternshipPostings
+                        .FirstOrDefaultAsync(i =>
+                            i.Title == "Application Status Test Internship");
+
+                if (statusInternship == null)
+                {
+                    statusInternship = new InternshipPosting
+                    {
+                        CompanyUserId = company.Id,
+                        Title = "Application Status Test Internship",
+                        Description = "Internship used for application status testing.",
+                        RequiredSkills = "C#",
+                        Location = "Dhaka",
+                        Deadline = DateTime.Now.AddMonths(1),
+                        Positions = 1,
+                        IsActive = true,
+                        CreatedAt = DateTime.Now
+                    };
+
+                    context.InternshipPostings.Add(statusInternship);
+                    await context.SaveChangesAsync();
+                }
+
+                var applicationExists =
+                    await context.InternshipApplications
+                        .AnyAsync(a =>
+                            a.InternshipPostingId == statusInternship.Id &&
+                            a.StudentUserId == student.Id);
+
+                if (!applicationExists)
+                {
+                    var application =
+                        new InternshipApplication
+                        {
+                            InternshipPostingId = statusInternship.Id,
+                            StudentUserId = student.Id,
+                            Status = "Applied",
+                            AppliedAt = DateTime.Now
+                        };
+
+                    context.InternshipApplications.Add(application);
+
+                    await context.SaveChangesAsync();
                 }
             }
         }
