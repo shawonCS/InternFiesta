@@ -1,0 +1,80 @@
+﻿@model IEnumerable<InternFiesta.Models.SavedInternship>
+
+@{
+    ViewData["Title"] = "Saved Internships";
+}
+
+<div class="page-heading">
+    <h2>Saved Internships</h2>
+    <p>View internships you saved for later.</p>
+</div>
+
+@if (Model == null || !Model.Any())
+{
+    <div class="alert alert-info">
+        You have not saved any internships yet.
+    </div>
+}
+else
+{
+    <div class="row g-4">
+
+        @foreach (var saved in Model)
+        {
+            if (saved.InternshipPosting != null)
+            {
+                <div class="col-md-6">
+
+                    <div class="card h-100">
+
+                        <div class="card-body">
+
+                            <h4 class="card-title">
+                                @saved.InternshipPosting.Title
+                            </h4>
+
+                            <p>
+                                <strong>Location:</strong>
+                                @saved.InternshipPosting.Location
+                            </p>
+
+                            <p>
+                                <strong>Required Skills:</strong>
+                                @saved.InternshipPosting.RequiredSkills
+                            </p>
+
+                            <p>
+                                <strong>Deadline:</strong>
+                                @saved.InternshipPosting.Deadline.ToString("dd MMM yyyy")
+                            </p>
+
+                            <p class="text-muted">
+                                @saved.InternshipPosting.Description
+                            </p>
+
+                        </div>
+
+                        <div class="card-footer bg-transparent">
+
+                            <form asp-controller="StudentInternships"
+                                  asp-action="RemoveSaved"
+                                  asp-route-id="@saved.Id"
+                                  method="post">
+
+                                <button type="submit"
+                                        class="btn btn-outline-danger">
+                                    Remove
+                                </button>
+
+                            </form>
+
+                        </div>
+
+                    </div>
+
+                </div>
+            }
+        }
+
+    </div>
+}

@@ -137,11 +137,18 @@ else
 
                         </form>
 
-                        <button type="button"
-                                class="btn btn-outline-secondary"
-                                disabled>
-                            Save
-                        </button>
+                        <form asp-controller="StudentInternships"
+                          asp-action="Save"
+                          asp-route-id="@internship.Id"
+                          method="post"
+                          class="d-inline">
+
+                            <button type="submit"
+                             class="btn btn-outline-secondary">
+                             Save
+                            </button>
+
+                        </form>
 
                     </div>
 
