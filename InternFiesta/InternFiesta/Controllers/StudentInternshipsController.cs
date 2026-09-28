@@ -189,5 +189,23 @@ namespace InternFiesta.Controllers
 
             return RedirectToAction(nameof(Saved));
         }
+        [HttpGet]
+        public async Task<IActionResult> MyApplications()
+        {
+            var studentUserId = _userManager.GetUserId(User);
+
+            if (studentUserId == null)
+            {
+                return Challenge();
+            }
+
+            var applications = await _context.InternshipApplications
+                .Where(a => a.StudentUserId == studentUserId)
+                .Include(a => a.InternshipPosting)
+                .OrderByDescending(a => a.AppliedAt)
+                .ToListAsync();
+
+            return View(applications);
+        }
     }
 }

@@ -1,0 +1,57 @@
+﻿@model IEnumerable<InternFiesta.Models.InternshipApplication>
+
+@{
+    ViewData["Title"] = "My Applications";
+}
+
+<div class="page-heading">
+    <h2>My Applications</h2>
+    <p>Track the current status of your internship applications.</p>
+</div>
+
+@if (Model == null || !Model.Any())
+{
+    <div class="alert alert-info">
+        You have not applied for any internships yet.
+    </div>
+}
+else
+{
+    <div class="row g-4">
+
+        @foreach (var application in Model)
+        {
+            <div class="col-md-6">
+
+                <div class="card h-100">
+
+                    <div class="card-body">
+
+                        <h4 class="card-title">
+                            @application.InternshipPosting?.Title
+                        </h4>
+
+                        <p>
+                            <strong>Location:</strong>
+                            @application.InternshipPosting?.Location
+                        </p>
+
+                        <p>
+                            <strong>Applied:</strong>
+                            @application.AppliedAt.ToString("dd MMM yyyy")
+                        </p>
+
+                        <p>
+                            <strong>Status:</strong>
+                            @application.Status
+                        </p>
+
+                    </div>
+
+                </div>
+
+            </div>
+        }
+
+    </div>
+}
