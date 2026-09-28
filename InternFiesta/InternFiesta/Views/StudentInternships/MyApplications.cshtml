@@ -42,9 +42,35 @@ else
                         </p>
 
                         <p>
-                            <strong>Status:</strong>
+                           <strong>Status:</strong>
+
+                           @if (application.Status == "Applied")
+                              {
+                                <span class="badge bg-primary">Applied</span>
+                              }
+                          else if (application.Status == "Shortlisted")
+                           {
+                               <span class="badge bg-info text-dark">Shortlisted</span>
+                            }
+                           else if (application.Status == "Selected")
+                           {
+                                <span class="badge bg-success">Selected</span>
+                           }
+                          else if (application.Status == "Rejected")
+                           {
+                               <span class="badge bg-danger">Rejected</span>
+                           }
+                          else if (application.Status == "Waitlisted")
+                           {
+                               <span class="badge bg-warning text-dark">Waitlisted</span>
+                           }
+                          else
+                           {
+                                <span class="badge bg-secondary">
                             @application.Status
-                        </p>
+                             </span>
+                           }
+                     </p>
 
                     </div>
 
