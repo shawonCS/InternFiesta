@@ -8,6 +8,9 @@ namespace InternFiesta.Models
         public int InternshipPostingId { get; set; }
 
         public string StudentUserId { get; set; } = string.Empty;
+
+        public string Status { get; set; } = "Applied";
+
         [ForeignKey(nameof(StudentUserId))]
         public ApplicationUser? Student { get; set; }
 
