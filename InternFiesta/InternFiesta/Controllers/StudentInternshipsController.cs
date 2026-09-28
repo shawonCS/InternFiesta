@@ -101,5 +101,93 @@ namespace InternFiesta.Controllers
 
             return RedirectToAction(nameof(Index));
         }
+
+        [HttpPost]
+        [ValidateAntiForgeryToken]
+        public async Task<IActionResult> Save(int id)
+        {
+            var studentUserId = _userManager.GetUserId(User);
+
+            if (studentUserId == null)
+            {
+                return Challenge();
+            }
+
+            var internship = await _context.InternshipPostings
+                .FirstOrDefaultAsync(i =>
+                    i.Id == id &&
+                    i.IsActive);
+
+            if (internship == null)
+            {
+                return NotFound();
+            }
+
+            var alreadySaved = await _context.SavedInternships
+                .AnyAsync(s =>
+                    s.InternshipPostingId == id &&
+                    s.StudentUserId == studentUserId);
+
+            if (!alreadySaved)
+            {
+                var savedInternship = new SavedInternship
+                {
+                    InternshipPostingId = id,
+                    StudentUserId = studentUserId,
+                    SavedAt = DateTime.Now
+                };
+
+                _context.SavedInternships.Add(savedInternship);
+                await _context.SaveChangesAsync();
+            }
+
+            return RedirectToAction(nameof(Index));
+        }
+
+        [HttpGet]
+        public async Task<IActionResult> Saved()
+        {
+            var studentUserId = _userManager.GetUserId(User);
+
+            if (studentUserId == null)
+            {
+                return Challenge();
+            }
+
+            var savedInternships = await _context.SavedInternships
+                .Where(s => s.StudentUserId == studentUserId)
+                .Include(s => s.InternshipPosting)
+                .OrderByDescending(s => s.SavedAt)
+                .ToListAsync();
+
+            return View(savedInternships);
+        }
+
+        [HttpPost]
+        [ValidateAntiForgeryToken]
+        public async Task<IActionResult> RemoveSaved(int id)
+        {
+            var studentUserId = _userManager.GetUserId(User);
+
+            if (studentUserId == null)
+            {
+                return Challenge();
+            }
+
+            var savedInternship = await _context.SavedInternships
+                .FirstOrDefaultAsync(s =>
+                    s.Id == id &&
+                    s.StudentUserId == studentUserId);
+
+            if (savedInternship == null)
+            {
+                return NotFound();
+            }
+
+            _context.SavedInternships.Remove(savedInternship);
+            await _context.SaveChangesAsync();
+
+            return RedirectToAction(nameof(Saved));
+        }
     }
 }
