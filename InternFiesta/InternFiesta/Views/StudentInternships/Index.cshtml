@@ -8,6 +8,13 @@
     <h2>Internship Opportunities</h2>
     <p>Browse available internship opportunities.</p>
 </div>
+<div class="mb-3">
+    <a asp-controller="StudentInternships"
+       asp-action="Saved"
+       class="btn btn-outline-primary">
+        View Saved Internships
+    </a>
+</div>
 @if (TempData["ApplicationError"] != null)
 {
     <div class="alert alert-warning">
