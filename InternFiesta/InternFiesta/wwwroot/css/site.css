@@ -614,7 +614,53 @@ body {
     }
 }
 
+.public-nav-btn {
+    background-color: #4f2d7f;
+    border-color: #4f2d7f;
+    color: white;
+}
+.public-nav-btn:hover {
+        background-color: #3d2166;
+        border-color: #3d2166;
+        color: white;
+}
+.btn-student-action {
+    background-color: #dff7f5;
+    border: 1px solid #dff7f5;
+    color: #126b67;
+}
+.btn-student-action:hover {
+        background-color: #c8efeb;
+        border-color: #c8efeb;
+        color: #0d5754;
+}
+.internship-search-sticky {
+    position: sticky;
+    top: 72px;
+    z-index: 100;
+    background-color: #f7f8fc;
+    padding-top: 10px;
+    padding-bottom: 10px;
+}
+.back-to-top {
+    position: fixed;
+    right: 25px;
+    bottom: 25px;
+    width: 44px;
+    height: 44px;
+    border: none;
+    border-radius: 50%;
+    background-color: #4f2d7f;
+    color: white;
+    font-size: 22px;
+    cursor: pointer;
+    z-index: 1000;
+    box-shadow: 0 3px 10px rgba(0, 0, 0, 0.18);
+}
 
+    .back-to-top:hover {
+        background-color: #3d2166;
+    }
 /* ==================================================
    SMALL PHONES
    ================================================== */
