@@ -32,7 +32,14 @@ namespace InternFiesta.Data
                 .WithOne()
                 .HasForeignKey<InterviewSchedule>(i => i.InternshipApplicationId)
                 .OnDelete(DeleteBehavior.NoAction);
+            builder.Entity<Notification>()
+                .HasOne(n => n.User)
+                .WithMany()
+                .HasForeignKey(n => n.UserId)
+                .OnDelete(DeleteBehavior.NoAction);
         }
         public DbSet<InterviewSchedule> InterviewSchedules { get; set; }
+
+        public DbSet<Notification> Notifications { get; set; }
     }
 }

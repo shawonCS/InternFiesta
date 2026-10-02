@@ -1,0 +1,54 @@
+﻿@model IEnumerable<InternFiesta.Models.Notification>
+
+@{
+    ViewData["Title"] = "My Notifications";
+}
+
+<div class="page-heading">
+    <h2>My Notifications</h2>
+
+    <p>
+        View your latest InternFiesta updates.
+    </p>
+</div>
+
+@if (Model == null || !Model.Any())
+{
+    <div class="alert alert-info">
+        You do not have any notifications yet.
+    </div>
+}
+else
+{
+    <div class="row g-3">
+
+        @foreach (var notification in Model)
+        {
+            <div class="col-12">
+
+                <div class="card">
+
+                    <div class="card-body">
+
+                        <h5>
+                            @notification.Title
+                        </h5>
+
+                        <p>
+                            @notification.Message
+                        </p>
+
+                        <small class="text-muted">
+                            @notification.CreatedAt
+                                .ToString("dd MMM yyyy, hh:mm tt")
+                        </small>
+
+                    </div>
+
+                </div>
+
+            </div>
+        }
+
+    </div>
+}
