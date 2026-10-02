@@ -1,0 +1,83 @@
+﻿@model InternFiesta.ViewModels.CompanyApplicationsViewModel
+
+@{
+    ViewData["Title"] = "Applications";
+}
+
+<div class="page-heading">
+    <h2>Applications</h2>
+
+    <p>
+        Applicants for @Model.Internship.Title
+    </p>
+</div>
+
+@if (Model.Applicants.Count == 0)
+{
+    <div class="alert alert-info">
+        No students have applied for this internship yet.
+    </div>
+}
+else
+{
+    <div class="row g-4">
+
+        @foreach (var item in Model.Applicants)
+        {
+            <div class="col-md-6">
+
+                <div class="card h-100">
+
+                    <div class="card-body">
+
+                        <h5>
+                            @(item.Student?.FullName ?? "Student")
+                        </h5>
+
+                        <p>
+                            <strong>Email:</strong>
+                            @item.Student?.Email
+                        </p>
+
+                        <p>
+                            <strong>Student ID:</strong>
+                            @(item.Profile?.StudentId ?? "Not provided")
+                        </p>
+
+                        <p>
+                            <strong>Department:</strong>
+                            @(item.Profile?.Department ?? "Not provided")
+                        </p>
+
+                        <p>
+                            <strong>CGPA:</strong>
+                            @(item.Profile?.CGPA.ToString() ?? "Not provided")
+                        </p>
+
+                        <p>
+                            <strong>Skills:</strong>
+                            @(item.Profile?.Skills ?? "Not provided")
+                        </p>
+
+                        <p>
+                            <strong>Applied:</strong>
+                            @item.Application.AppliedAt.ToString("dd MMM yyyy")
+                        </p>
+
+                        <p>
+                            <strong>Status:</strong>
+
+                            <span class="badge bg-primary">
+                                @item.Application.Status
+                            </span>
+                        </p>
+
+                    </div>
+
+                </div>
+
+            </div>
+        }
+
+    </div>
+}
