@@ -17,5 +17,9 @@ namespace InternFiesta.ViewModels
         public ApplicationUser? Student { get; set; }
 
         public StudentProfile? Profile { get; set; }
+        public int MatchScore { get; set; }
+
+        public string MatchLabel { get; set; }
+            = "Not Rated";
     }
 }

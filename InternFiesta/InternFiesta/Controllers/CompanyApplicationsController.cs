@@ -1,5 +1,6 @@
 ﻿using InternFiesta.Data;
 using InternFiesta.Models;
+using InternFiesta.Services;
 using InternFiesta.ViewModels;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Identity;
@@ -76,17 +77,25 @@ namespace InternFiesta.Controllers
                     Applicants =
                         applications
                             .Select(a =>
-                                new CompanyApplicantViewModel
+                            {
+                                var profile =
+                                    profiles.GetValueOrDefault(
+                                        a.StudentUserId);
+
+                                var match =
+                                    CandidateMatchService.Calculate(
+                                        internship.RequiredSkills,
+                                        profile?.Skills);
+
+                                return new CompanyApplicantViewModel
                                 {
                                     Application = a,
-
-                                    Student =
-                                        a.Student,
-
-                                    Profile =
-                                        profiles.GetValueOrDefault(
-                                            a.StudentUserId)
-                                })
+                                    Student = a.Student,
+                                    Profile = profile,
+                                    MatchScore = match.Score,
+                                    MatchLabel = match.Label
+                                };
+                            })
                             .ToList()
                 };
 

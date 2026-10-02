@@ -61,6 +61,13 @@ else
                             @(item.Profile?.CGPA.ToString()
                                 ?? "Not provided")
                         </p>
+                        <p>
+                            <strong>Candidate Match:</strong>
+
+                            <span class="badge bg-primary">
+                                @item.MatchScore% - @item.MatchLabel
+                            </span>
+                        </p>
 
                         <p>
                             <strong>Skills:</strong>
