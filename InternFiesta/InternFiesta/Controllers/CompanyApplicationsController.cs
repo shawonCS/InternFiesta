@@ -12,7 +12,9 @@ namespace InternFiesta.Controllers
     public class CompanyApplicationsController : Controller
     {
         private readonly ApplicationDbContext _context;
-        private readonly UserManager<ApplicationUser> _userManager;
+
+        private readonly
+            UserManager<ApplicationUser> _userManager;
 
         public CompanyApplicationsController(
             ApplicationDbContext context,
@@ -49,7 +51,8 @@ namespace InternFiesta.Controllers
                     .Where(a =>
                         a.InternshipPostingId == id)
                     .Include(a => a.Student)
-                    .OrderByDescending(a => a.AppliedAt)
+                    .OrderByDescending(a =>
+                        a.AppliedAt)
                     .ToListAsync();
 
             var studentIds =
@@ -62,7 +65,8 @@ namespace InternFiesta.Controllers
                 await _context.StudentProfiles
                     .Where(p =>
                         studentIds.Contains(p.UserId))
-                    .ToDictionaryAsync(p => p.UserId);
+                    .ToDictionaryAsync(
+                        p => p.UserId);
 
             var model =
                 new CompanyApplicationsViewModel
@@ -70,20 +74,82 @@ namespace InternFiesta.Controllers
                     Internship = internship,
 
                     Applicants =
-                        applications.Select(a =>
-                            new CompanyApplicantViewModel
-                            {
-                                Application = a,
-                                Student = a.Student,
+                        applications
+                            .Select(a =>
+                                new CompanyApplicantViewModel
+                                {
+                                    Application = a,
 
-                                Profile =
-                                    profiles.GetValueOrDefault(
-                                        a.StudentUserId)
-                            })
-                        .ToList()
+                                    Student =
+                                        a.Student,
+
+                                    Profile =
+                                        profiles.GetValueOrDefault(
+                                            a.StudentUserId)
+                                })
+                            .ToList()
                 };
 
             return View(model);
+        }
+
+        [HttpPost]
+        [ValidateAntiForgeryToken]
+        public async Task<IActionResult> UpdateStatus(
+            int applicationId,
+            string status)
+        {
+            var companyUserId =
+                _userManager.GetUserId(User);
+
+            if (companyUserId == null)
+            {
+                return Challenge();
+            }
+
+            var allowedStatuses =
+                new[]
+                {
+                    "Shortlisted",
+                    "Selected",
+                    "Rejected",
+                    "Waitlisted"
+                };
+
+            if (!allowedStatuses.Contains(status))
+            {
+                return BadRequest();
+            }
+
+            var application =
+                await _context.InternshipApplications
+                    .Include(a =>
+                        a.InternshipPosting)
+                    .FirstOrDefaultAsync(a =>
+                        a.Id == applicationId &&
+                        a.InternshipPosting!
+                            .CompanyUserId ==
+                            companyUserId);
+
+            if (application == null)
+            {
+                return NotFound();
+            }
+
+            application.Status = status;
+
+            await _context.SaveChangesAsync();
+
+            TempData["StatusMessage"] =
+                $"Application status updated to {status}.";
+
+            return RedirectToAction(
+                nameof(Index),
+                new
+                {
+                    id =
+                        application.InternshipPostingId
+                });
         }
     }
 }

@@ -12,6 +12,13 @@
     </p>
 </div>
 
+@if (TempData["StatusMessage"] != null)
+{
+    <div class="alert alert-success">
+        @TempData["StatusMessage"]
+    </div>
+}
+
 @if (Model.Applicants.Count == 0)
 {
     <div class="alert alert-info">
@@ -51,26 +58,70 @@ else
 
                         <p>
                             <strong>CGPA:</strong>
-                            @(item.Profile?.CGPA.ToString() ?? "Not provided")
+                            @(item.Profile?.CGPA.ToString()
+                                ?? "Not provided")
                         </p>
 
                         <p>
                             <strong>Skills:</strong>
-                            @(item.Profile?.Skills ?? "Not provided")
+                            @(item.Profile?.Skills
+                                ?? "Not provided")
                         </p>
 
                         <p>
                             <strong>Applied:</strong>
-                            @item.Application.AppliedAt.ToString("dd MMM yyyy")
+                            @item.Application.AppliedAt
+                                .ToString("dd MMM yyyy")
                         </p>
 
                         <p>
-                            <strong>Status:</strong>
+                            <strong>Current Status:</strong>
 
                             <span class="badge bg-primary">
                                 @item.Application.Status
                             </span>
                         </p>
+
+                        <hr />
+
+                        <form asp-controller="CompanyApplications"
+                              asp-action="UpdateStatus"
+                              method="post"
+                              class="d-flex flex-wrap gap-2">
+
+                            <input type="hidden"
+                                   name="applicationId"
+                                   value="@item.Application.Id" />
+
+                            <button type="submit"
+                                    name="status"
+                                    value="Shortlisted"
+                                    class="btn btn-info">
+                                Shortlist
+                            </button>
+
+                            <button type="submit"
+                                    name="status"
+                                    value="Selected"
+                                    class="btn btn-success">
+                                Select
+                            </button>
+
+                            <button type="submit"
+                                    name="status"
+                                    value="Rejected"
+                                    class="btn btn-danger">
+                                Reject
+                            </button>
+
+                            <button type="submit"
+                                    name="status"
+                                    value="Waitlisted"
+                                    class="btn btn-warning">
+                                Waitlist
+                            </button>
+
+                        </form>
 
                     </div>
 
