@@ -1,0 +1,67 @@
+﻿@model IEnumerable<InternFiesta.Models.InterviewSchedule>
+
+@{
+    ViewData["Title"] = "My Interviews";
+}
+
+<div class="page-heading">
+    <h2>My Interviews</h2>
+
+    <p>
+        View your scheduled internship interviews.
+    </p>
+</div>
+
+@if (Model == null || !Model.Any())
+{
+    <div class="alert alert-info">
+        You do not have any scheduled interviews yet.
+    </div>
+}
+else
+{
+    <div class="row g-4">
+
+        @foreach (var interview in Model)
+        {
+            <div class="col-md-6">
+
+                <div class="card h-100">
+
+                    <div class="card-body">
+
+                        <h4>
+                            @(interview.InternshipApplication?
+                                .InternshipPosting?
+                                .Title
+                                ?? "Internship Interview")
+                        </h4>
+
+                        <p>
+                            <strong>Date & Time:</strong>
+                            @(interview.InterviewDateTime
+                                .ToString("dd MMM yyyy, hh:mm tt"))
+                        </p>
+
+                        <p>
+                            <strong>Location / Meeting Link:</strong>
+                            @interview.LocationOrLink
+                        </p>
+
+                        @if (!string.IsNullOrWhiteSpace(interview.Notes))
+                        {
+                            <p>
+                                <strong>Notes:</strong>
+                                @interview.Notes
+                            </p>
+                        }
+
+                    </div>
+
+                </div>
+
+            </div>
+        }
+
+    </div>
+}
