@@ -12,6 +12,20 @@
     </p>
 </div>
 
+@if (TempData["InterviewMessage"] != null)
+{
+    <div class="alert alert-success">
+        @TempData["InterviewMessage"]
+    </div>
+}
+
+@if (TempData["InterviewError"] != null)
+{
+    <div class="alert alert-warning">
+        @TempData["InterviewError"]
+    </div>
+}
+
 @if (TempData["StatusMessage"] != null)
 {
     <div class="alert alert-success">
@@ -37,13 +51,13 @@ else
 
                     <div class="card-body">
 
-                        <h5>
+                        <h5 class="mb-3">
                             @(item.Student?.FullName ?? "Student")
                         </h5>
 
                         <p>
                             <strong>Email:</strong>
-                            @item.Student?.Email
+                            @(item.Student?.Email ?? "Not provided")
                         </p>
 
                         <p>
@@ -58,36 +72,88 @@ else
 
                         <p>
                             <strong>CGPA:</strong>
-                            @(item.Profile?.CGPA.ToString()
-                                ?? "Not provided")
-                        </p>
-                        <p>
-                            <strong>Candidate Match:</strong>
-
-                            <span class="badge bg-primary">
-                                @item.MatchScore% - @item.MatchLabel
-                            </span>
+                            @(item.Profile != null
+                                ? item.Profile.CGPA.ToString()
+                                : "Not provided")
                         </p>
 
                         <p>
                             <strong>Skills:</strong>
-                            @(item.Profile?.Skills
-                                ?? "Not provided")
+                            @(item.Profile?.Skills ?? "Not provided")
+                        </p>
+
+                        <p>
+                            <strong>Candidate Match:</strong>
+
+                            @if (item.MatchScore >= 70)
+                            {
+                                <span class="badge bg-success">
+                                    @item.MatchScore% - @item.MatchLabel
+                                </span>
+                            }
+                            else if (item.MatchScore >= 40)
+                            {
+                                <span class="badge bg-warning text-dark">
+                                    @item.MatchScore% - @item.MatchLabel
+                                </span>
+                            }
+                            else
+                            {
+                                <span class="badge bg-secondary">
+                                    @item.MatchScore% - @item.MatchLabel
+                                </span>
+                            }
                         </p>
 
                         <p>
                             <strong>Applied:</strong>
-                            @item.Application.AppliedAt
-                                .ToString("dd MMM yyyy")
+                            @(item.Application.AppliedAt.ToString("dd MMM yyyy"))
                         </p>
 
                         <p>
                             <strong>Current Status:</strong>
 
-                            <span class="badge bg-primary">
-                                @item.Application.Status
-                            </span>
+                            @if (item.Application.Status == "Shortlisted")
+                            {
+                                <span class="badge bg-info text-dark">
+                                    Shortlisted
+                                </span>
+                            }
+                            else if (item.Application.Status == "Selected")
+                            {
+                                <span class="badge bg-success">
+                                    Selected
+                                </span>
+                            }
+                            else if (item.Application.Status == "Rejected")
+                            {
+                                <span class="badge bg-danger">
+                                    Rejected
+                                </span>
+                            }
+                            else if (item.Application.Status == "Waitlisted")
+                            {
+                                <span class="badge bg-warning text-dark">
+                                    Waitlisted
+                                </span>
+                            }
+                            else
+                            {
+                                <span class="badge bg-primary">
+                                    @item.Application.Status
+                                </span>
+                            }
                         </p>
+
+                        @if (item.Application.Status == "Shortlisted")
+                        {
+                            <a asp-controller="Interview"
+                               asp-action="Schedule"
+                               asp-route-applicationId="@item.Application.Id"
+                               class="btn btn-primary mb-3">
+                                Schedule / Reschedule Interview
+                            </a>
+                        }
 
                         <hr />
 

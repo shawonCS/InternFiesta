@@ -1,0 +1,92 @@
+﻿@model InternFiesta.Models.InterviewSchedule
+
+@{
+    ViewData["Title"] =
+        Model.Id == 0
+            ? "Schedule Interview"
+            : "Reschedule Interview";
+}
+
+<div class="page-heading">
+    <h2>
+        @(Model.Id == 0
+            ? "Schedule Interview"
+            : "Reschedule Interview")
+    </h2>
+
+    <p>
+        @ViewBag.StudentName -
+        @ViewBag.InternshipTitle
+    </p>
+</div>
+
+<div class="card">
+    <div class="card-body">
+
+        <form asp-controller="Interview"
+              asp-action="Schedule"
+              method="post">
+
+            <input asp-for="InternshipApplicationId"
+                   type="hidden" />
+
+            <div class="mb-3">
+
+                <label class="form-label">
+                    Interview Date & Time
+                </label>
+
+                <input type="datetime-local"
+                       name="InterviewDateTime"
+                       value="@Model.InterviewDateTime.ToString("yyyy-MM-ddTHH:mm")"
+                       step="60"
+                       class="form-control" />
+
+                <span asp-validation-for="InterviewDateTime"
+                      class="text-danger">
+                </span>
+
+            </div>
+
+            <div class="mb-3">
+
+                <label asp-for="LocationOrLink"
+                       class="form-label">
+                    Location / Meeting Link
+                </label>
+
+                <input asp-for="LocationOrLink"
+                       class="form-control"
+                       placeholder="Office location or online meeting link" />
+
+                <span asp-validation-for="LocationOrLink"
+                      class="text-danger">
+                </span>
+
+            </div>
+
+            <div class="mb-3">
+
+                <label asp-for="Notes"
+                       class="form-label">
+                    Notes
+                </label>
+
+                <textarea asp-for="Notes"
+                          class="form-control"
+                          rows="3"
+                          placeholder="Optional interview instructions"></textarea>
+
+            </div>
+
+            <button type="submit"
+                    class="btn btn-primary">
+                @(Model.Id == 0
+                    ? "Schedule Interview"
+                    : "Update Interview")
+            </button>
+
+        </form>
+
+    </div>
+</div>
