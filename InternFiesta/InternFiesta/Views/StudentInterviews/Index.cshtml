@@ -8,14 +8,14 @@
     <h2>My Interviews</h2>
 
     <p>
-        View your scheduled internship interviews.
+        View your internship interview schedule and instructions.
     </p>
 </div>
 
 @if (Model == null || !Model.Any())
 {
     <div class="alert alert-info">
-        You do not have any scheduled interviews yet.
+        No interviews have been scheduled for you yet.
     </div>
 }
 else
@@ -24,34 +24,81 @@ else
 
         @foreach (var interview in Model)
         {
+            var isUpcoming =
+                interview.InterviewDateTime > DateTime.Now;
+
             <div class="col-md-6">
 
                 <div class="card h-100">
 
                     <div class="card-body">
 
-                        <h4>
-                            @(interview.InternshipApplication?
-                                .InternshipPosting?
-                                .Title
-                                ?? "Internship Interview")
-                        </h4>
+                        <div class="d-flex justify-content-between align-items-start gap-2 mb-3">
+
+                            <h4 class="mb-0">
+                                @(
+                                    interview.InternshipApplication?
+                                        .InternshipPosting?
+                                        .Title
+                                    ?? "Internship Interview"
+                                )
+                            </h4>
+
+                            @if (isUpcoming)
+                            {
+                                <span class="badge bg-success">
+                                    Upcoming
+                                </span>
+                            }
+                            else
+                            {
+                                <span class="badge bg-secondary">
+                                    Past
+                                </span>
+                            }
+
+                        </div>
 
                         <p>
-                            <strong>Date & Time:</strong>
-                            @(interview.InterviewDateTime
-                                .ToString("dd MMM yyyy, hh:mm tt"))
+                            <strong>Date:</strong>
+                            @(interview.InterviewDateTime.ToString("dd MMM yyyy"))
+                        </p>
+
+                        <p>
+                            <strong>Time:</strong>
+                            @(interview.InterviewDateTime.ToString("hh:mm tt"))
                         </p>
 
                         <p>
                             <strong>Location / Meeting Link:</strong>
-                            @interview.LocationOrLink
+
+                            @if (!string.IsNullOrWhiteSpace(interview.LocationOrLink))
+                            {
+                                if (interview.LocationOrLink.StartsWith(
+                                    "http",
+                                    StringComparison.OrdinalIgnoreCase))
+                                {
+                                    <a href="@interview.LocationOrLink"
+                                       target="_blank"
+                                       rel="noopener noreferrer">
+                                        Open Meeting Link
+                                    </a>
+                                }
+                                else
+                                {
+                                    @interview.LocationOrLink
+                                }
+                            }
+                            else
+                            {
+                                <span>Not provided</span>
+                            }
                         </p>
 
                         @if (!string.IsNullOrWhiteSpace(interview.Notes))
                         {
-                            <p>
-                                <strong>Notes:</strong>
+                            <p class="mb-0">
+                                <strong>Instructions:</strong>
                                 @interview.Notes
                             </p>
                         }
