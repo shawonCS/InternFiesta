@@ -219,7 +219,7 @@ namespace InternFiesta.Controllers
 
             if (internship.IsActive)
             {
-                TempData["InternshipMessage"] =
+                TempData["SuccessMessage"] =
                     "This internship is already active.";
 
                 return RedirectToAction(nameof(Index));
@@ -229,7 +229,7 @@ namespace InternFiesta.Controllers
 
             await _context.SaveChangesAsync();
 
-            TempData["InternshipMessage"] =
+            TempData["SuccessMessage"] =
                 "Internship reactivated successfully.";
 
             return RedirectToAction(nameof(Index));

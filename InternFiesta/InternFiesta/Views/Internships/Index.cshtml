@@ -121,7 +121,7 @@ else
 
                        @if (internship.IsActive)
                         {
-                            <form asp-controller="CompanyInternships"
+                            <form asp-controller="Internships"
                                   asp-action="Close"
                                   asp-route-id="@internship.Id"
                                   method="post"
@@ -135,7 +135,7 @@ else
                         }
                         else
                         {
-                            <form asp-controller="CompanyInternships"
+                            <form asp-controller="Internships"
                                   asp-action="Reactivate"
                                   asp-route-id="@internship.Id"
                                   method="post"
