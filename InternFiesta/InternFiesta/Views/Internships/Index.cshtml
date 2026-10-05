@@ -119,18 +119,32 @@ else
                             Edit
                         </a>
 
-                        @if (internship.IsActive)
+                       @if (internship.IsActive)
                         {
-                            <form asp-action="Close"
+                            <form asp-controller="CompanyInternships"
+                                  asp-action="Close"
                                   asp-route-id="@internship.Id"
-                                  method="post">
+                                  method="post"
+                                  class="d-inline"
+                                  onsubmit="return confirm('Are you sure you want to close this internship?');">
 
-                                <button type="submit"
-                                        class="btn btn-outline-danger btn-sm"
-                                        onclick="return confirm('Are you sure you want to close this internship?');">
+                                <button type="submit" class="btn btn-outline-danger">
                                     Close
                                 </button>
+                            </form>
+                        }
+                        else
+                        {
+                            <form asp-controller="CompanyInternships"
+                                  asp-action="Reactivate"
+                                  asp-route-id="@internship.Id"
+                                  method="post"
+                                  class="d-inline"
+                                  onsubmit="return confirm('Are you sure you want to reactivate this internship?');">
 
+                                <button type="submit" class="btn btn-success">
+                                    Reactivate
+                                </button>
                             </form>
                         }
 

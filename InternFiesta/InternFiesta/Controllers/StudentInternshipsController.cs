@@ -134,6 +134,8 @@ namespace InternFiesta.Controllers
                 application);
 
             await _context.SaveChangesAsync();
+            TempData["ApplicationSuccess"] =
+            "Your application was submitted successfully.";
 
             return RedirectToAction(
                 nameof(Index));

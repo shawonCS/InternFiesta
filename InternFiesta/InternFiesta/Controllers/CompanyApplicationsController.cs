@@ -101,7 +101,6 @@ namespace InternFiesta.Controllers
 
             return View(model);
         }
-
         [HttpPost]
         [ValidateAntiForgeryToken]
         public async Task<IActionResult> UpdateStatus(
@@ -119,10 +118,10 @@ namespace InternFiesta.Controllers
             var allowedStatuses =
                 new[]
                 {
-                    "Shortlisted",
-                    "Selected",
-                    "Rejected",
-                    "Waitlisted"
+            "Shortlisted",
+            "Selected",
+            "Rejected",
+            "Waitlisted"
                 };
 
             if (!allowedStatuses.Contains(status))
@@ -132,12 +131,11 @@ namespace InternFiesta.Controllers
 
             var application =
                 await _context.InternshipApplications
-                    .Include(a =>
-                        a.InternshipPosting)
+                    .Include(a => a.InternshipPosting)
                     .FirstOrDefaultAsync(a =>
                         a.Id == applicationId &&
-                        a.InternshipPosting!
-                            .CompanyUserId ==
+                        a.InternshipPosting != null &&
+                        a.InternshipPosting.CompanyUserId ==
                             companyUserId);
 
             if (application == null)
@@ -145,7 +143,39 @@ namespace InternFiesta.Controllers
                 return NotFound();
             }
 
-            application.Status = status;
+            var oldStatus =
+                application.Status;
+
+            application.Status =
+                status;
+
+            // Create notification only if status actually changed
+            if (oldStatus != status)
+            {
+                var notification =
+                    new Notification
+                    {
+                        UserId =
+                            application.StudentUserId,
+
+                        Title =
+                            "Application Status Updated",
+
+                        Message =
+                            $"Your application for " +
+                            $"{application.InternshipPosting!.Title} " +
+                            $"has been updated to {status}.",
+
+                        IsRead =
+                            false,
+
+                        CreatedAt =
+                            DateTime.Now
+                    };
+
+                _context.Notifications.Add(
+                    notification);
+            }
 
             await _context.SaveChangesAsync();
 

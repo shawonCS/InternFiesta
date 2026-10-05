@@ -196,5 +196,43 @@ namespace InternFiesta.Controllers
 
             return RedirectToAction(nameof(Index));
         }
+        [HttpPost]
+        [ValidateAntiForgeryToken]
+        public async Task<IActionResult> Reactivate(int id)
+        {
+            var companyUserId = _userManager.GetUserId(User);
+
+            if (companyUserId == null)
+            {
+                return Challenge();
+            }
+
+            var internship = await _context.InternshipPostings
+                .FirstOrDefaultAsync(i =>
+                    i.Id == id &&
+                    i.CompanyUserId == companyUserId);
+
+            if (internship == null)
+            {
+                return NotFound();
+            }
+
+            if (internship.IsActive)
+            {
+                TempData["InternshipMessage"] =
+                    "This internship is already active.";
+
+                return RedirectToAction(nameof(Index));
+            }
+
+            internship.IsActive = true;
+
+            await _context.SaveChangesAsync();
+
+            TempData["InternshipMessage"] =
+                "Internship reactivated successfully.";
+
+            return RedirectToAction(nameof(Index));
+        }
     }
 }

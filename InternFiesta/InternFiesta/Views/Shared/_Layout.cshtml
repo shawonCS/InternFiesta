@@ -1,4 +1,27 @@
-﻿<!DOCTYPE html>
+﻿@using Microsoft.AspNetCore.Identity
+@using Microsoft.EntityFrameworkCore
+@using InternFiesta.Data
+@using InternFiesta.Models
+
+@inject ApplicationDbContext DbContext
+@inject UserManager<ApplicationUser> UserManager
+
+@{
+    var unreadNotificationCount = 0;
+
+    if (User.Identity != null && User.Identity.IsAuthenticated)
+    {
+        var currentUserId = UserManager.GetUserId(User);
+
+        if (currentUserId != null)
+        {
+            unreadNotificationCount = await DbContext.Notifications
+                .CountAsync(n => n.UserId == currentUserId && !n.IsRead);
+        }
+    }
+}
+
+<!DOCTYPE html>
 <html lang="en">
 <head>
     <meta charset="utf-8" />
@@ -38,12 +61,20 @@
 
             <nav class="sidebar-nav">
                 <a asp-controller="Notifications"
-                   asp-action="Index"
-                   class="sidebar-link">
+                 asp-action="Index"
+                 class="sidebar-link">
 
-                   <span class="sidebar-icon">●</span>
+                 <span class="sidebar-icon">●</span>
 
-                   My Notifications
+                 My Notifications
+
+                @if (unreadNotificationCount > 0)
+             {
+                  <span class="badge bg-danger ms-2">
+                  @unreadNotificationCount
+                </span>
+             }
+
                 </a>
                 <a asp-controller="Dashboard"
                    asp-action="Index"

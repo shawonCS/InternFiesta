@@ -26,21 +26,31 @@ namespace InternFiesta.Controllers
         [HttpGet]
         public async Task<IActionResult> Index()
         {
-            var userId =
-                _userManager.GetUserId(User);
+            var userId = _userManager.GetUserId(User);
 
             if (userId == null)
             {
                 return Challenge();
             }
 
-            var notifications =
-                await _context.Notifications
-                    .Where(n =>
-                        n.UserId == userId)
-                    .OrderByDescending(n =>
-                        n.CreatedAt)
-                    .ToListAsync();
+            var notifications = await _context.Notifications
+                .Where(n => n.UserId == userId)
+                .OrderByDescending(n => n.CreatedAt)
+                .ToListAsync();
+
+            var unreadNotifications = notifications
+                .Where(n => !n.IsRead)
+                .ToList();
+
+            if (unreadNotifications.Any())
+            {
+                foreach (var notification in unreadNotifications)
+                {
+                    notification.IsRead = true;
+                }
+
+                await _context.SaveChangesAsync();
+            }
 
             return View(notifications);
         }

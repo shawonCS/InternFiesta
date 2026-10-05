@@ -29,6 +29,13 @@
         @TempData["ApplicationError"]
     </div>
 }
+
+@if (TempData["ApplicationSuccess"] != null)
+{
+    <div class="alert alert-success">
+        @TempData["ApplicationSuccess"]
+    </div>
+}
 <div class="card mb-4 internship-search-sticky">
     <div class="card-body">
 

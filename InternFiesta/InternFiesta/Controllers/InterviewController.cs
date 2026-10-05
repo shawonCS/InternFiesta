@@ -103,7 +103,7 @@ namespace InternFiesta.Controllers
         [HttpPost]
         [ValidateAntiForgeryToken]
         public async Task<IActionResult> Schedule(
-            InterviewSchedule model)
+     InterviewSchedule model)
         {
             var companyUserId =
                 _userManager.GetUserId(User);
@@ -168,6 +168,9 @@ namespace InternFiesta.Controllers
                         i.InternshipApplicationId ==
                             model.InternshipApplicationId);
 
+            var isNewSchedule =
+                existing == null;
+
             var cleanInterviewTime =
                 new DateTime(
                     model.InterviewDateTime.Year,
@@ -216,10 +219,41 @@ namespace InternFiesta.Controllers
                     DateTime.Now;
             }
 
+            // Student notification
+            var notification =
+                new Notification
+                {
+                    UserId =
+                        application.StudentUserId,
+
+                    Title =
+                        isNewSchedule
+                            ? "Interview Scheduled"
+                            : "Interview Rescheduled",
+
+                    Message =
+                        isNewSchedule
+                            ? $"An interview for {application.InternshipPosting!.Title} " +
+                              $"has been scheduled for " +
+                              $"{cleanInterviewTime:dd MMM yyyy, hh:mm tt}."
+                            : $"Your interview for {application.InternshipPosting!.Title} " +
+                              $"has been rescheduled to " +
+                              $"{cleanInterviewTime:dd MMM yyyy, hh:mm tt}.",
+
+                    IsRead =
+                        false,
+
+                    CreatedAt =
+                        DateTime.Now
+                };
+
+            _context.Notifications.Add(
+                notification);
+
             await _context.SaveChangesAsync();
 
             TempData["InterviewMessage"] =
-                existing == null
+                isNewSchedule
                     ? "Interview scheduled successfully."
                     : "Interview rescheduled successfully.";
 
@@ -228,7 +262,8 @@ namespace InternFiesta.Controllers
                 "CompanyApplications",
                 new
                 {
-                    id = application.InternshipPostingId
+                    id =
+                        application.InternshipPostingId
                 });
         }
     }
