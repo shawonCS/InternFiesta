@@ -1,7 +1,9 @@
 @model InternFiesta.Models.StudentProfile
-
+@using InternFiesta.Services
 @{
     ViewData["Title"] = "My Profile";
+    var completeness =
+        ProfileCompletenessService.Calculate(Model);
 }
 
 <div class="page-heading">
@@ -10,6 +12,72 @@
         Manage your academic information, skills,
         projects and experience.
     </p>
+</div>
+<div class="card mb-4">
+    <div class="card-body">
+
+        <div class="d-flex justify-content-between align-items-center mb-2">
+            <h5 class="mb-0">
+                Profile / CV Completeness
+            </h5>
+
+            <strong>
+                @completeness.Percentage%
+            </strong>
+        </div>
+
+        <div class="progress mb-3"
+             style="height: 10px;">
+
+            <div class="progress-bar"
+                 role="progressbar"
+                 style="width: @(completeness.Percentage)%"
+                 aria-valuenow="@completeness.Percentage"
+                 aria-valuemin="0"
+                 aria-valuemax="100">
+            </div>
+
+        </div>
+
+        @if (completeness.MissingFields.Count == 0)
+        {
+            <div class="alert alert-success mb-0">
+                Your profile is complete.
+            </div>
+        }
+        else
+        {
+            <p class="mb-2">
+                <strong>Missing information:</strong>
+            </p>
+
+            <ul class="mb-3">
+                @foreach (var field in completeness.MissingFields)
+                {
+                    <li>@field</li>
+                }
+            </ul>
+
+            @if (!completeness.CanApply)
+            {
+                <div class="alert alert-warning mb-0">
+                    Complete the required fields before applying for internships:
+                    <strong>
+                        @string.Join(", ",
+                            completeness.MissingRequiredFields)
+                    </strong>
+                </div>
+            }
+            else
+            {
+                <div class="alert alert-success mb-0">
+                    Your required profile information is complete.
+                    You can apply for internships.
+                </div>
+            }
+        }
+
+    </div>
 </div>
 
 @if (TempData["SuccessMessage"] != null)

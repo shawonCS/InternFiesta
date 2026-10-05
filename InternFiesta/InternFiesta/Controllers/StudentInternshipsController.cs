@@ -1,5 +1,6 @@
 ﻿using InternFiesta.Data;
 using InternFiesta.Models;
+using InternFiesta.Services;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
@@ -62,46 +63,81 @@ namespace InternFiesta.Controllers
         [ValidateAntiForgeryToken]
         public async Task<IActionResult> Apply(int id)
         {
-            var studentUserId = _userManager.GetUserId(User);
+            var studentUserId =
+                _userManager.GetUserId(User);
 
             if (studentUserId == null)
             {
                 return Challenge();
             }
 
-            var internship = await _context.InternshipPostings
-                .FirstOrDefaultAsync(i => i.Id == id && i.IsActive);
+            var internship =
+                await _context.InternshipPostings
+                    .FirstOrDefaultAsync(i =>
+                        i.Id == id &&
+                        i.IsActive);
+
             if (internship == null)
             {
                 return NotFound();
             }
 
-            var alreadyApplied = await _context.InternshipApplications
-                .AnyAsync(a =>
-                a.InternshipPostingId == id &&
-                a.StudentUserId == studentUserId);
+            // Check profile completeness before allowing application
+            var profile =
+                await _context.StudentProfiles
+                    .FirstOrDefaultAsync(p =>
+                        p.UserId == studentUserId);
+
+            var completeness =
+                ProfileCompletenessService.Calculate(
+                    profile);
+
+            if (!completeness.CanApply)
+            {
+                TempData["ProfileIncompleteError"] =
+                    "Please complete the required profile information before applying. Missing: "
+                    + string.Join(
+                        ", ",
+                        completeness.MissingRequiredFields)
+                    + ".";
+
+                return RedirectToAction(
+                    nameof(Index));
+            }
+
+            // Prevent duplicate application
+            var alreadyApplied =
+                await _context.InternshipApplications
+                    .AnyAsync(a =>
+                        a.InternshipPostingId == id &&
+                        a.StudentUserId == studentUserId);
 
             if (alreadyApplied)
             {
                 TempData["ApplicationError"] =
                     "You have already applied for this internship.";
 
-                return RedirectToAction(nameof(Index));
+                return RedirectToAction(
+                    nameof(Index));
             }
 
-            var application = new InternshipApplication
-            {
-                InternshipPostingId = id,
-                StudentUserId = studentUserId,
-                AppliedAt = DateTime.Now
-            };
+            var application =
+                new InternshipApplication
+                {
+                    InternshipPostingId = id,
+                    StudentUserId = studentUserId,
+                    Status = "Applied",
+                    AppliedAt = DateTime.Now
+                };
 
-            _context.InternshipApplications.Add(application);
+            _context.InternshipApplications.Add(
+                application);
+
             await _context.SaveChangesAsync();
 
-            return RedirectToAction(nameof(Index));
+            return RedirectToAction(
+                nameof(Index));
         }
-
         [HttpPost]
         [ValidateAntiForgeryToken]
         public async Task<IActionResult> Save(int id)

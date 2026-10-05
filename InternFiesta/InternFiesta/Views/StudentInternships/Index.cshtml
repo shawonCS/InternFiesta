@@ -9,6 +9,20 @@
     <p>Browse available internship opportunities.</p>
 </div>
 
+@if (TempData["ProfileIncompleteError"] != null)
+{
+    <div class="alert alert-warning">
+
+        @TempData["ProfileIncompleteError"]
+
+        <a asp-controller="StudentProfile"
+           asp-action="Index"
+           class="alert-link ms-1">
+            Complete Profile
+        </a>
+
+    </div>
+}
 @if (TempData["ApplicationError"] != null)
 {
     <div class="alert alert-warning">
