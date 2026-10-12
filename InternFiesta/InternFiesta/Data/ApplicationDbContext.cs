@@ -21,6 +21,8 @@ namespace InternFiesta.Data
         protected override void OnModelCreating(ModelBuilder builder)
         {
             base.OnModelCreating(builder);
+            builder.Entity<InternshipPosting>()
+            .HasQueryFilter(i => !i.IsDeleted);
 
             builder.Entity<InternshipApplication>()
                 .HasOne(a => a.Student)

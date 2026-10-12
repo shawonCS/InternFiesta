@@ -1,4 +1,5 @@
-﻿using InternFiesta.Controllers;
+﻿
+using InternFiesta.Controllers;
 using InternFiesta.Data;
 using InternFiesta.Models;
 using Microsoft.AspNetCore.Http;
@@ -8,7 +9,9 @@ using Microsoft.AspNetCore.Mvc.ViewFeatures;
 using Microsoft.EntityFrameworkCore;
 using Moq;
 using NUnit.Framework;
+using System;
 using System.Security.Claims;
+using System.Threading.Tasks;
 
 namespace InternFiesta.UnitTests
 {
@@ -18,18 +21,16 @@ namespace InternFiesta.UnitTests
         {
             var options =
                 new DbContextOptionsBuilder<ApplicationDbContext>()
-                    .UseInMemoryDatabase(
-                        Guid.NewGuid().ToString())
+                    .UseInMemoryDatabase(Guid.NewGuid().ToString())
                     .Options;
 
             return new ApplicationDbContext(options);
         }
 
-        private UserManager<ApplicationUser>
-            CreateUserManager(string userId)
+        private UserManager<ApplicationUser> CreateUserManager(
+            string userId)
         {
-            var store =
-                new Mock<IUserStore<ApplicationUser>>();
+            var store = new Mock<IUserStore<ApplicationUser>>();
 
             var userManager =
                 new Mock<UserManager<ApplicationUser>>(
@@ -44,9 +45,8 @@ namespace InternFiesta.UnitTests
                     null!);
 
             userManager
-                .Setup(u =>
-                    u.GetUserId(
-                        It.IsAny<ClaimsPrincipal>()))
+                .Setup(u => u.GetUserId(
+                    It.IsAny<ClaimsPrincipal>()))
                 .Returns(userId);
 
             return userManager.Object;
@@ -56,18 +56,13 @@ namespace InternFiesta.UnitTests
             ApplicationDbContext context,
             string userId)
         {
-            var userManager =
-                CreateUserManager(userId);
+            var controller = new StudentInternshipsController(
+                context,
+                CreateUserManager(userId));
 
-            var controller =
-                new StudentInternshipsController(
-                    context,
-                    userManager);
-
-            controller.TempData =
-                new TempDataDictionary(
-                    new DefaultHttpContext(),
-                    Mock.Of<ITempDataProvider>());
+            controller.TempData = new TempDataDictionary(
+                new DefaultHttpContext(),
+                Mock.Of<ITempDataProvider>());
 
             return controller;
         }
@@ -77,7 +72,7 @@ namespace InternFiesta.UnitTests
         {
             using var context = CreateContext();
 
-            var internship =
+            context.InternshipPostings.Add(
                 new InternshipPosting
                 {
                     Id = 1,
@@ -86,35 +81,41 @@ namespace InternFiesta.UnitTests
                     Description = "Test internship",
                     RequiredSkills = "C#",
                     Location = "Dhaka",
-                    Deadline = DateTime.Now.AddDays(30),
+                    Deadline = DateTime.UtcNow.AddDays(30),
                     Positions = 2,
                     IsActive = true,
-                    CreatedAt = DateTime.Now
-                };
+                    CreatedAt = DateTime.UtcNow
+                });
 
-            context.InternshipPostings.Add(internship);
+            // Student must have a complete profile
+            // before applying.
+            context.StudentProfiles.Add(
+                new StudentProfile
+                {
+                    UserId = "student-1",
+                    StudentId = "STU-001",
+                    Department = "Computer Science",
+                    Skills = "C#, ASP.NET Core",
+                    CGPA = 3.50m,
+                    Projects = "InternFiesta"
+                });
 
             await context.SaveChangesAsync();
 
-            var controller =
-                CreateController(
-                    context,
-                    "student-1");
+            var controller = CreateController(
+                context,
+                "student-1");
 
-            var result =
-                await controller.Apply(1);
+            var result = await controller.Apply(1);
 
             Assert.That(
                 result,
                 Is.TypeOf<RedirectToActionResult>());
 
             var applications =
-                await context.InternshipApplications
-                    .ToListAsync();
+                await context.InternshipApplications.ToListAsync();
 
-            Assert.That(
-                applications.Count,
-                Is.EqualTo(1));
+            Assert.That(applications.Count, Is.EqualTo(1));
 
             Assert.That(
                 applications[0].InternshipPostingId,
@@ -123,6 +124,11 @@ namespace InternFiesta.UnitTests
             Assert.That(
                 applications[0].StudentUserId,
                 Is.EqualTo("student-1"));
+
+            Assert.That(
+                controller.TempData["SuccessMessage"],
+                Is.EqualTo(
+                    "Your application was submitted successfully."));
         }
 
         [Test]
@@ -130,7 +136,7 @@ namespace InternFiesta.UnitTests
         {
             using var context = CreateContext();
 
-            var internship =
+            context.InternshipPostings.Add(
                 new InternshipPosting
                 {
                     Id = 1,
@@ -139,13 +145,11 @@ namespace InternFiesta.UnitTests
                     Description = "Test internship",
                     RequiredSkills = "C#",
                     Location = "Dhaka",
-                    Deadline = DateTime.Now.AddDays(30),
+                    Deadline = DateTime.UtcNow.AddDays(30),
                     Positions = 2,
                     IsActive = true,
-                    CreatedAt = DateTime.Now
-                };
-
-            context.InternshipPostings.Add(internship);
+                    CreatedAt = DateTime.UtcNow
+                });
 
             context.InternshipApplications.Add(
                 new InternshipApplication
@@ -153,33 +157,28 @@ namespace InternFiesta.UnitTests
                     InternshipPostingId = 1,
                     StudentUserId = "student-1",
                     Status = "Applied",
-                    AppliedAt = DateTime.Now
+                    AppliedAt = DateTime.UtcNow
                 });
 
             await context.SaveChangesAsync();
 
-            var controller =
-                CreateController(
-                    context,
-                    "student-1");
+            var controller = CreateController(
+                context,
+                "student-1");
 
-            var result =
-                await controller.Apply(1);
+            var result = await controller.Apply(1);
 
             Assert.That(
                 result,
                 Is.TypeOf<RedirectToActionResult>());
 
             var applications =
-                await context.InternshipApplications
-                    .ToListAsync();
+                await context.InternshipApplications.ToListAsync();
+
+            Assert.That(applications.Count, Is.EqualTo(1));
 
             Assert.That(
-                applications.Count,
-                Is.EqualTo(1));
-
-            Assert.That(
-                controller.TempData["ApplicationError"],
+                controller.TempData["WarningMessage"],
                 Is.EqualTo(
                     "You have already applied for this internship."));
         }

@@ -234,5 +234,131 @@ namespace InternFiesta.Controllers
 
             return RedirectToAction(nameof(Index));
         }
+        [HttpPost]
+        [ValidateAntiForgeryToken]
+        public async Task<IActionResult> Delete(int id)
+        {
+            var companyUserId = _userManager.GetUserId(User);
+
+            if (companyUserId == null)
+                return Challenge();
+
+            var internship = await _context.InternshipPostings
+                .FirstOrDefaultAsync(i =>
+                    i.Id == id &&
+                    i.CompanyUserId == companyUserId);
+
+            if (internship == null)
+                return NotFound();
+
+            if (internship.IsActive)
+            {
+                TempData["WarningMessage"] =
+                    "Please close this internship before deleting it.";
+
+                return RedirectToAction(nameof(Index));
+            }
+
+            bool hasApplications = await _context.InternshipApplications
+                .AnyAsync(a => a.InternshipPostingId == id);
+
+            if (hasApplications)
+            {
+                TempData["WarningMessage"] =
+                    "This internship cannot be deleted because students have already applied.";
+
+                return RedirectToAction(nameof(Index));
+            }
+
+            await using var transaction =
+                await _context.Database.BeginTransactionAsync();
+
+            var savedInternships = await _context.SavedInternships
+                .Where(s => s.InternshipPostingId == id)
+                .ToListAsync();
+
+            _context.SavedInternships.RemoveRange(savedInternships);
+            _context.InternshipPostings.Remove(internship);
+
+            await _context.SaveChangesAsync();
+            await transaction.CommitAsync();
+
+            TempData["SuccessMessage"] =
+                "Internship posting deleted successfully.";
+
+            return RedirectToAction(nameof(Index));
+        }
+
+
+        [HttpPost]
+        [ValidateAntiForgeryToken]
+        public async Task<IActionResult> DeleteSelected(List<int> ids)
+        {
+            var companyUserId = _userManager.GetUserId(User);
+
+            if (companyUserId == null)
+                return Challenge();
+
+            if (ids == null || ids.Count == 0)
+            {
+                TempData["WarningMessage"] =
+                    "Please select at least one internship.";
+
+                return RedirectToAction(nameof(Index));
+            }
+
+            var uniqueIds = ids.Distinct().ToList();
+
+            var internships = await _context.InternshipPostings
+                .Where(i =>
+                    uniqueIds.Contains(i.Id) &&
+                    i.CompanyUserId == companyUserId)
+                .ToListAsync();
+
+            if (internships.Count != uniqueIds.Count)
+            {
+                TempData["ErrorMessage"] =
+                    "One or more selected internships were not found or do not belong to your company.";
+
+                return RedirectToAction(nameof(Index));
+            }
+
+            if (internships.Any(i => i.IsActive))
+            {
+                TempData["WarningMessage"] =
+                    "Close all selected internships before deleting them.";
+
+                return RedirectToAction(nameof(Index));
+            }
+
+            bool hasApplications = await _context.InternshipApplications
+                .AnyAsync(a => uniqueIds.Contains(a.InternshipPostingId));
+
+            if (hasApplications)
+            {
+                TempData["WarningMessage"] =
+                    "Some selected internships have student applications. No postings were deleted.";
+
+                return RedirectToAction(nameof(Index));
+            }
+
+            await using var transaction =
+                await _context.Database.BeginTransactionAsync();
+
+            var savedInternships = await _context.SavedInternships
+                .Where(s => uniqueIds.Contains(s.InternshipPostingId))
+                .ToListAsync();
+
+            _context.SavedInternships.RemoveRange(savedInternships);
+            _context.InternshipPostings.RemoveRange(internships);
+
+            await _context.SaveChangesAsync();
+            await transaction.CommitAsync();
+
+            TempData["SuccessMessage"] =
+                $"{internships.Count} internship posting(s) deleted successfully.";
+
+            return RedirectToAction(nameof(Index));
+        }
     }
 }

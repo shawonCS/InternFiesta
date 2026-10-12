@@ -1,25 +1,62 @@
-﻿@model IEnumerable<InternFiesta.Models.Notification>
+﻿
+@model IEnumerable<InternFiesta.Models.Notification>
 
 @{
     ViewData["Title"] = "My Notifications";
 }
 
-<div class="page-heading">
-    <h2>My Notifications</h2>
+<!-- Page Heading -->
+<div class="page-heading d-flex flex-wrap justify-content-between align-items-center gap-3">
 
-    <p>
-        View your latest InternFiesta updates.
-    </p>
+    <div>
+        <h2>My Notifications</h2>
+
+        <p>
+            View and manage your latest InternFiesta updates.
+        </p>
+    </div>
+
+    @if (Model != null && Model.Any())
+    {
+        <!-- Clear All Notifications -->
+        <form asp-controller="Notifications"
+              asp-action="ClearAll"
+              method="post"
+              data-preserve-scroll="true"
+              onsubmit="return confirm('Are you sure you want to permanently clear all your notifications?');">
+
+            @Html.AntiForgeryToken()
+
+            <button type="submit"
+                    class="btn btn-outline-danger btn-sm">
+                Clear All
+            </button>
+
+        </form>
+    }
+
 </div>
 
 @if (Model == null || !Model.Any())
 {
-    <div class="alert alert-info">
-        You do not have any notifications yet.
+    <!-- Empty State -->
+    <div class="card">
+        <div class="card-body text-center py-5">
+
+            <h5 class="fw-semibold mb-2">
+                No notifications
+            </h5>
+
+            <p class="text-muted mb-0">
+                You're all caught up! New updates will appear here.
+            </p>
+
+        </div>
     </div>
 }
 else
 {
+    <!-- Notification List -->
     <div class="row g-3">
 
         @foreach (var notification in Model)
@@ -30,17 +67,44 @@ else
 
                     <div class="card-body">
 
-                        <h5>
-                            @notification.Title
-                        </h5>
+                        <div class="d-flex flex-wrap justify-content-between align-items-start gap-3">
 
-                        <p>
-                            @notification.Message
-                        </p>
+                            <!-- Notification Content -->
+                            <div class="flex-grow-1">
 
-                        <small class="text-muted">
-                            @notification.CreatedAt.ToString("dd MMM yyyy, hh:mm tt")
-                        </small>
+                                <h5 class="mb-2">
+                                    @notification.Title
+                                </h5>
+
+                                <p class="text-muted mb-2">
+                                    @notification.Message
+                                </p>
+
+                                <small class="text-muted">
+                                    @notification.CreatedAt.ToString("dd MMM yyyy, hh:mm tt")
+                                </small>
+
+                            </div>
+
+                            <!-- Individual Delete -->
+                            <form asp-controller="Notifications"
+                                  asp-action="Delete"
+                                  asp-route-id="@notification.Id"
+                                  method="post"
+                                  data-preserve-scroll="true"
+                                  onsubmit="return confirm('Are you sure you want to delete this notification?');">
+
+                                @Html.AntiForgeryToken()
+
+                                <button type="submit"
+                                        class="btn btn-outline-danger btn-sm"
+                                        aria-label="Delete notification">
+                                    Delete
+                                </button>
+
+                            </form>
+
+                        </div>
 
                     </div>
 

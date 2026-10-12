@@ -1,3 +1,4 @@
+
 @model IEnumerable<InternFiesta.Models.InternshipPosting>
 
 @{
@@ -10,42 +11,87 @@
         <p>Create and manage your company's internship opportunities.</p>
     </div>
 
-    <a asp-action="Create"
+    <div class="d-flex flex-column align-items-end gap-2">
+    <a asp-controller="Internships"
+       asp-action="Create"
        class="btn btn-primary">
         Create Internship
     </a>
-</div>
 
-@if (TempData["SuccessMessage"] != null)
-{
-    <div class="alert alert-success">
-        @TempData["SuccessMessage"]
-    </div>
-}
+    @if (Model != null && Model.Any())
+    {
+        <button type="button"
+                id="toggleDeleteMode"
+                class="btn btn-outline-danger btn-sm"
+                title="Delete internship postings"
+                aria-label="Delete internship postings"
+                aria-pressed="false">
+            <span aria-hidden="true">🗑️</span>
+        </button>
+    }
+</div>
+</div>
 
 @if (Model == null || !Model.Any())
 {
     <div class="card">
         <div class="card-body text-center py-5">
-
-            <h5 class="fw-bold">
-                No internship postings yet
-            </h5>
+            <h5 class="fw-bold">No internship postings yet</h5>
 
             <p class="text-muted">
                 Create your first internship opportunity.
             </p>
 
-            <a asp-action="Create"
+            <a asp-controller="Internships"
+               asp-action="Create"
                class="btn btn-primary">
                 Create Internship
             </a>
-
         </div>
     </div>
 }
 else
 {
+    <!-- Delete mode controls -->
+    <div class="d-flex flex-wrap justify-content-between align-items-center gap-2 mb-3">
+
+        <div id="deleteModeToolbar"
+             class="d-none d-flex flex-wrap align-items-center gap-3">
+
+            <label class="d-flex align-items-center gap-2 mb-0">
+                <input type="checkbox"
+                       id="selectAllInternships"
+                       class="form-check-input mt-0" />
+
+                <span>Select All</span>
+            </label>
+
+            <small id="selectedCount" class="text-muted">
+                0 selected
+            </small>
+
+            <button type="submit"
+                    form="bulkDeleteForm"
+                    id="bulkDeleteButton"
+                    class="btn btn-danger btn-sm"
+                    disabled>
+                Delete Selected
+            </button>
+
+        </div>
+    </div>
+
+    <!-- Bulk delete form -->
+    <form id="bulkDeleteForm"
+          asp-controller="Internships"
+          asp-action="DeleteSelected"
+          method="post"
+          data-preserve-scroll="true"
+          onsubmit="return confirm('Are you sure you want to delete the selected internships?');">
+
+        @Html.AntiForgeryToken()
+    </form>
+
     <div class="row g-4">
 
         @foreach (var internship in Model)
@@ -56,8 +102,20 @@ else
 
                     <div class="d-flex justify-content-between align-items-start mb-3">
 
-                        <div class="dashboard-card-icon">
-                            💼
+                        <div class="d-flex align-items-center gap-2">
+
+                            <!-- Hidden until Delete Mode is enabled -->
+                            <input type="checkbox"
+                                   class="form-check-input internship-select d-none"
+                                   name="ids"
+                                   value="@internship.Id"
+                                   form="bulkDeleteForm"
+                                   aria-label="Select @internship.Title" />
+
+                            <div class="dashboard-card-icon">
+                                💼
+                            </div>
+
                         </div>
 
                         @if (internship.IsActive)
@@ -105,7 +163,9 @@ else
 
                     </div>
 
-                    <div class="d-flex gap-2">
+                    <!-- Existing actions preserved -->
+                    <div class="d-flex flex-wrap gap-2">
+
                         <a asp-controller="CompanyApplications"
                            asp-action="Index"
                            asp-route-id="@internship.Id"
@@ -113,22 +173,34 @@ else
                             Applicants
                         </a>
 
-                        <a asp-action="Edit"
+                        <a asp-controller="Internships"
+                           asp-action="Edit"
                            asp-route-id="@internship.Id"
-                           class="btn btn-outline-primary btn-sm">
+                           class="btn btn-outline-primary btn-sm"
+                           onclick="sessionStorage.setItem(
+                               'internfiesta-internships-scroll',
+                               JSON.stringify({
+                                   y: window.scrollY,
+                                   savedAt: Date.now()
+                               })
+                           );">
                             Edit
                         </a>
 
-                       @if (internship.IsActive)
+                        @if (internship.IsActive)
                         {
                             <form asp-controller="Internships"
                                   asp-action="Close"
                                   asp-route-id="@internship.Id"
                                   method="post"
+                                  data-preserve-scroll="true"
                                   class="d-inline"
                                   onsubmit="return confirm('Are you sure you want to close this internship?');">
 
-                                <button type="submit" class="btn btn-outline-danger">
+                                @Html.AntiForgeryToken()
+
+                                <button type="submit"
+                                        class="btn btn-outline-danger">
                                     Close
                                 </button>
                             </form>
@@ -139,14 +211,35 @@ else
                                   asp-action="Reactivate"
                                   asp-route-id="@internship.Id"
                                   method="post"
+                                  data-preserve-scroll="true"
                                   class="d-inline"
                                   onsubmit="return confirm('Are you sure you want to reactivate this internship?');">
 
-                                <button type="submit" class="btn btn-success">
+                                @Html.AntiForgeryToken()
+
+                                <button type="submit"
+                                        class="btn btn-success">
                                     Reactivate
                                 </button>
                             </form>
                         }
+
+                        <!-- Individual Delete -->
+                        <form asp-controller="Internships"
+                              asp-action="Delete"
+                              asp-route-id="@internship.Id"
+                              method="post"
+                              data-preserve-scroll="true"
+                              class="d-inline"
+                              onsubmit="return confirm('Are you sure you want to delete this internship?');">
+
+                            @Html.AntiForgeryToken()
+
+                            <button type="submit"
+                                    class="btn btn-outline-danger btn-sm">
+                                Delete
+                            </button>
+                        </form>
 
                     </div>
 
@@ -156,4 +249,157 @@ else
         }
 
     </div>
+}
+
+@section Scripts {
+    <script>
+        document.addEventListener("DOMContentLoaded", function () {
+
+            // ============================
+            // Delete Mode
+            // ============================
+
+            const toggleButton =
+                document.getElementById("toggleDeleteMode");
+
+            const toolbar =
+                document.getElementById("deleteModeToolbar");
+
+            const selectAll =
+                document.getElementById("selectAllInternships");
+
+            const checkboxes =
+                Array.from(
+                    document.querySelectorAll(".internship-select")
+                );
+
+            const selectedCount =
+                document.getElementById("selectedCount");
+
+            const bulkDeleteButton =
+                document.getElementById("bulkDeleteButton");
+
+            let deleteModeActive = false;
+
+            function updateSelection() {
+
+                const selected =
+                    checkboxes.filter(checkbox => checkbox.checked).length;
+
+                if (selectedCount) {
+                    selectedCount.textContent =
+                        selected + " selected";
+                }
+
+                if (bulkDeleteButton) {
+                    bulkDeleteButton.disabled = selected === 0;
+                }
+
+                if (selectAll) {
+                    selectAll.checked =
+                        checkboxes.length > 0 &&
+                        selected === checkboxes.length;
+
+                    selectAll.indeterminate =
+                        selected > 0 &&
+                        selected < checkboxes.length;
+                }
+            }
+
+            if (toggleButton && toolbar) {
+
+                toggleButton.addEventListener("click", function () {
+
+                    deleteModeActive = !deleteModeActive;
+
+                    toolbar.classList.toggle(
+                        "d-none",
+                        !deleteModeActive
+                    );
+
+                    checkboxes.forEach(function (checkbox) {
+
+                        checkbox.classList.toggle(
+                            "d-none",
+                            !deleteModeActive
+                        );
+
+                        if (!deleteModeActive) {
+                            checkbox.checked = false;
+                        }
+                    });
+
+                    if (!deleteModeActive && selectAll) {
+                        selectAll.checked = false;
+                        selectAll.indeterminate = false;
+                    }
+
+                    toggleButton.innerHTML = '<span aria-hidden="true">🗑️</span>';
+                    toggleButton.title = deleteModeActive
+                     ? "Exit delete mode"
+                     : "Delete internship postings";
+                     toggleButton.setAttribute("aria-label", toggleButton.title);
+                     toggleButton.setAttribute("aria-pressed", String(deleteModeActive));
+                     toggleButton.classList.toggle("active", deleteModeActive);
+                    updateSelection();
+                });
+            }
+
+            if (selectAll) {
+                selectAll.addEventListener("change", function () {
+
+                    checkboxes.forEach(function (checkbox) {
+                        checkbox.checked = selectAll.checked;
+                    });
+
+                    updateSelection();
+                });
+            }
+
+            checkboxes.forEach(function (checkbox) {
+                checkbox.addEventListener(
+                    "change",
+                    updateSelection
+                );
+            });
+
+            updateSelection();
+
+            // ============================
+            // Existing Edit Scroll Restore
+            // ============================
+
+            const key = "internfiesta-internships-scroll";
+            const stored = sessionStorage.getItem(key);
+
+            if (!stored) return;
+
+            sessionStorage.removeItem(key);
+
+            try {
+                const position = JSON.parse(stored);
+
+                if (
+                    !Number.isFinite(position.y) ||
+                    !Number.isFinite(position.savedAt) ||
+                    Date.now() - position.savedAt > 300000
+                ) {
+                    return;
+                }
+
+                requestAnimationFrame(function () {
+                    window.scrollTo({
+                        top: position.y,
+                        behavior: "instant"
+                    });
+                });
+
+            } catch (error) {
+                console.error(
+                    "Could not restore scroll position.",
+                    error
+                );
+            }
+        });
+    </script>
 }

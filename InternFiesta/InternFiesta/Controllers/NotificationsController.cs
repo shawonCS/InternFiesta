@@ -1,4 +1,5 @@
-﻿using InternFiesta.Data;
+﻿
+using InternFiesta.Data;
 using InternFiesta.Models;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Identity;
@@ -11,9 +12,7 @@ namespace InternFiesta.Controllers
     public class NotificationsController : Controller
     {
         private readonly ApplicationDbContext _context;
-
-        private readonly
-            UserManager<ApplicationUser> _userManager;
+        private readonly UserManager<ApplicationUser> _userManager;
 
         public NotificationsController(
             ApplicationDbContext context,
@@ -29,9 +28,7 @@ namespace InternFiesta.Controllers
             var userId = _userManager.GetUserId(User);
 
             if (userId == null)
-            {
                 return Challenge();
-            }
 
             var notifications = await _context.Notifications
                 .Where(n => n.UserId == userId)
@@ -53,6 +50,62 @@ namespace InternFiesta.Controllers
             }
 
             return View(notifications);
+        }
+
+        [HttpPost]
+        [ValidateAntiForgeryToken]
+        public async Task<IActionResult> Delete(int id)
+        {
+            var userId = _userManager.GetUserId(User);
+
+            if (userId == null)
+                return Challenge();
+
+            var notification = await _context.Notifications
+                .FirstOrDefaultAsync(n =>
+                    n.Id == id &&
+                    n.UserId == userId);
+
+            if (notification == null)
+                return NotFound();
+
+            _context.Notifications.Remove(notification);
+            await _context.SaveChangesAsync();
+
+            TempData["SuccessMessage"] =
+                "Notification deleted successfully.";
+
+            return RedirectToAction(nameof(Index));
+        }
+
+        [HttpPost]
+        [ValidateAntiForgeryToken]
+        public async Task<IActionResult> ClearAll()
+        {
+            var userId = _userManager.GetUserId(User);
+
+            if (userId == null)
+                return Challenge();
+
+            var notifications = await _context.Notifications
+                .Where(n => n.UserId == userId)
+                .ToListAsync();
+
+            if (notifications.Count == 0)
+            {
+                TempData["WarningMessage"] =
+                    "There are no notifications to clear.";
+
+                return RedirectToAction(nameof(Index));
+            }
+
+            _context.Notifications.RemoveRange(notifications);
+            await _context.SaveChangesAsync();
+
+            TempData["SuccessMessage"] =
+                "All your notifications have been cleared.";
+
+            return RedirectToAction(nameof(Index));
         }
     }
 }

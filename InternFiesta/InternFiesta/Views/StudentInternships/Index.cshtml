@@ -1,50 +1,32 @@
-﻿@model IEnumerable<InternFiesta.Models.InternshipPosting>
+﻿
+@model IEnumerable<InternFiesta.Models.InternshipPosting>
 
 @{
     ViewData["Title"] = "Internship Opportunities";
 }
 
+<!-- Page Heading -->
 <div class="page-heading">
     <h2>Internship Opportunities</h2>
-    <p>Browse available internship opportunities.</p>
+    <p>Browse and explore available internship opportunities.</p>
 </div>
 
-@if (TempData["ProfileIncompleteError"] != null)
-{
-    <div class="alert alert-warning">
-
-        @TempData["ProfileIncompleteError"]
-
-        <a asp-controller="StudentProfile"
-           asp-action="Index"
-           class="alert-link ms-1">
-            Complete Profile
-        </a>
-
-    </div>
-}
-@if (TempData["ApplicationError"] != null)
-{
-    <div class="alert alert-warning">
-        @TempData["ApplicationError"]
-    </div>
-}
-
-@if (TempData["ApplicationSuccess"] != null)
-{
-    <div class="alert alert-success">
-        @TempData["ApplicationSuccess"]
-    </div>
-}
+<!-- Search and Filter Section -->
 <div class="card mb-4 internship-search-sticky">
     <div class="card-body">
 
-        <form method="get" class="row g-3">
+        <form asp-controller="StudentInternships"
+              asp-action="Index"
+              method="get"
+              class="row g-3">
 
             <div class="col-md-3">
-                <label class="form-label">Title</label>
+                <label for="internshipSearch" class="form-label">
+                    Title
+                </label>
 
                 <input type="text"
+                       id="internshipSearch"
                        name="search"
                        value="@Context.Request.Query["search"]"
                        class="form-control"
@@ -52,19 +34,25 @@
             </div>
 
             <div class="col-md-3">
-                <label class="form-label">Location</label>
+                <label for="internshipLocation" class="form-label">
+                    Location
+                </label>
 
                 <input type="text"
+                       id="internshipLocation"
                        name="location"
                        value="@Context.Request.Query["location"]"
                        class="form-control"
-                       placeholder="Location" />
+                       placeholder="Search by location" />
             </div>
 
             <div class="col-md-3">
-                <label class="form-label">Skills</label>
+                <label for="internshipSkills" class="form-label">
+                    Skills
+                </label>
 
                 <input type="text"
+                       id="internshipSkills"
                        name="skills"
                        value="@Context.Request.Query["skills"]"
                        class="form-control"
@@ -72,7 +60,6 @@
             </div>
 
             <div class="col-md-3 d-flex align-items-end">
-
                 <div class="d-flex gap-2 w-100">
 
                     <button type="submit"
@@ -87,7 +74,6 @@
                     </a>
 
                 </div>
-
             </div>
 
         </form>
@@ -97,12 +83,30 @@
 
 @if (Model == null || !Model.Any())
 {
-    <div class="alert alert-info">
-        No internship opportunities are currently available.
+    <!-- Empty State -->
+    <div class="card">
+        <div class="card-body text-center py-5">
+
+            <h5 class="fw-semibold mb-2">
+                No internship opportunities found
+            </h5>
+
+            <p class="text-muted mb-3">
+                Try adjusting your search filters or check back later.
+            </p>
+
+            <a asp-controller="StudentInternships"
+               asp-action="Index"
+               class="btn btn-outline-primary">
+                View All Opportunities
+            </a>
+
+        </div>
     </div>
 }
 else
 {
+    <!-- Internship Cards -->
     <div class="row g-4">
 
         @foreach (var internship in Model)
@@ -113,63 +117,83 @@ else
 
                     <div class="card-body">
 
-                        <h4 class="card-title">
+                        <h4 class="card-title mb-3">
                             @internship.Title
                         </h4>
 
-                        <p>
-                            <strong>Location:</strong>
-                            @internship.Location
-                        </p>
+                        <div class="mb-3">
 
-                        <p>
-                            <strong>Required Skills:</strong>
-                            @internship.RequiredSkills
-                        </p>
+                            <p class="mb-2">
+                                <strong>Location:</strong>
+                                @internship.Location
+                            </p>
 
-                        <p>
-                            <strong>Positions:</strong>
-                            @internship.Positions
-                        </p>
+                            <p class="mb-2">
+                                <strong>Required Skills:</strong>
+                                @(string.IsNullOrWhiteSpace(internship.RequiredSkills)
+                                    ? "Not specified"
+                                    : internship.RequiredSkills)
+                            </p>
 
-                        <p>
-                            <strong>Deadline:</strong>
-                            @internship.Deadline.ToString("dd MMM yyyy")
-                        </p>
+                            <p class="mb-2">
+                                <strong>Positions:</strong>
+                                @internship.Positions
+                            </p>
 
-                        <p class="text-muted">
+                            <p class="mb-2">
+                                <strong>Deadline:</strong>
+                                @internship.Deadline.ToString("dd MMM yyyy")
+                            </p>
+
+                        </div>
+
+                        <p class="text-muted mb-0">
                             @internship.Description
                         </p>
 
                     </div>
 
+                    <!-- Apply and Save Actions -->
                     <div class="card-footer bg-transparent">
 
-                        <form asp-controller="StudentInternships"
-                              asp-action="Apply"
-                              asp-route-id="@internship.Id"
-                              method="post"
-                              class="d-inline"
-                              onsubmit="return confirm('Are you sure you want to apply for this internship?');">
+                        <div class="d-flex flex-wrap gap-2">
 
-                            <button type="submit"
-                               class="btn btn-primary">
+                            <!-- Apply -->
+                            <form asp-controller="StudentInternships"
+                                  asp-action="Apply"
+                                  asp-route-id="@internship.Id"
+                                  method="post"
+                                  data-preserve-scroll="true"
+                                  class="d-inline"
+                                  onsubmit="return confirm('Are you sure you want to apply for this internship?');">
+
+                                @Html.AntiForgeryToken()
+
+                                <button type="submit"
+                                        class="btn btn-primary">
                                     Apply
-                            </button>
-                        </form>
+                                </button>
 
-                        <form asp-controller="StudentInternships"
-                          asp-action="Save"
-                          asp-route-id="@internship.Id"
-                          method="post"
-                          class="d-inline">
+                            </form>
 
-                            <button type="submit"
-                                class="btn btn-student-action">
+                            <!-- Save -->
+                            <form asp-controller="StudentInternships"
+                                  asp-action="Save"
+                                  asp-route-id="@internship.Id"
+                                  method="post"
+                                  data-preserve-scroll="true"
+                                  class="d-inline">
+
+                                @Html.AntiForgeryToken()
+
+                                <button type="submit"
+                                        class="btn btn-student-action">
                                     Save
-                            </button>
+                                </button>
 
-                        </form>
+                            </form>
+
+                        </div>
 
                     </div>
 

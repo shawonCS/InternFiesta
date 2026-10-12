@@ -661,6 +661,56 @@ body {
     .back-to-top:hover {
         background-color: #3d2166;
     }
+/* ==========================================
+   INTERNFIESTA GLOBAL TOAST NOTIFICATIONS
+   ========================================== */
+
+#globalToastContainer {
+    position: fixed;
+    top: 20px;
+    right: 20px;
+    z-index: 1090;
+    pointer-events: none;
+}
+
+.internfiesta-toast {
+    width: min(350px, calc(100vw - 40px));
+    background: #ffffff;
+    border-radius: 12px;
+    overflow: hidden;
+    pointer-events: auto;
+}
+
+    .internfiesta-toast .toast-header {
+        background: #ffffff;
+        border-bottom: 1px solid #e9ecef;
+        padding: 12px 16px;
+    }
+
+    .internfiesta-toast .toast-body {
+        color: #374151;
+        font-size: 14px;
+        padding: 14px 16px;
+        line-height: 1.5;
+    }
+
+@media (max-width: 576px) {
+    #globalToastContainer {
+        top: 10px;
+        right: 10px;
+        left: 10px;
+    }
+
+    .internfiesta-toast {
+        width: 100%;
+    }
+}
+
+@media print {
+    #globalToastContainer {
+        display: none !important;
+    }
+}
 /* ==================================================
    SMALL PHONES
    ================================================== */

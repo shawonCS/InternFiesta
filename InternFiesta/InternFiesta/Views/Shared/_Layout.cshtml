@@ -275,7 +275,85 @@ else
         @RenderBody()
     </main>
 }
+@{
+    var toastSuccess = TempData["SuccessMessage"] as string;
+    var toastError = TempData["ErrorMessage"] as string;
+    var toastWarning = TempData["WarningMessage"] as string;
+}
 
+<div class="toast-container position-fixed top-0 end-0 p-3"
+     id="globalToastContainer"
+     style="z-index: 1090;"
+     aria-live="polite"
+     aria-atomic="false">
+
+    @if (!string.IsNullOrWhiteSpace(toastSuccess))
+    {
+        <div class="toast internfiesta-toast border-0 shadow"
+             role="status"
+             data-bs-delay="6500">
+
+            <div class="toast-header">
+                <span class="text-success me-2">✔</span>
+                <strong class="me-auto">Success</strong>
+
+                <button type="button"
+                        class="btn-close"
+                        data-bs-dismiss="toast"
+                        aria-label="Close"></button>
+            </div>
+
+            <div class="toast-body">
+                @toastSuccess
+            </div>
+        </div>
+    }
+
+    @if (!string.IsNullOrWhiteSpace(toastError))
+    {
+        <div class="toast internfiesta-toast border-0 shadow"
+             role="alert"
+             aria-live="assertive"
+             data-bs-delay="6500">
+
+            <div class="toast-header">
+                <span class="text-danger me-2">✖</span>
+                <strong class="me-auto">Error</strong>
+
+                <button type="button"
+                        class="btn-close"
+                        data-bs-dismiss="toast"
+                        aria-label="Close"></button>
+            </div>
+
+            <div class="toast-body">
+                @toastError
+            </div>
+        </div>
+    }
+
+    @if (!string.IsNullOrWhiteSpace(toastWarning))
+    {
+        <div class="toast internfiesta-toast border-0 shadow"
+             role="status"
+             data-bs-delay="6500">
+
+            <div class="toast-header">
+                <span class="text-warning me-2">⚠</span>
+                <strong class="me-auto">Warning</strong>
+
+                <button type="button"
+                        class="btn-close"
+                        data-bs-dismiss="toast"
+                        aria-label="Close"></button>
+            </div>
+
+            <div class="toast-body">
+                @toastWarning
+            </div>
+        </div>
+    }
+</div>
 
 <script src="~/lib/jquery/dist/jquery.min.js"></script>
 
