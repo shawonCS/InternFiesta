@@ -291,5 +291,54 @@ namespace InternFiesta.Controllers
                 nameof(SubmitFeedback),
                 new { id = academic.InternshipApplicationId });
         }
+        // T-14.3: Faculty - Assigned Students List
+        [HttpGet]
+        [Authorize(Roles = "FacultySupervisor")]
+        public async Task<IActionResult> FacultyStudents()
+        {
+            var facultyId = _userManager.GetUserId(User);
+
+            var internships = await _context.AcademicInternships
+                .AsNoTracking()
+                .Where(a => a.FacultyUserId == facultyId)
+                .Include(a => a.InternshipApplication)
+                    .ThenInclude(a => a.Student)
+                .Include(a => a.InternshipApplication)
+                    .ThenInclude(a => a.InternshipPosting)
+                .Include(a => a.ProgressUpdates)
+                .Include(a => a.CompanyFeedback)
+                .Include(a => a.Milestones)
+                .AsSplitQuery()
+                .OrderByDescending(a => a.StartedAt)
+                .ToListAsync();
+
+            return View(internships);
+        }
+
+        // T-14.3: Faculty - Student Progress Details
+        [HttpGet]
+        [Authorize(Roles = "FacultySupervisor")]
+        public async Task<IActionResult> FacultyStudentDetails(int id)
+        {
+            var facultyId = _userManager.GetUserId(User);
+
+            var internship = await _context.AcademicInternships
+                .AsNoTracking()
+                .Where(a => a.Id == id && a.FacultyUserId == facultyId)
+                .Include(a => a.InternshipApplication)
+                    .ThenInclude(a => a.Student)
+                .Include(a => a.InternshipApplication)
+                    .ThenInclude(a => a.InternshipPosting)
+                .Include(a => a.ProgressUpdates)
+                .Include(a => a.CompanyFeedback)
+                .Include(a => a.Milestones)
+                .AsSplitQuery()
+                .FirstOrDefaultAsync();
+
+            if (internship == null)
+                return NotFound();
+
+            return View(internship);
+        }
     }
 }

@@ -1,0 +1,110 @@
+﻿@model InternFiesta.Models.AcademicInternship
+
+@{
+    ViewData["Title"] = "Student Internship Progress";
+
+    var student = Model.InternshipApplication.Student;
+    var posting = Model.InternshipApplication.InternshipPosting;
+}
+
+<a asp-controller="AcademicProgress"
+   asp-action="FacultyStudents"
+   class="btn btn-outline-secondary mb-3">
+    Back to Assigned Students
+</a>
+
+<h2>Student Internship Progress</h2>
+
+<div class="card mb-4">
+    <div class="card-body">
+        <h4>@(student?.FullName ?? "Unknown Student")</h4>
+        <p><strong>Email:</strong> @(student?.Email ?? "N/A")</p>
+        <p><strong>Internship:</strong> @(posting?.Title ?? "N/A")</p>
+        <p><strong>Status:</strong> @Model.InternshipApplication.Status</p>
+    </div>
+</div>
+
+<h4>Progress Updates</h4>
+
+@if (!Model.ProgressUpdates.Any())
+{
+    <div class="alert alert-info">
+        No progress updates submitted yet.
+    </div>
+}
+else
+{
+    @foreach (var progress in Model.ProgressUpdates
+        .OrderByDescending(p => p.SubmittedAt))
+    {
+        <div class="card mb-3">
+            <div class="card-body">
+                <p>@progress.Description</p>
+                <small class="text-muted">
+                    @progress.SubmittedAt.ToString("dd MMM yyyy, hh:mm tt") UTC
+                </small>
+            </div>
+        </div>
+    }
+}
+
+<h4 class="mt-4">Company Feedback</h4>
+
+@if (!Model.CompanyFeedback.Any())
+{
+    <div class="alert alert-info">
+        No company feedback submitted yet.
+    </div>
+}
+else
+{
+    @foreach (var feedback in Model.CompanyFeedback
+        .OrderByDescending(f => f.SubmittedAt))
+    {
+        <div class="card mb-3">
+            <div class="card-body">
+                <h5>Rating: @feedback.Rating / 5</h5>
+                <p>@feedback.Comments</p>
+                <small class="text-muted">
+                    @feedback.SubmittedAt.ToString("dd MMM yyyy, hh:mm tt") UTC
+                </small>
+            </div>
+        </div>
+    }
+}
+
+<h4 class="mt-4">Milestones</h4>
+
+@if (!Model.Milestones.Any())
+{
+    <div class="alert alert-info">
+        No milestones added yet.
+    </div>
+}
+else
+{
+    <table class="table table-bordered">
+        <thead>
+            <tr>
+                <th>Title</th>
+                <th>Description</th>
+                <th>Due Date</th>
+                <th>Status</th>
+            </tr>
+        </thead>
+        <tbody>
+            @foreach (var milestone in Model.Milestones
+                .OrderBy(m => m.DueDate))
+            {
+                <tr>
+                    <td>@milestone.Title</td>
+                    <td>@milestone.Description</td>
+                    <td>
+                        @(milestone.DueDate?.ToString("dd MMM yyyy") ?? "N/A")
+                    </td>
+                    <td>@milestone.Status</td>
+                </tr>
+            }
+        </tbody>
+    </table>
+}

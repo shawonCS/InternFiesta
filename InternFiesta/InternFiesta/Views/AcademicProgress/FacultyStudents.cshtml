@@ -1,0 +1,79 @@
+﻿@model List<InternFiesta.Models.AcademicInternship>
+
+@{
+    ViewData["Title"] = "Assigned Students Progress";
+}
+
+<h2>Assigned Students Progress</h2>
+<p class="text-muted">
+    Students assigned to you for academic internship supervision.
+</p>
+
+@if (!Model.Any())
+{
+    <div class="alert alert-info">
+        No students have been assigned to you yet.
+    </div>
+}
+else
+{
+    <div class="row g-3">
+        @foreach (var internship in Model)
+        {
+            var student = internship.InternshipApplication.Student;
+            var posting = internship.InternshipApplication.InternshipPosting;
+
+            var latestProgress = internship.ProgressUpdates
+                .OrderByDescending(p => p.SubmittedAt)
+                .FirstOrDefault();
+
+            var latestFeedback = internship.CompanyFeedback
+                .OrderByDescending(f => f.SubmittedAt)
+                .FirstOrDefault();
+
+            var completed = internship.Milestones
+                .Count(m => m.Status == "Completed");
+
+            <div class="col-md-6">
+                <div class="card shadow-sm h-100">
+                    <div class="card-body">
+                        <h5>@(student?.FullName ?? "Unknown Student")</h5>
+
+                        <p class="text-muted">
+                            @(posting?.Title ?? "Academic Internship")
+                        </p>
+
+                        <p>
+                            <strong>Progress Updates:</strong>
+                            @internship.ProgressUpdates.Count
+                        </p>
+
+                        <p>
+                            <strong>Milestones:</strong>
+                            @completed / @internship.Milestones.Count completed
+                        </p>
+
+                        <p>
+                            <strong>Latest Progress:</strong>
+                            @(latestProgress?.Description ?? "No progress submitted")
+                        </p>
+
+                        <p>
+                            <strong>Company Rating:</strong>
+                            @(latestFeedback != null
+                                ? latestFeedback.Rating.ToString() + "/5"
+                                : "No feedback yet")
+                        </p>
+
+                        <a asp-controller="AcademicProgress"
+                           asp-action="FacultyStudentDetails"
+                           asp-route-id="@internship.Id"
+                           class="btn btn-primary">
+                            View Full Progress
+                        </a>
+                    </div>
+                </div>
+            </div>
+        }
+    </div>
+}

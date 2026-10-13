@@ -147,6 +147,16 @@
                     </a>
                 }
 
+                 @if (User.IsInRole("FacultySupervisor"))
+                {
+                    <a asp-controller="AcademicProgress"
+                       asp-action="FacultyStudents"
+                       class="sidebar-link">
+                        <span class="sidebar-icon">▤</span>
+                        Assigned Students Progress
+                    </a>
+                }
+
             </nav>
 
 
