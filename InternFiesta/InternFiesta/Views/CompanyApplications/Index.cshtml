@@ -195,6 +195,15 @@ else
                             </button>
 
                         </form>
+                        @if (item.Application.Status == "Selected")
+                        {
+                            <a asp-controller="AcademicProgress"
+                               asp-action="SubmitFeedback"
+                               asp-route-id="@item.Application.Id"
+                               class="btn btn-outline-primary mt-3">
+                                Give Company Feedback
+                            </a>
+                        }
 
                     </div>
 

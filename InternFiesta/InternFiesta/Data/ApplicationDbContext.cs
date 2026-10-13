@@ -39,9 +39,34 @@ namespace InternFiesta.Data
                 .WithMany()
                 .HasForeignKey(n => n.UserId)
                 .OnDelete(DeleteBehavior.NoAction);
+            builder.Entity<AcademicInternship>()
+                .HasOne(a => a.InternshipApplication)
+                .WithMany()
+                .HasForeignKey(a => a.InternshipApplicationId)
+                .OnDelete(DeleteBehavior.Restrict);
+
+            builder.Entity<AcademicInternship>()
+                .HasIndex(a => a.InternshipApplicationId)
+                .IsUnique();
+
+            builder.Entity<AcademicInternship>()
+                .HasOne(a => a.FacultyUser)
+                .WithMany()
+                .HasForeignKey(a => a.FacultyUserId)
+                .OnDelete(DeleteBehavior.Restrict);
+
+            builder.Entity<AcademicCompanyFeedback>()
+                .HasOne(f => f.CompanyUser)
+                .WithMany()
+                .HasForeignKey(f => f.CompanyUserId)
+                .OnDelete(DeleteBehavior.Restrict);
         }
         public DbSet<InterviewSchedule> InterviewSchedules { get; set; }
 
         public DbSet<Notification> Notifications { get; set; }
+        public DbSet<AcademicInternship> AcademicInternships { get; set; }
+        public DbSet<AcademicMilestone> AcademicMilestones { get; set; }
+        public DbSet<AcademicProgressUpdate> AcademicProgressUpdates { get; set; }
+        public DbSet<AcademicCompanyFeedback> AcademicCompanyFeedbacks { get; set; }
     }
 }

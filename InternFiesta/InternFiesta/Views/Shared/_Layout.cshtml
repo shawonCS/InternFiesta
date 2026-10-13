@@ -136,6 +136,17 @@
                     </a>
                 }
 
+                @* NEW: Coordinator Faculty Assignment *@
+                @if (User.IsInRole("UniversityCoordinator"))
+                {
+                    <a asp-controller="AcademicProgress"
+                       asp-action="AssignFaculty"
+                       class="sidebar-link">
+                        <span class="sidebar-icon">▣</span>
+                        Assign Faculty
+                    </a>
+                }
+
             </nav>
 
 

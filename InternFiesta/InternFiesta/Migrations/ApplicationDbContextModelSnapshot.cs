@@ -22,6 +22,133 @@ namespace InternFiesta.Migrations
 
             SqlServerModelBuilderExtensions.UseIdentityColumns(modelBuilder);
 
+            modelBuilder.Entity("InternFiesta.Models.AcademicCompanyFeedback", b =>
+                {
+                    b.Property<int>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("int");
+
+                    SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("Id"));
+
+                    b.Property<int>("AcademicInternshipId")
+                        .HasColumnType("int");
+
+                    b.Property<string>("Comments")
+                        .IsRequired()
+                        .HasMaxLength(2000)
+                        .HasColumnType("nvarchar(2000)");
+
+                    b.Property<string>("CompanyUserId")
+                        .IsRequired()
+                        .HasColumnType("nvarchar(450)");
+
+                    b.Property<int>("Rating")
+                        .HasColumnType("int");
+
+                    b.Property<DateTime>("SubmittedAt")
+                        .HasColumnType("datetime2");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("AcademicInternshipId");
+
+                    b.HasIndex("CompanyUserId");
+
+                    b.ToTable("AcademicCompanyFeedbacks");
+                });
+
+            modelBuilder.Entity("InternFiesta.Models.AcademicInternship", b =>
+                {
+                    b.Property<int>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("int");
+
+                    SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("Id"));
+
+                    b.Property<string>("FacultyUserId")
+                        .IsRequired()
+                        .HasColumnType("nvarchar(450)");
+
+                    b.Property<int>("InternshipApplicationId")
+                        .HasColumnType("int");
+
+                    b.Property<DateTime>("StartedAt")
+                        .HasColumnType("datetime2");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("FacultyUserId");
+
+                    b.HasIndex("InternshipApplicationId")
+                        .IsUnique();
+
+                    b.ToTable("AcademicInternships");
+                });
+
+            modelBuilder.Entity("InternFiesta.Models.AcademicMilestone", b =>
+                {
+                    b.Property<int>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("int");
+
+                    SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("Id"));
+
+                    b.Property<int>("AcademicInternshipId")
+                        .HasColumnType("int");
+
+                    b.Property<DateTime?>("CompletedAt")
+                        .HasColumnType("datetime2");
+
+                    b.Property<string>("Description")
+                        .HasMaxLength(1000)
+                        .HasColumnType("nvarchar(1000)");
+
+                    b.Property<DateTime?>("DueDate")
+                        .HasColumnType("datetime2");
+
+                    b.Property<string>("Status")
+                        .IsRequired()
+                        .HasMaxLength(20)
+                        .HasColumnType("nvarchar(20)");
+
+                    b.Property<string>("Title")
+                        .IsRequired()
+                        .HasMaxLength(150)
+                        .HasColumnType("nvarchar(150)");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("AcademicInternshipId");
+
+                    b.ToTable("AcademicMilestones");
+                });
+
+            modelBuilder.Entity("InternFiesta.Models.AcademicProgressUpdate", b =>
+                {
+                    b.Property<int>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("int");
+
+                    SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("Id"));
+
+                    b.Property<int>("AcademicInternshipId")
+                        .HasColumnType("int");
+
+                    b.Property<string>("Description")
+                        .IsRequired()
+                        .HasMaxLength(2000)
+                        .HasColumnType("nvarchar(2000)");
+
+                    b.Property<DateTime>("SubmittedAt")
+                        .HasColumnType("datetime2");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("AcademicInternshipId");
+
+                    b.ToTable("AcademicProgressUpdates");
+                });
+
             modelBuilder.Entity("InternFiesta.Models.ApplicationUser", b =>
                 {
                     b.Property<string>("Id")
@@ -447,6 +574,66 @@ namespace InternFiesta.Migrations
                     b.ToTable("AspNetUserTokens", (string)null);
                 });
 
+            modelBuilder.Entity("InternFiesta.Models.AcademicCompanyFeedback", b =>
+                {
+                    b.HasOne("InternFiesta.Models.AcademicInternship", "AcademicInternship")
+                        .WithMany("CompanyFeedback")
+                        .HasForeignKey("AcademicInternshipId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.HasOne("InternFiesta.Models.ApplicationUser", "CompanyUser")
+                        .WithMany()
+                        .HasForeignKey("CompanyUserId")
+                        .OnDelete(DeleteBehavior.Restrict)
+                        .IsRequired();
+
+                    b.Navigation("AcademicInternship");
+
+                    b.Navigation("CompanyUser");
+                });
+
+            modelBuilder.Entity("InternFiesta.Models.AcademicInternship", b =>
+                {
+                    b.HasOne("InternFiesta.Models.ApplicationUser", "FacultyUser")
+                        .WithMany()
+                        .HasForeignKey("FacultyUserId")
+                        .OnDelete(DeleteBehavior.Restrict)
+                        .IsRequired();
+
+                    b.HasOne("InternFiesta.Models.InternshipApplication", "InternshipApplication")
+                        .WithMany()
+                        .HasForeignKey("InternshipApplicationId")
+                        .OnDelete(DeleteBehavior.Restrict)
+                        .IsRequired();
+
+                    b.Navigation("FacultyUser");
+
+                    b.Navigation("InternshipApplication");
+                });
+
+            modelBuilder.Entity("InternFiesta.Models.AcademicMilestone", b =>
+                {
+                    b.HasOne("InternFiesta.Models.AcademicInternship", "AcademicInternship")
+                        .WithMany("Milestones")
+                        .HasForeignKey("AcademicInternshipId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.Navigation("AcademicInternship");
+                });
+
+            modelBuilder.Entity("InternFiesta.Models.AcademicProgressUpdate", b =>
+                {
+                    b.HasOne("InternFiesta.Models.AcademicInternship", "AcademicInternship")
+                        .WithMany("ProgressUpdates")
+                        .HasForeignKey("AcademicInternshipId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.Navigation("AcademicInternship");
+                });
+
             modelBuilder.Entity("InternFiesta.Models.InternshipApplication", b =>
                 {
                     b.HasOne("InternFiesta.Models.InternshipPosting", "InternshipPosting")
@@ -570,6 +757,15 @@ namespace InternFiesta.Migrations
                         .HasForeignKey("UserId")
                         .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired();
+                });
+
+            modelBuilder.Entity("InternFiesta.Models.AcademicInternship", b =>
+                {
+                    b.Navigation("CompanyFeedback");
+
+                    b.Navigation("Milestones");
+
+                    b.Navigation("ProgressUpdates");
                 });
 #pragma warning restore 612, 618
         }

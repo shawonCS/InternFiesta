@@ -1,0 +1,125 @@
+﻿@model List<InternFiesta.Models.InternshipApplication>
+@using InternFiesta.Models
+
+@{
+    ViewData["Title"] = "Assign Faculty";
+
+    var faculty = ViewBag.Faculty as IList<ApplicationUser>
+        ?? new List<ApplicationUser>();
+
+    var assignments = ViewBag.Assignments
+        as Dictionary<int, string>
+        ?? new Dictionary<int, string>();
+}
+
+<div class="container py-4">
+    <h2>Assign Faculty Supervisor</h2>
+
+    <p class="text-muted">
+        Assign a faculty supervisor to selected students.
+    </p>
+
+    @if (TempData["SuccessMessage"] != null)
+    {
+        <div class="alert alert-success">
+            @TempData["SuccessMessage"]
+        </div>
+    }
+
+    @if (TempData["StatusMessage"] != null)
+    {
+        <div class="alert alert-warning">
+            @TempData["StatusMessage"]
+        </div>
+    }
+
+    @if (!faculty.Any())
+    {
+        <div class="alert alert-warning">
+            No FacultySupervisor accounts found.
+        </div>
+    }
+
+    @if (!Model.Any())
+    {
+        <div class="alert alert-info">
+            No selected internship applications found.
+        </div>
+    }
+    else
+    {
+        <div class="row g-3">
+            @foreach (var application in Model)
+            {
+                var assignedId =
+                    assignments.GetValueOrDefault(application.Id);
+
+                <div class="col-md-6">
+                    <div class="card shadow-sm h-100">
+                        <div class="card-body">
+                            <h5>
+                                @application.InternshipPosting?.Title
+                            </h5>
+
+                            <p>
+                                Student:
+                                @application.Student?.FullName
+                            </p>
+
+                            <p>
+                                Application ID: @application.Id
+                            </p>
+
+                            <form asp-controller="AcademicProgress"
+                                  asp-action="AssignFaculty"
+                                  method="post">
+
+                                @Html.AntiForgeryToken()
+
+                                <input type="hidden"
+                                       name="ApplicationId"
+                                       value="@application.Id" />
+
+                                <label class="form-label">
+                                    Faculty Supervisor
+                                </label>
+
+                                <select name="FacultyUserId"
+                                        class="form-select mb-3"
+                                        required>
+                                    <option value="">
+                                        Select Faculty
+                                    </option>
+
+                                    @foreach (var person in faculty)
+                                    {
+                                        if (person.Id == assignedId)
+                                        {
+                                            <option value="@person.Id" selected>
+                                                @person.FullName
+                                            </option>
+                                        }
+                                        else
+                                        {
+                                            <option value="@person.Id">
+                                                @person.FullName
+                                            </option>
+                                        }
+                                    }
+                                </select>
+
+                                <button type="submit"
+                                        class="btn btn-primary"
+                                        disabled="@(!faculty.Any())">
+                                    @(assignedId == null
+                                        ? "Assign Faculty"
+                                        : "Update Faculty")
+                                </button>
+                            </form>
+                        </div>
+                    </div>
+                </div>
+            }
+        </div>
+    }
+</div>

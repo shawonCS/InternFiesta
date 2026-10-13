@@ -1,0 +1,49 @@
+﻿@model InternFiesta.Controllers.AcademicProgressController.ProgressForm
+
+@{
+    ViewData["Title"] = "Submit Progress Update";
+    int internshipId = ViewBag.AcademicInternshipId;
+}
+
+<div class="container py-4">
+    <div class="card shadow-sm mx-auto" style="max-width:650px;">
+        <div class="card-body p-4">
+            <h3>Submit Progress Update</h3>
+
+            <p class="text-muted">
+                Share your latest academic internship progress.
+            </p>
+
+            <form asp-controller="AcademicProgress"
+                  asp-action="SubmitProgress"
+                  asp-route-id="@internshipId"
+                  method="post">
+
+                @Html.AntiForgeryToken()
+
+                <div asp-validation-summary="ModelOnly"
+                     class="text-danger"></div>
+
+                <div class="mb-3">
+                    <label asp-for="Description"
+                           class="form-label">
+                        Progress Description
+                    </label>
+
+                    <textarea asp-for="Description"
+                              class="form-control"
+                              rows="6"
+                              maxlength="2000"
+                              placeholder="Describe your completed work, achievements and challenges..."></textarea>
+
+                    <span asp-validation-for="Description"
+                          class="text-danger"></span>
+                </div>
+
+                <button type="submit" class="btn btn-primary">
+                    Submit Progress
+                </button>
+            </form>
+        </div>
+    </div>
+</div>

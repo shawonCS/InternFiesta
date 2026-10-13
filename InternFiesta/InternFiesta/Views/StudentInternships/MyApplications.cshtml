@@ -80,6 +80,15 @@ else
                                     </span>
                                 }
                             </p>
+                        @if (application.Status == "Selected")
+                        {
+                            <a asp-controller="AcademicProgress"
+                               asp-action="SubmitProgress"
+                               asp-route-id="@application.Id"
+                               class="btn btn-primary mt-2">
+                                Submit Progress
+                            </a>
+                        }
 
                     </div>
 

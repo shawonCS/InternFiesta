@@ -21,6 +21,15 @@ builder.Services
     .AddDefaultTokenProviders();
 
 var app = builder.Build();
+if (app.Environment.IsDevelopment())
+{
+    using var demoScope = app.Services.CreateScope();
+
+    await DemoAcademicUsersSeeder.SeedAsync(
+        demoScope.ServiceProvider,
+        demoScope.ServiceProvider
+            .GetRequiredService<IConfiguration>());
+}
 
 // Configure the HTTP request pipeline.
 if (!app.Environment.IsDevelopment())
