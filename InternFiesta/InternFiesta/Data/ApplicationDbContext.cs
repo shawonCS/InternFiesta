@@ -69,6 +69,22 @@ namespace InternFiesta.Data
             builder.Entity<FacultyEvaluation>()
                 .HasIndex(e => e.AcademicInternshipId)
                 .IsUnique();
+
+            builder.Entity<JobFairRegistration>()
+                .HasOne(r => r.JobFair)
+                .WithMany(f => f.Registrations)
+                .HasForeignKey(r => r.JobFairId)
+                .OnDelete(DeleteBehavior.Restrict);
+
+            builder.Entity<JobFairRegistration>()
+                .HasOne(r => r.User)
+                .WithMany()
+                .HasForeignKey(r => r.UserId)
+                .OnDelete(DeleteBehavior.Restrict);
+
+            builder.Entity<JobFairRegistration>()
+                .HasIndex(r => new { r.JobFairId, r.UserId })
+                .IsUnique();
         }
         public DbSet<InterviewSchedule> InterviewSchedules { get; set; }
 
@@ -78,5 +94,9 @@ namespace InternFiesta.Data
         public DbSet<AcademicProgressUpdate> AcademicProgressUpdates { get; set; }
         public DbSet<AcademicCompanyFeedback> AcademicCompanyFeedbacks { get; set; }
         public DbSet<FacultyEvaluation> FacultyEvaluations { get; set; } = null!;
+
+        public DbSet<JobFair> JobFairs { get; set; } = null!;
+
+        public DbSet<JobFairRegistration> JobFairRegistrations { get; set; } = null!;
     }
 }

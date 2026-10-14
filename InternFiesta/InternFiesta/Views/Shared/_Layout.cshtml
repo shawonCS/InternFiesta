@@ -166,6 +166,15 @@
                     </a>
                 }
 
+                @if (User.IsInRole("UniversityCoordinator"))
+                {
+                    <a asp-controller="CoordinatorJobFairs"
+                       asp-action="Index"
+                       class="sidebar-link">
+                        <span class="sidebar-icon">▣</span>
+                        Manage Job Fairs
+                    </a>
+                }
             </nav>
 
 

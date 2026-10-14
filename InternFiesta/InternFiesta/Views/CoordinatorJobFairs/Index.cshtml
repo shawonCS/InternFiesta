@@ -1,0 +1,169 @@
+﻿@model List<InternFiesta.Models.JobFair>
+
+@{
+    ViewData["Title"] = "Manage Job Fairs";
+    var nowUtc = DateTime.UtcNow;
+}
+
+<div class="container-fluid px-0">
+
+    <div class="d-flex flex-wrap justify-content-between
+        align-items-center gap-3 mb-4">
+
+        <div>
+            <h2 class="mb-1">Manage Job Fairs</h2>
+            <p class="text-muted mb-0">
+                Create events and monitor student and company participation.
+            </p>
+        </div>
+
+        <a asp-controller="CoordinatorJobFairs"
+           asp-action="Create"
+           class="btn btn-primary">
+            + Create Job Fair
+        </a>
+    </div>
+
+    @if (!Model.Any())
+    {
+        <div class="card border-0 shadow-sm">
+            <div class="card-body p-5 text-center">
+                <h4>No job fairs created yet</h4>
+
+                <p class="text-muted">
+                    Create your first job fair to get started.
+                </p>
+
+                <a asp-controller="CoordinatorJobFairs"
+                   asp-action="Create"
+                   class="btn btn-primary">
+                    Create Job Fair
+                </a>
+            </div>
+        </div>
+    }
+    else
+    {
+        <div class="row g-4">
+
+            @foreach (var fair in Model)
+            {
+                var studentCount = fair.Registrations
+                    .Count(r => r.ParticipantRole == "Student");
+
+                var companyCount = fair.Registrations
+                    .Count(r => r.ParticipantRole == "Company");
+
+                var hasEnded = fair.EndsAtUtc <= nowUtc;
+
+                <div class="col-12 col-xl-6">
+                    <div class="card h-100 border-0 shadow-sm">
+                        <div class="card-body p-4">
+
+                            <div class="d-flex justify-content-between
+                                align-items-start gap-2 mb-3">
+                                <h4 class="mb-0">@fair.Title</h4>
+
+                                @if (fair.IsClosed)
+                                {
+                                    <span class="badge bg-secondary">
+                                        Closed
+                                    </span>
+                                }
+                                else if (hasEnded)
+                                {
+                                    <span class="badge bg-secondary">
+                                        Ended
+                                    </span>
+                                }
+                                else if (fair.StartsAtUtc <= nowUtc)
+                                {
+                                    <span class="badge bg-success">
+                                        Ongoing
+                                    </span>
+                                }
+                                else
+                                {
+                                    <span class="badge bg-primary">
+                                        Upcoming
+                                    </span>
+                                }
+                            </div>
+
+                            <p class="text-muted">@fair.Description</p>
+
+                            <p class="mb-2">
+                                <strong>Venue:</strong> @fair.Venue
+                            </p>
+
+                            <p class="mb-2">
+                                <strong>Starts:</strong>
+                                @fair.StartsAtUtc.AddHours(6).ToString("dd MMM yyyy, hh:mm tt") BST
+                            </p>
+
+                            <p class="mb-3">
+                                <strong>Ends:</strong>
+                                @fair.EndsAtUtc.AddHours(6).ToString("dd MMM yyyy, hh:mm tt") BST
+                            </p>
+
+                            <div class="row g-3 mb-4">
+
+                                <div class="col-6">
+                                    <div class="border rounded p-3 text-center">
+                                        <div class="fs-3 fw-bold text-primary">
+                                            @studentCount
+                                        </div>
+                                        <div class="text-muted small">
+                                            Student Registrations
+                                        </div>
+                                    </div>
+                                </div>
+
+                                <div class="col-6">
+                                    <div class="border rounded p-3 text-center">
+                                        <div class="fs-3 fw-bold text-primary">
+                                            @companyCount
+                                        </div>
+                                        <div class="text-muted small">
+                                            Company Registrations
+                                        </div>
+                                    </div>
+                                </div>
+
+                            </div>
+
+                            <div class="d-flex flex-wrap gap-2">
+
+                                @if (!fair.IsClosed)
+                                {
+                                    <a asp-controller="CoordinatorJobFairs"
+                                       asp-action="Edit"
+                                       asp-route-id="@fair.Id"
+                                       class="btn btn-outline-primary">
+                                        Edit
+                                    </a>
+
+                                    <form asp-controller="CoordinatorJobFairs"
+                                          asp-action="Close"
+                                          asp-route-id="@fair.Id"
+                                          method="post"
+                                          onsubmit="return confirm('Close this job fair? New registrations should no longer be accepted.');">
+
+                                        @Html.AntiForgeryToken()
+
+                                        <button type="submit"
+                                                class="btn btn-outline-danger">
+                                            Close Event
+                                        </button>
+                                    </form>
+                                }
+                            </div>
+
+                        </div>
+                    </div>
+                </div>
+            }
+
+        </div>
+    }
+</div>

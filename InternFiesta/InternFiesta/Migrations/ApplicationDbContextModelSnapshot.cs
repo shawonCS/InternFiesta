@@ -377,6 +377,83 @@ namespace InternFiesta.Migrations
                     b.ToTable("InterviewSchedules");
                 });
 
+            modelBuilder.Entity("InternFiesta.Models.JobFair", b =>
+                {
+                    b.Property<int>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("int");
+
+                    SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("Id"));
+
+                    b.Property<DateTime>("CreatedAtUtc")
+                        .HasColumnType("datetime2");
+
+                    b.Property<string>("CreatedByCoordinatorId")
+                        .IsRequired()
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<string>("Description")
+                        .IsRequired()
+                        .HasMaxLength(2000)
+                        .HasColumnType("nvarchar(2000)");
+
+                    b.Property<DateTime>("EndsAtUtc")
+                        .HasColumnType("datetime2");
+
+                    b.Property<bool>("IsClosed")
+                        .HasColumnType("bit");
+
+                    b.Property<DateTime>("StartsAtUtc")
+                        .HasColumnType("datetime2");
+
+                    b.Property<string>("Title")
+                        .IsRequired()
+                        .HasMaxLength(150)
+                        .HasColumnType("nvarchar(150)");
+
+                    b.Property<string>("Venue")
+                        .IsRequired()
+                        .HasMaxLength(200)
+                        .HasColumnType("nvarchar(200)");
+
+                    b.HasKey("Id");
+
+                    b.ToTable("JobFairs");
+                });
+
+            modelBuilder.Entity("InternFiesta.Models.JobFairRegistration", b =>
+                {
+                    b.Property<int>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("int");
+
+                    SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("Id"));
+
+                    b.Property<int>("JobFairId")
+                        .HasColumnType("int");
+
+                    b.Property<string>("ParticipantRole")
+                        .IsRequired()
+                        .HasMaxLength(20)
+                        .HasColumnType("nvarchar(20)");
+
+                    b.Property<DateTime>("RegisteredAtUtc")
+                        .HasColumnType("datetime2");
+
+                    b.Property<string>("UserId")
+                        .IsRequired()
+                        .HasColumnType("nvarchar(450)");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("UserId");
+
+                    b.HasIndex("JobFairId", "UserId")
+                        .IsUnique();
+
+                    b.ToTable("JobFairRegistrations");
+                });
+
             modelBuilder.Entity("InternFiesta.Models.Notification", b =>
                 {
                     b.Property<int>("Id")
@@ -722,6 +799,25 @@ namespace InternFiesta.Migrations
                     b.Navigation("InternshipApplication");
                 });
 
+            modelBuilder.Entity("InternFiesta.Models.JobFairRegistration", b =>
+                {
+                    b.HasOne("InternFiesta.Models.JobFair", "JobFair")
+                        .WithMany("Registrations")
+                        .HasForeignKey("JobFairId")
+                        .OnDelete(DeleteBehavior.Restrict)
+                        .IsRequired();
+
+                    b.HasOne("InternFiesta.Models.ApplicationUser", "User")
+                        .WithMany()
+                        .HasForeignKey("UserId")
+                        .OnDelete(DeleteBehavior.Restrict)
+                        .IsRequired();
+
+                    b.Navigation("JobFair");
+
+                    b.Navigation("User");
+                });
+
             modelBuilder.Entity("InternFiesta.Models.Notification", b =>
                 {
                     b.HasOne("InternFiesta.Models.ApplicationUser", "User")
@@ -813,6 +909,11 @@ namespace InternFiesta.Migrations
                     b.Navigation("Milestones");
 
                     b.Navigation("ProgressUpdates");
+                });
+
+            modelBuilder.Entity("InternFiesta.Models.JobFair", b =>
+                {
+                    b.Navigation("Registrations");
                 });
 #pragma warning restore 612, 618
         }
