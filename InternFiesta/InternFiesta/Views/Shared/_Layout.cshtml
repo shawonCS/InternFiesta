@@ -156,6 +156,15 @@
                         Assigned Students Progress
                     </a>
                 }
+                @if (User.IsInRole("FacultySupervisor"))
+                {
+                    <a asp-controller="AcademicProgress"
+                       asp-action="PerformanceMatrix"
+                       class="sidebar-link">
+                        <span class="sidebar-icon">▦</span>
+                        Intern Performance Matrix
+                    </a>
+                }
 
             </nav>
 

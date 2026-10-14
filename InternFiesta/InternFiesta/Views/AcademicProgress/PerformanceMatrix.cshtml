@@ -1,0 +1,156 @@
+﻿@model List<InternFiesta.Models.AcademicInternship>
+
+@{
+    ViewData["Title"] = "Intern Performance Matrix";
+}
+
+<div class="page-heading">
+    <h2>Intern Performance Matrix</h2>
+    <p>
+        Compare the progress, milestones and company feedback
+        of students assigned to you.
+    </p>
+</div>
+
+@if (!Model.Any())
+{
+    <div class="alert alert-info">
+        No academic interns have been assigned to you yet.
+    </div>
+}
+else
+{
+    <div class="card shadow-sm">
+        <div class="card-body">
+            <div class="table-responsive">
+                <table class="table table-bordered table-hover align-middle">
+                    <thead class="table-light">
+                        <tr>
+                            <th>Student</th>
+                            <th>Internship</th>
+                            <th>Progress Updates</th>
+                            <th>Latest Progress</th>
+                            <th>Milestones</th>
+                            <th>Company Rating</th>
+                            <th>Latest Feedback</th>
+                            <th>Action</th>
+                        </tr>
+                    </thead>
+
+                    <tbody>
+                        @foreach (var internship in Model)
+                        {
+                            var latestProgress = internship.ProgressUpdates
+                                .OrderByDescending(p => p.SubmittedAt)
+                                .FirstOrDefault();
+
+                            var completedMilestones = internship.Milestones
+                                .Count(m => m.Status == "Completed");
+
+                            var totalMilestones = internship.Milestones.Count;
+
+                            var latestFeedback = internship.CompanyFeedback
+                                .OrderByDescending(f => f.SubmittedAt)
+                                .FirstOrDefault();
+
+                            var averageRating = internship.CompanyFeedback.Any()
+                                ? internship.CompanyFeedback.Average(f => f.Rating)
+                                : 0;
+
+                            <tr>
+                                <td>
+                                    <strong>
+                                        @(internship.InternshipApplication?.Student?.FullName
+                                            ?? "Unknown Student")
+                                    </strong>
+                                </td>
+
+                                <td>
+                                    @(internship.InternshipApplication?.InternshipPosting?.Title
+                                        ?? "Unknown Internship")
+                                </td>
+
+                                <td>
+                                    <span class="badge bg-primary">
+                                        @internship.ProgressUpdates.Count
+                                    </span>
+                                </td>
+
+                                <td>
+                                    @if (latestProgress != null)
+                                    {
+                                        <div>
+                                            @latestProgress.Description
+                                        </div>
+
+                                        <small class="text-muted">
+                                            @latestProgress.SubmittedAt.ToString("dd MMM yyyy")
+                                        </small>
+                                    }
+                                    else
+                                    {
+                                        <span class="text-muted">
+                                            No updates
+                                        </span>
+                                    }
+                                </td>
+
+                                <td>
+                                    <strong>
+                                        @completedMilestones / @totalMilestones
+                                    </strong>
+
+                                    @if (totalMilestones > 0)
+                                    {
+                                        <div class="text-muted small">
+                                            @((completedMilestones * 100.0 / totalMilestones).ToString("0"))%
+                                            completed
+                                        </div>
+                                    }
+                                    else
+                                    {
+                                        <div class="text-muted small">
+                                            No milestones
+                                        </div>
+                                    }
+                                </td>
+
+                                <td>
+                                    @if (latestFeedback != null)
+                                    {
+                                        <span class="badge bg-success">
+                                            @averageRating.ToString("0.0") / 5
+                                        </span>
+
+                                        <div class="text-muted small">
+                                            @internship.CompanyFeedback.Count feedback(s)
+                                        </div>
+                                    }
+                                    else
+                                    {
+                                        <span class="text-muted">
+                                            No rating
+                                        </span>
+                                    }
+                                </td>
+
+                                <td>
+                                    @(latestFeedback?.Comments ?? "No feedback")
+                                </td>
+
+                                <td>
+                                    <a asp-controller="AcademicProgress"
+                                       asp-action="FacultyStudentDetails"
+                                       asp-route-id="@internship.Id"
+                                       class="btn btn-sm btn-primary">
+                                        View Details
+                                    </a>
+                                </td>
+                            </tr>
+                        }
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+}

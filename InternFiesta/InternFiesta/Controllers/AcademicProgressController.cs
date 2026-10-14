@@ -197,7 +197,18 @@ namespace InternFiesta.Controllers
                     Description = model.Description.Trim(),
                     SubmittedAt = DateTime.UtcNow
                 });
-
+            // Notify assigned faculty about student progress
+            if (!string.IsNullOrEmpty(academic.FacultyUserId))
+            {
+                _context.Notifications.Add(new Notification
+                {
+                    UserId = academic.FacultyUserId,
+                    Title = "New Student Progress Update",
+                    Message = "An assigned student has submitted a new internship progress update. Please review it.",
+                    IsRead = false,
+                    CreatedAt = DateTime.UtcNow
+                });
+            }
             await _context.SaveChangesAsync();
 
             TempData["SuccessMessage"] =
@@ -281,6 +292,18 @@ namespace InternFiesta.Controllers
                     Comments = model.Comments.Trim(),
                     SubmittedAt = DateTime.UtcNow
                 });
+            // Notify assigned faculty about company feedback
+            if (!string.IsNullOrEmpty(academic.FacultyUserId))
+            {
+                _context.Notifications.Add(new Notification
+                {
+                    UserId = academic.FacultyUserId,
+                    Title = "New Company Feedback",
+                    Message = "New company feedback has been submitted for an assigned student's internship.",
+                    IsRead = false,
+                    CreatedAt = DateTime.UtcNow
+                });
+            }
 
             await _context.SaveChangesAsync();
 
@@ -314,7 +337,32 @@ namespace InternFiesta.Controllers
 
             return View(internships);
         }
+        // T-15.1: Faculty Performance Matrix
+        [HttpGet]
+        [Authorize(Roles = "FacultySupervisor")]
+        public async Task<IActionResult> PerformanceMatrix()
+        {
+            var facultyId = _userManager.GetUserId(User);
 
+            if (string.IsNullOrEmpty(facultyId))
+                return Challenge();
+
+            var internships = await _context.AcademicInternships
+                .AsNoTracking()
+                .Where(a => a.FacultyUserId == facultyId)
+                .Include(a => a.InternshipApplication)
+                    .ThenInclude(a => a.Student)
+                .Include(a => a.InternshipApplication)
+                    .ThenInclude(a => a.InternshipPosting)
+                .Include(a => a.ProgressUpdates)
+                .Include(a => a.Milestones)
+                .Include(a => a.CompanyFeedback)
+                .AsSplitQuery()
+                .OrderByDescending(a => a.StartedAt)
+                .ToListAsync();
+
+            return View(internships);
+        }
         // T-14.3: Faculty - Student Progress Details
         [HttpGet]
         [Authorize(Roles = "FacultySupervisor")]
