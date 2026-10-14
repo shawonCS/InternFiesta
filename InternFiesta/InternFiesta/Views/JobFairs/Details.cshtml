@@ -1,0 +1,177 @@
+﻿
+@model InternFiesta.Controllers.JobFairsController.DetailsPage
+
+@{
+    ViewData["Title"] = "Job Fair Details";
+
+    var fair = Model.Fair;
+    var now = DateTime.UtcNow;
+
+    var registrationOpen =
+        !fair.IsClosed && fair.EndsAtUtc > now;
+
+    var eventEnded = fair.EndsAtUtc <= now;
+
+    var companies = fair.Registrations
+        .Where(r => r.ParticipantRole == "Company")
+        .ToList();
+}
+
+<div class="container-fluid px-0">
+
+    <div class="d-flex justify-content-between
+                align-items-center flex-wrap gap-2 mb-4">
+        <h2>@fair.Title</h2>
+
+        <a asp-action="Index"
+           class="btn btn-outline-secondary">
+            Back to Job Fairs
+        </a>
+    </div>
+
+    <div class="card border-0 shadow-sm mb-4">
+        <div class="card-body p-4">
+
+            <p>@fair.Description</p>
+
+            <p>
+                <strong>Venue:</strong> @fair.Venue
+            </p>
+
+            <p>
+                <strong>Starts:</strong>
+                @fair.StartsAtUtc.AddHours(6).ToString("dd MMM yyyy, hh:mm tt") BST
+            </p>
+
+            <p>
+                <strong>Ends:</strong>
+                @fair.EndsAtUtc.AddHours(6).ToString("dd MMM yyyy, hh:mm tt") BST
+            </p>
+
+            @if (Model.MyRegistration != null)
+            {
+                <div class="alert alert-success">
+                    Registration Confirmed!
+                    You are registered as
+                    <strong>@Model.MyRegistration.ParticipantRole</strong>.
+                </div>
+            }
+            else if (registrationOpen &&
+                     (User.IsInRole("Student") || User.IsInRole("Company")))
+            {
+                <form asp-action="Register"
+                      asp-route-id="@fair.Id"
+                      method="post">
+                    @Html.AntiForgeryToken()
+
+                    <button type="submit"
+                            class="btn btn-primary">
+                        Register for Job Fair
+                    </button>
+                </form>
+            }
+            else if (!registrationOpen)
+            {
+                <div class="alert alert-secondary">
+                    Registration is closed.
+                </div>
+            }
+
+            @if (User.IsInRole("Company") &&
+                 Model.MyRegistration != null &&
+                 registrationOpen)
+            {
+                <a asp-action="Booth"
+                   asp-route-id="@fair.Id"
+                   class="btn btn-outline-primary mt-3">
+                    Add / Edit Company Booth
+                </a>
+            }
+
+            @if (Model.MyRegistration != null && eventEnded &&
+                 (User.IsInRole("Student") || User.IsInRole("Company")))
+            {
+                <a asp-action="Feedback"
+                   asp-route-id="@fair.Id"
+                   class="btn btn-outline-success mt-3">
+                    @(Model.HasFeedback ? "Edit Feedback" : "Submit Feedback")
+                </a>
+            }
+
+            @if (User.IsInRole("UniversityCoordinator"))
+            {
+                <a asp-action="Attendance"
+                   asp-route-id="@fair.Id"
+                   class="btn btn-outline-dark mt-3">
+                    Manage Attendance
+                </a>
+            }
+
+        </div>
+    </div>
+
+    <h3 class="mb-3">Participating Companies</h3>
+
+    @if (!companies.Any())
+    {
+        <div class="alert alert-info">
+            No companies have registered yet.
+        </div>
+    }
+    else
+    {
+        <div class="row g-3">
+
+            @foreach (var company in companies)
+            {
+                var booth = Model.Booths
+                    .FirstOrDefault(b =>
+                        b.CompanyUserId == company.UserId);
+
+                <div class="col-md-6">
+                    <div class="card border-0 shadow-sm h-100">
+                        <div class="card-body p-4">
+
+                            <h5>
+                                @(booth?.BoothName ??
+                                  company.User?.FullName ??
+                                  "Participating Company")
+                            </h5>
+
+                            <p class="text-muted">
+                                @(company.User?.FullName ?? "Company")
+                            </p>
+
+                            @if (booth != null)
+                            {
+                                <p>@booth.Description</p>
+
+                                <p>
+                                    <strong>Contact:</strong>
+                                    @booth.ContactEmail
+                                </p>
+
+                                @if (!string.IsNullOrWhiteSpace(
+                                     booth.BoothLocation))
+                                {
+                                    <p>
+                                        <strong>Booth Location:</strong>
+                                        @booth.BoothLocation
+                                    </p>
+                                }
+                            }
+                            else
+                            {
+                                <p class="text-muted">
+                                    Booth details will be added soon.
+                                </p>
+                            }
+
+                        </div>
+                    </div>
+                </div>
+            }
+
+        </div>
+    }
+</div>

@@ -21,5 +21,7 @@ namespace InternFiesta.Models
         public string ParticipantRole { get; set; } = string.Empty;
 
         public DateTime RegisteredAtUtc { get; set; } = DateTime.UtcNow;
+
+        public DateTime? AttendedAtUtc { get; set; }
     }
 }

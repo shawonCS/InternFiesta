@@ -1,0 +1,107 @@
+﻿
+@model List<InternFiesta.Models.JobFair>
+
+@{
+    var onlyMine = ViewBag.OnlyMine is bool b && b;
+    var registeredIds =
+        ViewBag.RegisteredIds as HashSet<int> ?? new HashSet<int>();
+
+    ViewData["Title"] = onlyMine ? "My Job Fairs" : "Job Fairs";
+    var now = DateTime.UtcNow;
+}
+
+<div class="container-fluid px-0">
+
+    <div class="d-flex justify-content-between
+                align-items-center flex-wrap gap-2 mb-4">
+        <div>
+            <h2>@ViewData["Title"]</h2>
+            <p class="text-muted mb-0">
+                Explore university career fairs and events.
+            </p>
+        </div>
+
+        <div class="d-flex gap-2">
+            <a asp-action="Index"
+               class="btn btn-outline-primary">
+                All Job Fairs
+            </a>
+
+            <a asp-action="MyEvents"
+               class="btn btn-primary">
+                My Registrations
+            </a>
+        </div>
+    </div>
+
+    @if (!Model.Any())
+    {
+        <div class="alert alert-info">
+            @(onlyMine
+                ? "You have not registered for any job fair yet."
+                : "No job fairs are available.")
+        </div>
+    }
+    else
+    {
+        <div class="row g-3">
+
+            @foreach (var fair in Model)
+            {
+                var registered = registeredIds.Contains(fair.Id);
+
+                <div class="col-md-6">
+                    <div class="card border-0 shadow-sm h-100">
+                        <div class="card-body p-4">
+
+                            <div class="d-flex justify-content-between
+                                        align-items-start gap-2">
+                                <h4>@fair.Title</h4>
+
+                                @if (registered)
+                                {
+                                    <span class="badge bg-success">
+                                        Registered
+                                    </span>
+                                }
+                                else if (fair.IsClosed || fair.EndsAtUtc <= now)
+                                {
+                                    <span class="badge bg-secondary">
+                                        Closed
+                                    </span>
+                                }
+                                else
+                                {
+                                    <span class="badge bg-primary">
+                                        Open
+                                    </span>
+                                }
+                            </div>
+
+                            <p class="text-muted">
+                                @fair.Description
+                            </p>
+
+                            <p>
+                                <strong>Venue:</strong> @fair.Venue
+                            </p>
+
+                            <p>
+                                <strong>Start:</strong>
+                                @fair.StartsAtUtc.AddHours(6).ToString("dd MMM yyyy, hh:mm tt") BST
+                            </p>
+
+                            <a asp-action="Details"
+                               asp-route-id="@fair.Id"
+                               class="btn btn-outline-primary">
+                                View Event
+                            </a>
+
+                        </div>
+                    </div>
+                </div>
+            }
+
+        </div>
+    }
+</div>

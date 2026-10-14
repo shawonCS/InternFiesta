@@ -174,8 +174,24 @@
                         <span class="sidebar-icon">▣</span>
                         Manage Job Fairs
                     </a>
-                }
-            </nav>
+				}
+				@if (User.IsInRole("Student") || User.IsInRole("Company"))
+				{
+				<a asp-controller="JobFairs"
+				   asp-action="Index"
+				   class="sidebar-link">
+					<span class="sidebar-icon">▣</span>
+					Job Fairs
+				</a>
+
+				<a asp-controller="JobFairs"
+				   asp-action="MyEvents"
+				   class="sidebar-link">
+					<span class="sidebar-icon">✓</span>
+					My Job Fairs
+				</a>
+				}
+			</nav>
 
 
             <div class="sidebar-bottom">

@@ -421,6 +421,80 @@ namespace InternFiesta.Migrations
                     b.ToTable("JobFairs");
                 });
 
+            modelBuilder.Entity("InternFiesta.Models.JobFairBooth", b =>
+                {
+                    b.Property<int>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("int");
+
+                    SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("Id"));
+
+                    b.Property<string>("BoothLocation")
+                        .HasMaxLength(100)
+                        .HasColumnType("nvarchar(100)");
+
+                    b.Property<string>("BoothName")
+                        .IsRequired()
+                        .HasMaxLength(150)
+                        .HasColumnType("nvarchar(150)");
+
+                    b.Property<string>("CompanyUserId")
+                        .IsRequired()
+                        .HasColumnType("nvarchar(450)");
+
+                    b.Property<string>("ContactEmail")
+                        .IsRequired()
+                        .HasMaxLength(200)
+                        .HasColumnType("nvarchar(200)");
+
+                    b.Property<string>("Description")
+                        .IsRequired()
+                        .HasMaxLength(1000)
+                        .HasColumnType("nvarchar(1000)");
+
+                    b.Property<int>("JobFairId")
+                        .HasColumnType("int");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("CompanyUserId");
+
+                    b.HasIndex("JobFairId", "CompanyUserId")
+                        .IsUnique();
+
+                    b.ToTable("JobFairBooths");
+                });
+
+            modelBuilder.Entity("InternFiesta.Models.JobFairFeedback", b =>
+                {
+                    b.Property<int>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("int");
+
+                    SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("Id"));
+
+                    b.Property<string>("Comments")
+                        .IsRequired()
+                        .HasMaxLength(1000)
+                        .HasColumnType("nvarchar(1000)");
+
+                    b.Property<int>("JobFairRegistrationId")
+                        .HasColumnType("int");
+
+                    b.Property<int>("Rating")
+                        .HasColumnType("int");
+
+                    b.Property<DateTime>("SubmittedAtUtc")
+                        .HasColumnType("datetime2");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("JobFairRegistrationId")
+                        .IsUnique();
+
+                    b.ToTable("JobFairFeedbacks");
+                });
+
             modelBuilder.Entity("InternFiesta.Models.JobFairRegistration", b =>
                 {
                     b.Property<int>("Id")
@@ -428,6 +502,9 @@ namespace InternFiesta.Migrations
                         .HasColumnType("int");
 
                     SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("Id"));
+
+                    b.Property<DateTime?>("AttendedAtUtc")
+                        .HasColumnType("datetime2");
 
                     b.Property<int>("JobFairId")
                         .HasColumnType("int");
@@ -797,6 +874,30 @@ namespace InternFiesta.Migrations
                         .IsRequired();
 
                     b.Navigation("InternshipApplication");
+                });
+
+            modelBuilder.Entity("InternFiesta.Models.JobFairBooth", b =>
+                {
+                    b.HasOne("InternFiesta.Models.ApplicationUser", null)
+                        .WithMany()
+                        .HasForeignKey("CompanyUserId")
+                        .OnDelete(DeleteBehavior.Restrict)
+                        .IsRequired();
+
+                    b.HasOne("InternFiesta.Models.JobFair", null)
+                        .WithMany()
+                        .HasForeignKey("JobFairId")
+                        .OnDelete(DeleteBehavior.Restrict)
+                        .IsRequired();
+                });
+
+            modelBuilder.Entity("InternFiesta.Models.JobFairFeedback", b =>
+                {
+                    b.HasOne("InternFiesta.Models.JobFairRegistration", null)
+                        .WithMany()
+                        .HasForeignKey("JobFairRegistrationId")
+                        .OnDelete(DeleteBehavior.Restrict)
+                        .IsRequired();
                 });
 
             modelBuilder.Entity("InternFiesta.Models.JobFairRegistration", b =>
