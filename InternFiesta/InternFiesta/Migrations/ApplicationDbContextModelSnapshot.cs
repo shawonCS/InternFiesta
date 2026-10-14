@@ -219,6 +219,42 @@ namespace InternFiesta.Migrations
                     b.ToTable("AspNetUsers", (string)null);
                 });
 
+            modelBuilder.Entity("InternFiesta.Models.FacultyEvaluation", b =>
+                {
+                    b.Property<int>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("int");
+
+                    SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("Id"));
+
+                    b.Property<int>("AcademicInternshipId")
+                        .HasColumnType("int");
+
+                    b.Property<string>("Comments")
+                        .IsRequired()
+                        .HasMaxLength(2000)
+                        .HasColumnType("nvarchar(2000)");
+
+                    b.Property<DateTime>("EvaluatedAt")
+                        .HasColumnType("datetime2");
+
+                    b.Property<string>("FacultyUserId")
+                        .IsRequired()
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<string>("Grade")
+                        .IsRequired()
+                        .HasMaxLength(3)
+                        .HasColumnType("nvarchar(3)");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("AcademicInternshipId")
+                        .IsUnique();
+
+                    b.ToTable("FacultyEvaluations");
+                });
+
             modelBuilder.Entity("InternFiesta.Models.InternshipApplication", b =>
                 {
                     b.Property<int>("Id")
@@ -629,6 +665,17 @@ namespace InternFiesta.Migrations
                         .WithMany("ProgressUpdates")
                         .HasForeignKey("AcademicInternshipId")
                         .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.Navigation("AcademicInternship");
+                });
+
+            modelBuilder.Entity("InternFiesta.Models.FacultyEvaluation", b =>
+                {
+                    b.HasOne("InternFiesta.Models.AcademicInternship", "AcademicInternship")
+                        .WithMany()
+                        .HasForeignKey("AcademicInternshipId")
+                        .OnDelete(DeleteBehavior.Restrict)
                         .IsRequired();
 
                     b.Navigation("AcademicInternship");

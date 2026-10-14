@@ -84,7 +84,7 @@ else
                                         </div>
 
                                         <small class="text-muted">
-                                            @latestProgress.SubmittedAt.ToString("dd MMM yyyy")
+                                            @latestProgress.SubmittedAt.AddHours(6).ToString("dd MMM yyyy, hh:mm tt") BST
                                         </small>
                                     }
                                     else
@@ -144,6 +144,12 @@ else
                                        asp-route-id="@internship.Id"
                                        class="btn btn-sm btn-primary">
                                         View Details
+                                    </a>
+                                    <a asp-controller="FacultyEvaluations"
+                                   asp-action="Edit"
+                                   asp-route-id="@internship.Id"
+                                   class="btn btn-sm btn-outline-primary mt-1">
+                                    Evaluate / Edit Grade
                                     </a>
                                 </td>
                             </tr>

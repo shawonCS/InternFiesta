@@ -1,0 +1,394 @@
+﻿@model InternFiesta.Models.FacultyEvaluation
+
+@{
+    Layout = null;
+
+    var internship = Model.AcademicInternship;
+    var application = internship.InternshipApplication;
+
+    var student = application.Student;
+    var posting = application.InternshipPosting;
+
+    var latestFeedback = internship.CompanyFeedback
+        .OrderByDescending(f => f.SubmittedAt)
+        .FirstOrDefault();
+
+    var recentUpdates = internship.ProgressUpdates
+        .OrderByDescending(p => p.SubmittedAt)
+        .Take(3)
+        .ToList();
+
+    var completedMilestones = internship.Milestones
+        .Count(m => m.Status == "Completed");
+
+    var evaluatedAtBST = Model.EvaluatedAt.AddHours(6);
+}
+
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+
+    <title>Faculty Evaluation Report - InternFiesta</title>
+
+    <style>
+            * {
+                box-sizing: border-box;
+            }
+
+            body {
+                margin: 0;
+                padding: 32px;
+                font-family: Arial, sans-serif;
+                color: #1f2937;
+                background: #f3f4f6;
+                line-height: 1.6;
+            }
+
+            .toolbar {
+                max-width: 850px;
+                margin: 0 auto 20px;
+                display: flex;
+                justify-content: space-between;
+                align-items: center;
+                gap: 12px;
+            }
+
+            .btn {
+                display: inline-block;
+                border-radius: 8px;
+                padding: 10px 18px;
+                font-size: 14px;
+                font-weight: 600;
+                text-decoration: none;
+                cursor: pointer;
+                border: 1px solid #d1d5db;
+                background: white;
+                color: #374151;
+            }
+
+            .btn-primary {
+                background: #49307d;
+                color: white;
+                border-color: #49307d;
+            }
+
+            .report {
+                max-width: 850px;
+                margin: 0 auto;
+                padding: 48px;
+                background: white;
+                border-radius: 12px;
+                box-shadow: 0 3px 18px rgba(0,0,0,.08);
+            }
+
+            .report-header {
+                text-align: center;
+                border-bottom: 2px solid #49307d;
+                padding-bottom: 22px;
+                margin-bottom: 30px;
+            }
+
+            .brand {
+                font-size: 15px;
+                font-weight: 700;
+                letter-spacing: 2px;
+                color: #49307d;
+            }
+
+            h1 {
+                margin: 10px 0;
+                font-size: 26px;
+            }
+
+            .subtitle {
+                color: #6b7280;
+                font-size: 13px;
+            }
+
+            h2 {
+                font-size: 16px;
+                color: #2f2054;
+                margin: 28px 0 12px;
+                padding-bottom: 7px;
+                border-bottom: 1px solid #e5e7eb;
+            }
+
+            .details {
+                display: grid;
+                grid-template-columns: 1fr 1fr;
+                gap: 16px 24px;
+            }
+
+            .label {
+                font-size: 12px;
+                color: #6b7280;
+            }
+
+            .value {
+                font-weight: 600;
+                overflow-wrap: anywhere;
+            }
+
+            .grade-box {
+                margin-top: 22px;
+                padding: 20px;
+                border-radius: 10px;
+                background: #f3effa;
+                display: flex;
+                justify-content: space-between;
+                align-items: center;
+            }
+
+            .grade {
+                font-size: 32px;
+                color: #49307d;
+                font-weight: 700;
+            }
+
+            .comment-box {
+                white-space: pre-wrap;
+                overflow-wrap: anywhere;
+                padding: 18px;
+                background: #f8fafc;
+                border-radius: 8px;
+            }
+
+            .update {
+                padding: 12px 0;
+                border-bottom: 1px solid #e5e7eb;
+            }
+
+            .update:last-child {
+                border-bottom: none;
+            }
+
+            .muted {
+                color: #6b7280;
+            }
+
+            .footer {
+                margin-top: 48px;
+                padding-top: 15px;
+                border-top: 1px solid #e5e7eb;
+                color: #6b7280;
+                font-size: 12px;
+                text-align: center;
+            }
+
+            @@media print {
+                body {
+                    background: white;
+                    padding: 0;
+                }
+
+                .toolbar {
+                    display: none !important;
+                }
+
+                .report {
+                    max-width: 100%;
+                    margin: 0;
+                    padding: 15px;
+                    border-radius: 0;
+                    box-shadow: none;
+                }
+
+                .grade-box,
+                .comment-box {
+                    print-color-adjust: exact;
+                    -webkit-print-color-adjust: exact;
+                }
+            }
+    </style>
+</head>
+
+<body>
+
+    <div class="toolbar">
+
+        <a class="btn"
+           href="@Url.Action("PerformanceMatrix", "AcademicProgress")">
+            Back to Performance Matrix
+        </a>
+
+        <div>
+            <a class="btn"
+               href="@Url.Action("Edit", "FacultyEvaluations", new { id = internship.Id })">
+                Edit Evaluation
+            </a>
+
+            <button type="button"
+                    class="btn btn-primary"
+                    onclick="window.print()">
+                Print / Save as PDF
+            </button>
+        </div>
+
+    </div>
+
+    <div class="report">
+
+        <div class="report-header">
+
+            <div class="brand">INTERNFIESTA</div>
+
+            <h1>Academic Internship Evaluation</h1>
+
+            <div class="subtitle">
+                Faculty Supervisor Evaluation Report
+            </div>
+
+        </div>
+
+        <h2>Student & Internship Information</h2>
+
+        <div class="details">
+
+            <div>
+                <div class="label">Student Name</div>
+                <div class="value">
+                    @(student?.FullName ?? "Unknown Student")
+                </div>
+            </div>
+
+            <div>
+                <div class="label">Student Email</div>
+                <div class="value">
+                    @(student?.Email ?? "Not available")
+                </div>
+            </div>
+
+            <div>
+                <div class="label">Internship</div>
+                <div class="value">
+                    @(posting?.Title ?? "Unknown Internship")
+                </div>
+            </div>
+
+            <div>
+                <div class="label">Faculty Supervisor</div>
+                <div class="value">
+                    @(internship.FacultyUser?.FullName ?? "Faculty Supervisor")
+                </div>
+            </div>
+
+            <div>
+                <div class="label">Internship Status</div>
+                <div class="value">
+                    @application.Status
+                </div>
+            </div>
+
+            <div>
+                <div class="label">Evaluated On</div>
+                <div class="value">
+                    @evaluatedAtBST.ToString("dd MMM yyyy, hh:mm tt") BST
+                </div>
+            </div>
+
+        </div>
+
+        <h2>Faculty Evaluation Result</h2>
+
+        <div class="grade-box">
+
+            <div>
+                <strong>Final Academic Grade</strong>
+                <div class="muted">
+                    Assigned by the faculty supervisor
+                </div>
+            </div>
+
+            <div class="grade">
+                @Model.Grade
+            </div>
+
+        </div>
+
+        <h2>Evaluation Comments</h2>
+
+        <div class="comment-box">
+            @Model.Comments
+        </div>
+
+        <h2>Internship Performance Overview</h2>
+
+        <div class="details">
+
+            <div>
+                <div class="label">Progress Updates Submitted</div>
+                <div class="value">
+                    @internship.ProgressUpdates.Count
+                </div>
+            </div>
+
+            <div>
+                <div class="label">Completed Milestones</div>
+                <div class="value">
+                    @completedMilestones / @internship.Milestones.Count
+                </div>
+            </div>
+
+            <div>
+                <div class="label">Latest Company Rating</div>
+                <div class="value">
+                    @(latestFeedback == null
+                        ? "Not available"
+                        : $"{latestFeedback.Rating} / 5")
+                </div>
+            </div>
+
+        </div>
+
+        <h2>Latest Company Feedback</h2>
+
+        @if (latestFeedback != null)
+        {
+            <div class="comment-box">
+                @latestFeedback.Comments
+            </div>
+        }
+        else
+        {
+            <p class="muted">
+                No company feedback has been submitted.
+            </p>
+        }
+
+        <h2>Recent Student Progress</h2>
+
+        @if (recentUpdates.Any())
+        {
+            @foreach (var update in recentUpdates)
+            {
+                <div class="update">
+                    <div>@update.Description</div>
+
+                    <div class="label">
+                        @update.SubmittedAt.AddHours(6).ToString("dd MMM yyyy")
+                        BST
+                    </div>
+                </div>
+            }
+        }
+        else
+        {
+            <p class="muted">
+                No progress updates have been submitted.
+            </p>
+        }
+
+        <div class="footer">
+            Generated by InternFiesta Academic Internship Management System.
+            <div>
+                This report contains faculty-entered evaluation information.
+            </div>
+        </div>
+
+    </div>
+
+</body>
+</html>

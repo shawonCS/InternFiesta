@@ -1,0 +1,253 @@
+﻿@model InternFiesta.Controllers.FacultyEvaluationsController.EvaluationForm
+
+@{
+    ViewData["Title"] = "Faculty Evaluation";
+
+    var internship =
+        (InternFiesta.Models.AcademicInternship)ViewBag.Internship;
+
+    var student = internship.InternshipApplication.Student;
+
+    var posting = internship.InternshipApplication.InternshipPosting;
+
+    var latestFeedback = internship.CompanyFeedback
+        .OrderByDescending(f => f.SubmittedAt)
+        .FirstOrDefault();
+
+    var completedMilestones = internship.Milestones
+        .Count(m => m.Status == "Completed");
+
+    var hasSavedEvaluation = (bool)ViewBag.HasSavedEvaluation;
+}
+
+<div class="container-fluid px-0">
+
+    <div class="d-flex flex-wrap justify-content-between align-items-center gap-3 mb-4">
+
+        <div>
+            <h2 class="mb-1">Faculty Evaluation</h2>
+
+            <p class="text-muted mb-0">
+                Review internship performance before assigning a grade.
+            </p>
+        </div>
+
+        <a asp-controller="AcademicProgress"
+           asp-action="PerformanceMatrix"
+           class="btn btn-outline-secondary">
+            Back to Performance Matrix
+        </a>
+
+    </div>
+
+    <div class="row g-4">
+
+        <div class="col-lg-5">
+
+            <div class="card border-0 shadow-sm mb-3">
+                <div class="card-body p-4">
+
+                    <h5 class="mb-3">Student Information</h5>
+
+                    <div class="mb-3">
+                        <small class="text-muted">Student</small>
+                        <div class="fw-semibold">
+                            @(student?.FullName ?? "Unknown Student")
+                        </div>
+                    </div>
+
+                    <div class="mb-3">
+                        <small class="text-muted">Internship</small>
+                        <div class="fw-semibold">
+                            @(posting?.Title ?? "Unknown Internship")
+                        </div>
+                    </div>
+
+                    <div>
+                        <small class="text-muted">Application Status</small>
+                        <div>
+                            <span class="badge bg-success">
+                                @internship.InternshipApplication.Status
+                            </span>
+                        </div>
+                    </div>
+
+                </div>
+            </div>
+
+            <div class="card border-0 shadow-sm">
+                <div class="card-body p-4">
+
+                    <h5 class="mb-3">Performance Evidence</h5>
+
+                    <div class="d-flex justify-content-between border-bottom py-3">
+                        <span>Progress Updates</span>
+                        <strong>@internship.ProgressUpdates.Count</strong>
+                    </div>
+
+                    <div class="d-flex justify-content-between border-bottom py-3">
+                        <span>Completed Milestones</span>
+                        <strong>
+                            @completedMilestones / @internship.Milestones.Count
+                        </strong>
+                    </div>
+
+                    <div class="py-3">
+                        <div class="d-flex justify-content-between">
+                            <span>Latest Company Rating</span>
+
+                            <strong>
+                                @if (latestFeedback != null)
+                                {
+                                    @($"{latestFeedback.Rating} / 5")
+                                }
+                                else
+                                {
+                                    <span class="text-muted">Not available</span>
+                                }
+                            </strong>
+                        </div>
+
+                        @if (latestFeedback != null)
+                        {
+                            <p class="text-muted small mt-2 mb-0">
+                                @latestFeedback.Comments
+                            </p>
+                        }
+                    </div>
+
+                    <a asp-controller="AcademicProgress"
+                       asp-action="FacultyStudentDetails"
+                       asp-route-id="@internship.Id"
+                       class="btn btn-outline-primary w-100 mt-2">
+                        View Full Student Progress
+                    </a>
+
+                </div>
+            </div>
+
+        </div>
+
+        <div class="col-lg-7">
+
+            <div class="card border-0 shadow-sm">
+                <div class="card-body p-4">
+
+                    <div class="d-flex justify-content-between align-items-center mb-4">
+                        <h5 class="mb-0">Academic Evaluation</h5>
+
+                        @if (hasSavedEvaluation)
+                        {
+                            <span class="badge bg-success">
+                                Previously Saved
+                            </span>
+                        }
+                        else
+                        {
+                            <span class="badge bg-secondary">
+                                Not Evaluated
+                            </span>
+                        }
+                    </div>
+
+                    <form asp-controller="FacultyEvaluations"
+                          asp-action="Edit"
+                          asp-route-id="@internship.Id"
+                          method="post">
+
+                        <div asp-validation-summary="ModelOnly"
+                             class="text-danger mb-3"></div>
+
+                        <div class="mb-4">
+
+                            <label asp-for="Grade"
+                                   class="form-label fw-semibold">
+                                Final Grade
+                            </label>
+
+                            <select asp-for="Grade"
+                                    class="form-select"
+                                    required>
+
+                                <option value="">
+                                    -- Select a grade --
+                                </option>
+
+                                <option value="A+">A+</option>
+                                <option value="A">A</option>
+                                <option value="A-">A-</option>
+                                <option value="B+">B+</option>
+                                <option value="B">B</option>
+                                <option value="B-">B-</option>
+                                <option value="C+">C+</option>
+                                <option value="C">C</option>
+                                <option value="D">D</option>
+                                <option value="F">F</option>
+
+                            </select>
+
+                            <span asp-validation-for="Grade"
+                                  class="text-danger small"></span>
+
+                            <div class="form-text">
+                                Select the grade according to your university's
+                                approved grading policy.
+                            </div>
+
+                        </div>
+
+                        <div class="mb-4">
+
+                            <label asp-for="Comments"
+                                   class="form-label fw-semibold">
+                                Evaluation Comments
+                            </label>
+
+                            <textarea asp-for="Comments"
+                                      class="form-control"
+                                      rows="7"
+                                      maxlength="2000"
+                                      minlength="10"
+                                      required
+                                      placeholder="Describe the student's technical performance, task completion, communication and overall professionalism."></textarea>
+
+                            <span asp-validation-for="Comments"
+                                  class="text-danger small"></span>
+
+                            <div class="form-text">
+                                Minimum 10 characters. Maximum 2000 characters.
+                            </div>
+
+                        </div>
+
+                        <div class="d-grid gap-2">
+
+                            <button type="submit"
+                                    class="btn btn-primary btn-lg">
+                                @(hasSavedEvaluation
+                                    ? "Update Evaluation"
+                                    : "Save Evaluation")
+                            </button>
+
+                            @if (hasSavedEvaluation)
+                            {
+                                <a asp-controller="FacultyEvaluations"
+                                   asp-action="Summary"
+                                   asp-route-id="@internship.Id"
+                                   class="btn btn-outline-secondary">
+                                    View Saved Evaluation Report
+                                </a>
+                            }
+
+                        </div>
+
+                    </form>
+
+                </div>
+            </div>
+
+        </div>
+
+    </div>
+
+</div>

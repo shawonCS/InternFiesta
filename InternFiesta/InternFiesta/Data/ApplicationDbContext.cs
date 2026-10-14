@@ -60,6 +60,15 @@ namespace InternFiesta.Data
                 .WithMany()
                 .HasForeignKey(f => f.CompanyUserId)
                 .OnDelete(DeleteBehavior.Restrict);
+            builder.Entity<FacultyEvaluation>()
+                .HasOne(e => e.AcademicInternship)
+                .WithMany()
+                .HasForeignKey(e => e.AcademicInternshipId)
+                .OnDelete(DeleteBehavior.Restrict);
+
+            builder.Entity<FacultyEvaluation>()
+                .HasIndex(e => e.AcademicInternshipId)
+                .IsUnique();
         }
         public DbSet<InterviewSchedule> InterviewSchedules { get; set; }
 
@@ -68,5 +77,6 @@ namespace InternFiesta.Data
         public DbSet<AcademicMilestone> AcademicMilestones { get; set; }
         public DbSet<AcademicProgressUpdate> AcademicProgressUpdates { get; set; }
         public DbSet<AcademicCompanyFeedback> AcademicCompanyFeedbacks { get; set; }
+        public DbSet<FacultyEvaluation> FacultyEvaluations { get; set; } = null!;
     }
 }

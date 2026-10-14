@@ -1,4 +1,5 @@
-﻿@model InternFiesta.Models.AcademicInternship
+﻿
+@model InternFiesta.Models.AcademicInternship
 
 @{
     ViewData["Title"] = "Student Internship Progress";
@@ -41,7 +42,7 @@ else
             <div class="card-body">
                 <p>@progress.Description</p>
                 <small class="text-muted">
-                    @progress.SubmittedAt.ToString("dd MMM yyyy, hh:mm tt") BST
+                    @progress.SubmittedAt.AddHours(6).ToString("dd MMM yyyy, hh:mm tt") BST
                 </small>
             </div>
         </div>
@@ -66,7 +67,7 @@ else
                 <h5>Rating: @feedback.Rating / 5</h5>
                 <p>@feedback.Comments</p>
                 <small class="text-muted">
-                    @feedback.SubmittedAt.ToString("dd MMM yyyy, hh:mm tt") UTC
+                    @feedback.SubmittedAt.AddHours(6).ToString("dd MMM yyyy, hh:mm tt") BST
                 </small>
             </div>
         </div>
