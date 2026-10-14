@@ -768,4 +768,27 @@ body {
         border: none !important;
         box-shadow: none !important;
     }
+
+}
+/* Keep sidebar logout visible */
+.sidebar {
+    display: flex;
+    flex-direction: column;
+    height: 100vh;
+    overflow: hidden;
+}
+
+.sidebar-brand {
+    flex-shrink: 0;
+}
+
+.sidebar-nav {
+    flex: 1 1 auto;
+    min-height: 0;
+    overflow-y: auto;
+}
+
+.sidebar-bottom {
+    flex-shrink: 0;
+    margin-top: auto;
 }
