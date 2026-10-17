@@ -86,10 +86,10 @@ namespace InternFiesta.Data
                 .HasIndex(r => new { r.JobFairId, r.UserId })
                 .IsUnique();
             builder.Entity<JobFairBooth>()
-    .HasOne<JobFair>()
-    .WithMany()
-    .HasForeignKey(b => b.JobFairId)
-    .OnDelete(DeleteBehavior.Restrict);
+                .HasOne<JobFair>()
+                .WithMany()
+                .HasForeignKey(b => b.JobFairId)
+                .OnDelete(DeleteBehavior.Restrict);
 
             builder.Entity<JobFairBooth>()
                 .HasOne<ApplicationUser>()
