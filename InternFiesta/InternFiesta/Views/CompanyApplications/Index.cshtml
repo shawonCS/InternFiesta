@@ -33,6 +33,28 @@
     </div>
 }
 
+<div class="alert alert-light border mb-3">
+    <strong>Total Positions:</strong>
+    @Model.Internship.Positions
+
+    <span class="mx-2">|</span>
+
+    <strong>Selected:</strong>
+    @Model.SelectedCount
+
+    <span class="mx-2">|</span>
+
+    <strong>Remaining:</strong>
+    @Model.RemainingPositions
+</div>
+
+@if (TempData["StatusError"] != null)
+{
+    <div class="alert alert-danger">
+        @TempData["StatusError"]
+    </div>
+}
+
 @if (Model.Applicants.Count == 0)
 {
     <div class="alert alert-info">
@@ -173,12 +195,31 @@ else
                                 Shortlist
                             </button>
 
-                            <button type="submit"
-                                    name="status"
-                                    value="Selected"
-                                    class="btn btn-success">
-                                Select
-                            </button>
+                           @if (item.Application.Status == "Selected")
+                                {
+                                    <button type="button"
+                                            class="btn btn-success"
+                                            disabled>
+                                        Selected
+                                    </button>
+                                }
+                                else if (Model.RemainingPositions > 0)
+                                {
+                                    <button type="submit"
+                                            name="status"
+                                            value="Selected"
+                                            class="btn btn-success">
+                                        Select
+                                    </button>
+                                }
+                                else
+                                {
+                                    <button type="button"
+                                            class="btn btn-secondary"
+                                            disabled>
+                                        Positions Full
+                                    </button>
+                                }
 
                             <button type="submit"
                                     name="status"

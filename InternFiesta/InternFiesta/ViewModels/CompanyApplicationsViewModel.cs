@@ -5,6 +5,9 @@ namespace InternFiesta.ViewModels
     public class CompanyApplicationsViewModel
     {
         public InternshipPosting Internship { get; set; } = null!;
+        public int SelectedCount { get; set; }
+
+        public int RemainingPositions { get; set; }
 
         public List<CompanyApplicantViewModel> Applicants { get; set; }
             = new();

@@ -1,4 +1,5 @@
-﻿using InternFiesta.Data;
+﻿using System.Data;
+using InternFiesta.Data;
 using InternFiesta.Models;
 using InternFiesta.Services;
 using InternFiesta.ViewModels;
@@ -74,6 +75,12 @@ namespace InternFiesta.Controllers
                 {
                     Internship = internship,
 
+                    SelectedCount = applications.Count(
+                    a => a.Status == "Selected"),
+                    RemainingPositions = Math.Max( 0,
+                    internship.Positions -
+                    applications.Count(a => a.Status == "Selected")),
+
                     Applicants =
                         applications
                             .Select(a =>
@@ -101,94 +108,113 @@ namespace InternFiesta.Controllers
 
             return View(model);
         }
+
         [HttpPost]
         [ValidateAntiForgeryToken]
         public async Task<IActionResult> UpdateStatus(
             int applicationId,
             string status)
         {
-            var companyUserId =
-                _userManager.GetUserId(User);
+            var companyUserId = _userManager.GetUserId(User);
 
             if (companyUserId == null)
-            {
                 return Challenge();
-            }
 
-            var allowedStatuses =
-                new[]
-                {
-            "Shortlisted",
-            "Selected",
-            "Rejected",
-            "Waitlisted"
-                };
+            var allowedStatuses = new[]
+            {
+             "Shortlisted",
+             "Selected",
+             "Rejected",
+             "Waitlisted"
+            };
 
             if (!allowedStatuses.Contains(status))
-            {
                 return BadRequest();
-            }
 
-            var application =
-                await _context.InternshipApplications
-                    .Include(a => a.InternshipPosting)
-                    .FirstOrDefaultAsync(a =>
-                        a.Id == applicationId &&
-                        a.InternshipPosting != null &&
-                        a.InternshipPosting.CompanyUserId ==
-                            companyUserId);
+            // SQL Server transaction prevents simultaneous
+            // selections from exceeding available positions.
+            // InMemory unit tests do not need a transaction.
+            await using var transaction =
+                _context.Database.IsRelational()
+                    ? await _context.Database.BeginTransactionAsync(
+                        IsolationLevel.Serializable)
+                    : null;
+
+            var application = await _context.InternshipApplications
+                .Include(a => a.InternshipPosting)
+                .FirstOrDefaultAsync(a =>
+                    a.Id == applicationId &&
+                    a.InternshipPosting != null &&
+                    a.InternshipPosting.CompanyUserId == companyUserId);
 
             if (application == null)
-            {
                 return NotFound();
-            }
 
-            var oldStatus =
-                application.Status;
+            var internship = application.InternshipPosting!;
 
-            application.Status =
-                status;
+            var oldStatus = application.Status;
 
-            // Create notification only if status actually changed
-            if (oldStatus != status)
+            // No need to update the same status again.
+            if (oldStatus == status)
             {
-                var notification =
-                    new Notification
-                    {
-                        UserId =
-                            application.StudentUserId,
+                TempData["StatusMessage"] =
+                    $"Application is already {status}.";
 
-                        Title =
-                            "Application Status Updated",
-
-                        Message =
-                            $"Your application for " +
-                            $"{application.InternshipPosting!.Title} " +
-                            $"has been updated to {status}.",
-
-                        IsRead =
-                            false,
-
-                        CreatedAt =
-                            DateTime.Now
-                    };
-
-                _context.Notifications.Add(
-                    notification);
+                return RedirectToAction(
+                    nameof(Index),
+                    new { id = application.InternshipPostingId });
             }
+
+            // IMPORTANT: Apply position limit only
+            // when a new candidate is being selected.
+            if (status == "Selected")
+            {
+                int selectedCount =
+                    await _context.InternshipApplications
+                        .CountAsync(a =>
+                            a.InternshipPostingId == internship.Id &&
+                            a.Status == "Selected");
+
+                if (selectedCount >= internship.Positions)
+                {
+                    TempData["StatusError"] =
+                        $"Cannot select more candidates. " +
+                        $"This internship has {internship.Positions} " +
+                        $"position(s), and all positions are filled.";
+
+                    return RedirectToAction(
+                        nameof(Index),
+                        new { id = internship.Id });
+                }
+            }
+
+            // Update candidate status.
+            application.Status = status;
+
+            // Notify student only when status changes.
+            _context.Notifications.Add(new Notification
+            {
+                UserId = application.StudentUserId,
+                Title = "Application Status Updated",
+                Message =
+                    $"Your application for {internship.Title} " +
+                    $"has been updated to {status}.",
+                IsRead = false,
+                CreatedAt = DateTime.UtcNow
+            });
 
             await _context.SaveChangesAsync();
+
+            if (transaction != null)
+                await transaction.CommitAsync();
 
             TempData["StatusMessage"] =
                 $"Application status updated to {status}.";
 
             return RedirectToAction(
                 nameof(Index),
-                new
-                {
-                    id =
-                        application.InternshipPostingId
-                });
+                new { id = internship.Id });
         }
+
     }
 }

@@ -1,4 +1,5 @@
-﻿using InternFiesta.Data;
+﻿using System.Data;
+using InternFiesta.Data;
 using InternFiesta.Models;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Identity;
@@ -117,6 +118,7 @@ namespace InternFiesta.Controllers
 
 
         // Save edited internship
+
         [HttpPost]
         [ValidateAntiForgeryToken]
         public async Task<IActionResult> Edit(
@@ -126,9 +128,22 @@ namespace InternFiesta.Controllers
             var companyUserId = _userManager.GetUserId(User);
 
             if (companyUserId == null)
-            {
                 return Challenge();
+
+            ModelState.Remove(nameof(InternshipPosting.CompanyUserId));
+            ModelState.Remove(nameof(InternshipPosting.CompanyUser));
+
+            if (!ModelState.IsValid)
+            {
+                model.Id = id;
+                return View(model);
             }
+
+            await using var transaction =
+                _context.Database.IsRelational()
+                    ? await _context.Database.BeginTransactionAsync(
+                        IsolationLevel.Serializable)
+                    : null;
 
             var internship = await _context.InternshipPostings
                 .FirstOrDefaultAsync(i =>
@@ -136,15 +151,23 @@ namespace InternFiesta.Controllers
                     i.CompanyUserId == companyUserId);
 
             if (internship == null)
-            {
                 return NotFound();
-            }
 
-            ModelState.Remove(nameof(InternshipPosting.CompanyUserId));
-            ModelState.Remove(nameof(InternshipPosting.CompanyUser));
+            // Number of candidates already selected.
+            int selectedCount = await _context.InternshipApplications
+                .CountAsync(a =>
+                    a.InternshipPostingId == id &&
+                    a.Status == "Selected");
 
-            if (!ModelState.IsValid)
+            // Cannot reduce positions below already selected count.
+            if (model.Positions < selectedCount)
             {
+                ModelState.AddModelError(
+                    nameof(InternshipPosting.Positions),
+                    $"You have already selected {selectedCount} " +
+                    $"candidate(s). Positions cannot be less than " +
+                    $"{selectedCount}.");
+
                 model.Id = id;
                 return View(model);
             }
@@ -158,11 +181,15 @@ namespace InternFiesta.Controllers
 
             await _context.SaveChangesAsync();
 
+            if (transaction != null)
+                await transaction.CommitAsync();
+
             TempData["SuccessMessage"] =
                 "Internship posting updated successfully.";
 
             return RedirectToAction(nameof(Index));
         }
+
 
 
         // Close internship instead of deleting it
