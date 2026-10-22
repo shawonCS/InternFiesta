@@ -110,6 +110,41 @@ namespace InternFiesta.Data
             builder.Entity<JobFairFeedback>()
                 .HasIndex(f => f.JobFairRegistrationId)
                 .IsUnique();
+
+
+            builder.Entity<AlumniProfile>()
+                .HasOne(p => p.User)
+                .WithOne()
+                .HasForeignKey<AlumniProfile>(p => p.UserId)
+                .OnDelete(DeleteBehavior.Restrict);
+
+            builder.Entity<AlumniProfile>()
+                .HasIndex(p => p.UserId)
+                .IsUnique();
+
+            builder.Entity<AlumniMentoringRequest>()
+                .HasOne(r => r.AlumniProfile)
+                .WithMany(p => p.MentoringRequests)
+                .HasForeignKey(r => r.AlumniProfileId)
+                .OnDelete(DeleteBehavior.Restrict);
+
+            builder.Entity<AlumniMentoringRequest>()
+                .HasOne(r => r.StudentUser)
+                .WithMany()
+                .HasForeignKey(r => r.StudentUserId)
+                .OnDelete(DeleteBehavior.Restrict);
+
+            // Only one pending request per student-mentor pair.
+            // SQL Server filtered unique index.
+            builder.Entity<AlumniMentoringRequest>()
+                .HasIndex(r => new
+                {
+                    r.AlumniProfileId,
+                    r.StudentUserId
+                })
+                .IsUnique()
+                .HasFilter("[Status] = 'Pending'");
+
         }
         public DbSet<InterviewSchedule> InterviewSchedules { get; set; }
 
@@ -126,5 +161,10 @@ namespace InternFiesta.Data
         public DbSet<JobFairBooth> JobFairBooths { get; set; } = null!;
 
         public DbSet<JobFairFeedback> JobFairFeedbacks { get; set; } = null!;
+        public DbSet<AlumniProfile> AlumniProfiles { get; set; }
+    = null!;
+
+        public DbSet<AlumniMentoringRequest> AlumniMentoringRequests
+        { get; set; } = null!;
     }
 }

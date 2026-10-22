@@ -149,6 +149,107 @@ namespace InternFiesta.Migrations
                     b.ToTable("AcademicProgressUpdates");
                 });
 
+            modelBuilder.Entity("InternFiesta.Models.AlumniMentoringRequest", b =>
+                {
+                    b.Property<int>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("int");
+
+                    SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("Id"));
+
+                    b.Property<int>("AlumniProfileId")
+                        .HasColumnType("int");
+
+                    b.Property<DateTime>("CreatedAtUtc")
+                        .HasColumnType("datetime2");
+
+                    b.Property<string>("Message")
+                        .IsRequired()
+                        .HasMaxLength(800)
+                        .HasColumnType("nvarchar(800)");
+
+                    b.Property<DateTime?>("RespondedAtUtc")
+                        .HasColumnType("datetime2");
+
+                    b.Property<string>("Status")
+                        .IsRequired()
+                        .HasMaxLength(20)
+                        .HasColumnType("nvarchar(20)");
+
+                    b.Property<string>("StudentUserId")
+                        .IsRequired()
+                        .HasColumnType("nvarchar(450)");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("StudentUserId");
+
+                    b.HasIndex("AlumniProfileId", "StudentUserId")
+                        .IsUnique()
+                        .HasFilter("[Status] = 'Pending'");
+
+                    b.ToTable("AlumniMentoringRequests");
+                });
+
+            modelBuilder.Entity("InternFiesta.Models.AlumniProfile", b =>
+                {
+                    b.Property<int>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("int");
+
+                    SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("Id"));
+
+                    b.Property<string>("About")
+                        .HasMaxLength(1000)
+                        .HasColumnType("nvarchar(1000)");
+
+                    b.Property<string>("CompanyName")
+                        .HasMaxLength(150)
+                        .HasColumnType("nvarchar(150)");
+
+                    b.Property<string>("Headline")
+                        .IsRequired()
+                        .HasMaxLength(180)
+                        .HasColumnType("nvarchar(180)");
+
+                    b.Property<string>("Industry")
+                        .IsRequired()
+                        .HasMaxLength(100)
+                        .HasColumnType("nvarchar(100)");
+
+                    b.Property<bool>("IsAvailableForMentoring")
+                        .HasColumnType("bit");
+
+                    b.Property<bool>("IsVisibleToStudents")
+                        .HasColumnType("bit");
+
+                    b.Property<string>("JobTitle")
+                        .HasMaxLength(120)
+                        .HasColumnType("nvarchar(120)");
+
+                    b.Property<string>("LinkedInUrl")
+                        .HasMaxLength(250)
+                        .HasColumnType("nvarchar(250)");
+
+                    b.Property<string>("Skills")
+                        .HasMaxLength(300)
+                        .HasColumnType("nvarchar(300)");
+
+                    b.Property<DateTime>("UpdatedAtUtc")
+                        .HasColumnType("datetime2");
+
+                    b.Property<string>("UserId")
+                        .IsRequired()
+                        .HasColumnType("nvarchar(450)");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("UserId")
+                        .IsUnique();
+
+                    b.ToTable("AlumniProfiles");
+                });
+
             modelBuilder.Entity("InternFiesta.Models.ApplicationUser", b =>
                 {
                     b.Property<string>("Id")
@@ -824,6 +925,36 @@ namespace InternFiesta.Migrations
                     b.Navigation("AcademicInternship");
                 });
 
+            modelBuilder.Entity("InternFiesta.Models.AlumniMentoringRequest", b =>
+                {
+                    b.HasOne("InternFiesta.Models.AlumniProfile", "AlumniProfile")
+                        .WithMany("MentoringRequests")
+                        .HasForeignKey("AlumniProfileId")
+                        .OnDelete(DeleteBehavior.Restrict)
+                        .IsRequired();
+
+                    b.HasOne("InternFiesta.Models.ApplicationUser", "StudentUser")
+                        .WithMany()
+                        .HasForeignKey("StudentUserId")
+                        .OnDelete(DeleteBehavior.Restrict)
+                        .IsRequired();
+
+                    b.Navigation("AlumniProfile");
+
+                    b.Navigation("StudentUser");
+                });
+
+            modelBuilder.Entity("InternFiesta.Models.AlumniProfile", b =>
+                {
+                    b.HasOne("InternFiesta.Models.ApplicationUser", "User")
+                        .WithOne()
+                        .HasForeignKey("InternFiesta.Models.AlumniProfile", "UserId")
+                        .OnDelete(DeleteBehavior.Restrict)
+                        .IsRequired();
+
+                    b.Navigation("User");
+                });
+
             modelBuilder.Entity("InternFiesta.Models.FacultyEvaluation", b =>
                 {
                     b.HasOne("InternFiesta.Models.AcademicInternship", "AcademicInternship")
@@ -1010,6 +1141,11 @@ namespace InternFiesta.Migrations
                     b.Navigation("Milestones");
 
                     b.Navigation("ProgressUpdates");
+                });
+
+            modelBuilder.Entity("InternFiesta.Models.AlumniProfile", b =>
+                {
+                    b.Navigation("MentoringRequests");
                 });
 
             modelBuilder.Entity("InternFiesta.Models.JobFair", b =>
