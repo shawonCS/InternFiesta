@@ -1,0 +1,172 @@
+﻿
+@model InternFiesta.ViewModels.Alumni.AlumniPublicProfile
+
+@{
+    ViewData["Title"] = "Alumni Profile";
+    string? requestStatus = ViewBag.RequestStatus as string;
+}
+
+<div class="container-fluid px-0">
+
+    <!-- PAGE HEADER -->
+    <div class="d-flex justify-content-between
+                align-items-center flex-wrap gap-2 mb-4">
+
+        <div>
+            <h2 class="mb-1">Alumni Profile</h2>
+            <p class="text-muted mb-0">
+                Explore professional experience and career guidance.
+            </p>
+        </div>
+
+        <a asp-controller="AlumniMentoring"
+           asp-action="Directory"
+           class="btn btn-outline-secondary">
+            Back to Alumni
+        </a>
+    </div>
+
+    <!-- ALUMNI PROFILE INFORMATION -->
+    <div class="card border-0 shadow-sm mb-4">
+        <div class="card-body p-4">
+
+            <h3 class="fw-bold mb-3">
+                @Model.FullName
+            </h3>
+
+            <!-- OPTIONAL JOB TITLE -->
+            @if (!string.IsNullOrWhiteSpace(Model.JobTitle))
+            {
+                <p class="text-primary fw-semibold mb-2">
+                    @Model.JobTitle
+                </p>
+            }
+
+            <!-- OPTIONAL INDUSTRY -->
+            @if (!string.IsNullOrWhiteSpace(Model.Industry))
+            {
+                <p class="text-muted mb-2">
+                    <strong>Industry:</strong>
+                    @Model.Industry
+                </p>
+            }
+
+            <!-- OPTIONAL COMPANY -->
+            @if (!string.IsNullOrWhiteSpace(Model.CompanyName))
+            {
+                <p class="text-muted mb-2">
+                    <strong>Company / Organization:</strong>
+                    @Model.CompanyName
+                </p>
+            }
+
+            <!-- OPTIONAL ABOUT -->
+            @if (!string.IsNullOrWhiteSpace(Model.About))
+            {
+                <hr class="my-4" />
+
+                <h5>About</h5>
+
+                <p class="text-muted mb-0"
+                   style="white-space: pre-line;">@Model.About</p>
+            }
+
+            <!-- OPTIONAL SKILLS -->
+            @if (!string.IsNullOrWhiteSpace(Model.Skills))
+            {
+                <div class="mt-4">
+                    <h5>Skills</h5>
+
+                    <p class="text-muted mb-0">
+                        @Model.Skills
+                    </p>
+                </div>
+            }
+
+            <!-- OPTIONAL LINKEDIN -->
+            @if (!string.IsNullOrWhiteSpace(Model.LinkedInUrl))
+            {
+                <div class="mt-4">
+                    <a href="@Model.LinkedInUrl"
+                       target="_blank"
+                       rel="noopener noreferrer"
+                       class="btn btn-outline-primary">
+                        View LinkedIn Profile
+                    </a>
+                </div>
+            }
+
+        </div>
+    </div>
+
+    <!-- MENTORING SECTION -->
+    <div class="card border-0 shadow-sm">
+        <div class="card-body p-4">
+
+            <h4 class="mb-3">Career Mentoring</h4>
+
+            @if (requestStatus == "Pending")
+            {
+                <div class="alert alert-info mb-0">
+                    Your mentoring request is pending.
+                    The Alumni will review your request.
+                </div>
+            }
+            else if (requestStatus == "Accepted")
+            {
+                <div class="alert alert-success mb-0">
+                    Your mentoring request has been accepted.
+                </div>
+            }
+            else if (!Model.IsAvailableForMentoring)
+            {
+                <div class="alert alert-light border mb-0">
+                    This Alumni is not currently accepting
+                    mentoring requests.
+                </div>
+            }
+            else
+            {
+                <p class="text-muted">
+                    Introduce yourself and explain what
+                    career guidance you are looking for.
+                </p>
+
+                <form asp-controller="AlumniMentoring"
+                      asp-action="SendRequest"
+                      asp-route-id="@Model.Id"
+                      method="post">
+
+                    @Html.AntiForgeryToken()
+
+                    <div class="mb-3">
+                        <label for="message"
+                               class="form-label fw-semibold">
+                            Your Message
+                        </label>
+
+                        <textarea id="message"
+                                  name="message"
+                                  class="form-control"
+                                  rows="4"
+                                  minlength="20"
+                                  maxlength="800"
+                                  required
+                                  placeholder="Introduce yourself and explain what career advice you need."></textarea>
+
+                        <div class="form-text">
+                            Write between 20 and 800 characters.
+                        </div>
+                    </div>
+
+                    <button type="submit"
+                            class="btn btn-primary">
+                        Send Mentoring Request
+                    </button>
+                </form>
+            }
+
+        </div>
+    </div>
+
+</div>

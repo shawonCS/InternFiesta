@@ -122,7 +122,7 @@
                        class="sidebar-link">
 					     <span class="sidebar-icon">◷</span>
 					My Interviews
-				</a>
+				    </a>
                 }
 
 
@@ -177,23 +177,45 @@
 				}
 				@if (User.IsInRole("Student") || User.IsInRole("Company"))
 				{
-				<a asp-controller="JobFairs"
-				   asp-action="Index"
-				   class="sidebar-link">
-					<span class="sidebar-icon">▣</span>
-					Job Fairs
-				</a>
+				    <a asp-controller="JobFairs"
+				       asp-action="Index"
+				       class="sidebar-link">
+					    <span class="sidebar-icon">▣</span>
+					    Job Fairs
+				    </a>
 
-				<a asp-controller="JobFairs"
-				   asp-action="MyEvents"
-				   class="sidebar-link">
-					<span class="sidebar-icon">✓</span>
-					My Job Fairs
-				</a>
+				    <a asp-controller="JobFairs"
+				       asp-action="MyEvents"
+				       class="sidebar-link">
+					    <span class="sidebar-icon">✓</span>
+					    My Job Fairs
+				    </a>
 				}
+                @if (User.IsInRole("Alumni"))
+                {
+                   <a asp-controller="AlumniProfiles"
+                       asp-action="Index"
+                       class="sidebar-link">
+                        <span class="sidebar-icon">◉</span>
+                        My Profile
+                   </a>
+                    <a asp-controller="AlumniMentoring"
+                       asp-action="Inbox"
+                       class="sidebar-link">
+                        <span class="sidebar-icon">▤</span>
+                        Mentoring Requests
+                    </a>
+                }
+                @if (User.IsInRole("Student"))
+                {
+                    <a asp-controller="AlumniMentoring"
+                       asp-action="Directory"
+                       class="sidebar-link">
+                        <span class="sidebar-icon">◎</span>
+                        Find Alumni
+                    </a>
+                }
 			</nav>
-
-
             <div class="sidebar-bottom">
 
                 <div class="sidebar-user">

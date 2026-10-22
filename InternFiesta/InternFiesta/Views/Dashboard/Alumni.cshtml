@@ -1,6 +1,70 @@
-﻿@{
+﻿
+@{
     ViewData["Title"] = "Alumni Dashboard";
 }
 
-<h2>Alumni Dashboard</h2>
-<p>Welcome to InternFiesta.</p>
+<div class="container-fluid px-0">
+
+    <div class="mb-4">
+        <h2>Alumni Dashboard</h2>
+        <p class="text-muted">
+            Stay connected with your university community
+            and support students through career guidance.
+        </p>
+    </div>
+
+    <div class="row g-4">
+
+        <div class="col-md-6">
+            <div class="card border-0 shadow-sm h-100">
+                <div class="card-body p-4">
+
+                    <h4>My Professional Profile</h4>
+
+                    <p class="text-muted">
+                        Manage your career information,
+                        skills, and professional experience.
+                    </p>
+
+                    <a asp-controller="AlumniProfiles"
+                       asp-action="Index"
+                       class="btn btn-primary">
+                        Manage My Profile
+                    </a>
+
+                </div>
+            </div>
+        </div>
+
+        <div class="col-md-6">
+            <div class="card border-0 shadow-sm h-100">
+                <div class="card-body p-4">
+
+                    <h4>Mentoring</h4>
+
+                    <p class="text-muted">
+                        Set your availability to help students
+                        with career guidance.
+                    </p>
+
+                    <div class="d-flex flex-wrap gap-2">
+
+                        <a asp-controller="AlumniProfiles"
+                           asp-action="Edit"
+                           class="btn btn-outline-primary">
+                            Update Mentoring Preferences
+                        </a>
+
+                        <a asp-controller="AlumniMentoring"
+                           asp-action="Inbox"
+                           class="btn btn-outline-primary">
+                            View Mentoring Requests
+                        </a>
+
+                    </div>
+                </div>
+            </div>
+        </div>
+
+    </div>
+</div>

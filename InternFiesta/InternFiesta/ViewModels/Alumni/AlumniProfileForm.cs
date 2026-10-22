@@ -5,17 +5,11 @@ namespace InternFiesta.ViewModels.Alumni
 {
     public class AlumniProfileForm
     {
-        [Required(ErrorMessage = "Professional headline is required.")]
-        [StringLength(180)]
-        [Display(Name = "Professional Headline")]
-        public string Headline { get; set; } = string.Empty;
-
-        [Required(ErrorMessage = "Industry is required.")]
         [StringLength(100)]
-        public string Industry { get; set; } = string.Empty;
+        public string? Industry { get; set; }
 
         [StringLength(120)]
-        [Display(Name = "Current Job Title")]
+        [Display(Name = "Job Title")]
         public string? JobTitle { get; set; }
 
         [StringLength(150)]
@@ -23,21 +17,21 @@ namespace InternFiesta.ViewModels.Alumni
         public string? CompanyName { get; set; }
 
         [StringLength(1000)]
-        [Display(Name = "About Me")]
+        [Display(Name = "About")]
         public string? About { get; set; }
 
         [StringLength(300)]
         public string? Skills { get; set; }
 
-        [Url(ErrorMessage = "Enter a valid URL.")]
         [StringLength(250)]
-        [Display(Name = "LinkedIn Profile URL")]
+        [Url(ErrorMessage = "Enter a valid URL.")]
+        [Display(Name = "LinkedIn URL")]
         public string? LinkedInUrl { get; set; }
 
-        [Display(Name = "Allow Students to Discover My Profile")]
+        [Display(Name = "Show my profile to students")]
         public bool IsVisibleToStudents { get; set; }
 
-        [Display(Name = "Available for Mentoring")]
+        [Display(Name = "Available for mentoring")]
         public bool IsAvailableForMentoring { get; set; }
     }
 }

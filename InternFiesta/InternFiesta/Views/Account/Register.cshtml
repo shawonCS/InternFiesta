@@ -1,4 +1,5 @@
-﻿@model InternFiesta.ViewModels.Account.RegisterViewModel
+﻿
+@model InternFiesta.ViewModels.Account.RegisterViewModel
 
 @{
     ViewData["Title"] = "Register";
@@ -6,16 +7,20 @@
 
 <div class="container py-5">
     <div class="row justify-content-center">
-        <div class="col-md-7 col-lg-6">
+        <div class="col-md-8 col-lg-7">
 
             <div class="card shadow-sm border-0 p-4">
 
                 <div class="text-center mb-4">
                     <h2 class="fw-bold">Create Your Account</h2>
-                    <p class="text-muted">Join InternFiesta today</p>
+                    <p class="text-muted">
+                        Join InternFiesta today
+                    </p>
                 </div>
 
-                <form asp-action="Register" method="post">
+                <form asp-controller="Account"
+                      asp-action="Register"
+                      method="post">
 
                     <div asp-validation-summary="ModelOnly"
                          class="text-danger mb-3"></div>
@@ -23,19 +28,23 @@
                     <div class="mb-3">
                         <label asp-for="FullName"
                                class="form-label"></label>
+
                         <input asp-for="FullName"
                                class="form-control" />
+
                         <span asp-validation-for="FullName"
-                              class="text-danger"></span>
+                              class="text-danger small"></span>
                     </div>
 
                     <div class="mb-3">
                         <label asp-for="Email"
                                class="form-label"></label>
+
                         <input asp-for="Email"
                                class="form-control" />
+
                         <span asp-validation-for="Email"
-                              class="text-danger"></span>
+                              class="text-danger small"></span>
                     </div>
 
                     <div class="mb-3">
@@ -50,31 +59,129 @@
                             <option value="Company">Company</option>
                             <option value="Alumni">Alumni</option>
                         </select>
+
+                        <span asp-validation-for="Role"
+                              class="text-danger small"></span>
+                    </div>
+
+                    <div id="alumniRegistrationFields" hidden>
+
+                        <p class="text-muted small mb-3">
+                            These professional details are optional.
+                            You can update them anytime.
+                        </p>
+
+                        <div class="mb-3">
+                            <label asp-for="AlumniIndustry"
+                                   class="form-label">
+                                Industry
+                            </label>
+
+                            <input asp-for="AlumniIndustry"
+                                   class="form-control"
+                                   maxlength="100"
+                                   placeholder="e.g. Information Technology" />
+
+                            <span asp-validation-for="AlumniIndustry"
+                                  class="text-danger small"></span>
+                        </div>
+
+                        <div class="row g-3 mb-3">
+                            <div class="col-md-6">
+                                <label asp-for="AlumniJobTitle"
+                                       class="form-label"></label>
+
+                                <input asp-for="AlumniJobTitle"
+                                       class="form-control"
+                                       maxlength="120"
+                                       placeholder="e.g. Backend Developer" />
+
+                                <span asp-validation-for="AlumniJobTitle"
+                                      class="text-danger small"></span>
+                            </div>
+
+                            <div class="col-md-6">
+                                <label asp-for="AlumniCompanyName"
+                                       class="form-label"></label>
+
+                                <input asp-for="AlumniCompanyName"
+                                       class="form-control"
+                                       maxlength="150"
+                                       placeholder="Current organization" />
+
+                                <span asp-validation-for="AlumniCompanyName"
+                                      class="text-danger small"></span>
+                            </div>
+                        </div>
+
+                        <div class="mb-3">
+                            <label asp-for="AlumniAbout"
+                                   class="form-label"></label>
+
+                            <textarea asp-for="AlumniAbout"
+                                      class="form-control"
+                                      rows="4"
+                                      maxlength="1000"
+                                      placeholder="Describe your education, experience and career journey"></textarea>
+
+                            <span asp-validation-for="AlumniAbout"
+                                  class="text-danger small"></span>
+                        </div>
+
+                        <div class="mb-3">
+                            <label asp-for="AlumniSkills"
+                                   class="form-label"></label>
+
+                            <input asp-for="AlumniSkills"
+                                   class="form-control"
+                                   maxlength="300"
+                                   placeholder="e.g. C#, SQL Server, Communication" />
+
+                            <span asp-validation-for="AlumniSkills"
+                                  class="text-danger small"></span>
+                        </div>
+
+                        <div class="mb-3">
+                            <label asp-for="AlumniLinkedInUrl"
+                                   class="form-label"></label>
+
+                            <input asp-for="AlumniLinkedInUrl"
+                                   type="url"
+                                   class="form-control"
+                                   maxlength="250"
+                                   placeholder="https://www.linkedin.com/in/yourname" />
+
+                            <span asp-validation-for="AlumniLinkedInUrl"
+                                  class="text-danger small"></span>
+                        </div>
                     </div>
 
                     <div class="mb-3">
                         <label asp-for="Password"
                                class="form-label"></label>
+
                         <input asp-for="Password"
                                class="form-control" />
+
                         <span asp-validation-for="Password"
-                              class="text-danger"></span>
+                              class="text-danger small"></span>
                     </div>
 
                     <div class="mb-3">
                         <label asp-for="ConfirmPassword"
                                class="form-label"></label>
+
                         <input asp-for="ConfirmPassword"
                                class="form-control" />
+
                         <span asp-validation-for="ConfirmPassword"
-                              class="text-danger"></span>
+                              class="text-danger small"></span>
                     </div>
 
                     <button type="submit"
                             class="btn btn-success w-100">
                         Register
                     </button>
-
                 </form>
 
                 <p class="text-center mt-4 mb-0">
@@ -89,4 +196,30 @@
 
 @section Scripts {
     <partial name="_ValidationScriptsPartial" />
+
+    <script>
+        document.addEventListener("DOMContentLoaded", function () {
+            const role = document.getElementById("Role");
+
+            const fields = document.getElementById(
+                "alumniRegistrationFields");
+
+            const inputs = fields.querySelectorAll(
+                "input, textarea, select");
+
+            function updateFields() {
+                const isAlumni = role.value === "Alumni";
+
+                fields.hidden = !isAlumni;
+
+                inputs.forEach(input => {
+                    input.disabled = !isAlumni;
+                });
+            }
+
+            role.addEventListener("change", updateFields);
+
+            updateFields();
+        });
+    </script>
 }
