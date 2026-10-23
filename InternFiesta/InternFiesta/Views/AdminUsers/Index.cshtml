@@ -1,0 +1,189 @@
+﻿@model InternFiesta.ViewModels.Admin.AdminUsersIndexViewModel
+
+@{
+    ViewData["Title"] = "Manage Users";
+}
+
+<div class="container-fluid px-0">
+
+    <h2 class="mb-1">User Accounts</h2>
+
+    <p class="text-muted">
+        View registered accounts and their assigned roles.
+    </p>
+
+    <!-- SEARCH AND ROLE FILTER -->
+    <div class="card border-0 shadow-sm mb-3">
+        <div class="card-body">
+
+            <form asp-controller="AdminUsers"
+                  asp-action="Index"
+                  method="get"
+                  class="row g-2 align-items-end">
+
+                <div class="col-md-6">
+
+                    <label for="q" class="form-label">
+                        Search name or email
+                    </label>
+
+                    <input id="q"
+                           name="q"
+                           type="search"
+                           maxlength="100"
+                           value="@Model.Search"
+                           class="form-control"
+                           placeholder="Search users" />
+                </div>
+
+                <div class="col-md-3">
+
+                    <label for="role" class="form-label">
+                        Role
+                    </label>
+
+                    <select id="role"
+                            name="role"
+                            class="form-select">
+
+                        <option value="">All roles</option>
+
+                        @foreach (var role in Model.AvailableRoles)
+                        {
+                            if (role == Model.SelectedRole)
+                            {
+                                <option value="@role" selected>
+                                    @role
+                                </option>
+                            }
+                            else
+                            {
+                                <option value="@role">
+                                    @role
+                                </option>
+                            }
+                        }
+                    </select>
+                </div>
+
+                <div class="col-md-3 d-flex gap-2">
+
+                    <button type="submit"
+                            class="btn btn-primary">
+                        Search
+                    </button>
+
+                    <a asp-controller="AdminUsers"
+                       asp-action="Index"
+                       class="btn btn-outline-secondary">
+                        Clear
+                    </a>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <p class="text-muted small">
+        @Model.TotalUsers matching account(s)
+    </p>
+
+    <!-- USER TABLE -->
+    <div class="card border-0 shadow-sm">
+        <div class="table-responsive">
+
+            <table class="table table-hover align-middle mb-0">
+
+                <thead>
+                    <tr>
+                        <th scope="col">Full Name</th>
+                        <th scope="col">Email</th>
+                        <th scope="col">Roles</th>
+                        <th scope="col">Email Confirmed</th>
+                        <th scope="col">Details</th>
+                    </tr>
+                </thead>
+
+                <tbody>
+
+                    @if (Model.Users.Count == 0)
+                    {
+                        <tr>
+                            <td colspan="5"
+                                class="text-center py-4">
+                                No matching users found.
+                            </td>
+                        </tr>
+                    }
+                    else
+                    {
+                        @foreach (var user in Model.Users)
+                        {
+                            <tr>
+
+                                <td>@user.FullName</td>
+
+                                <td>@user.Email</td>
+
+                                <td>
+                                    @(user.Roles.Count > 0
+                                        ? string.Join(", ", user.Roles)
+                                        : "No role assigned")
+                                </td>
+
+                                <td>
+                                    @(user.EmailConfirmed
+                                        ? "Yes"
+                                        : "No")
+                                </td>
+
+                                <td>
+                                    <a asp-controller="AdminUsers"
+                                       asp-action="Details"
+                                       asp-route-id="@user.Id"
+                                       class="btn btn-outline-primary btn-sm">
+                                        View Details
+                                    </a>
+                                </td>
+                            </tr>
+                        }
+                    }
+                </tbody>
+            </table>
+        </div>
+    </div>
+
+    <!-- PAGINATION -->
+    @if (Model.TotalPages > 1)
+    {
+        <nav class="d-flex align-items-center gap-3 mt-3"
+             aria-label="User list pages">
+
+            @if (Model.Page > 1)
+            {
+                <a asp-action="Index"
+                   asp-route-q="@Model.Search"
+                   asp-route-role="@Model.SelectedRole"
+                   asp-route-page="@(Model.Page - 1)"
+                   class="btn btn-outline-secondary btn-sm">
+                    Previous
+                </a>
+            }
+
+            <span>
+                Page @Model.Page of @Model.TotalPages
+            </span>
+
+            @if (Model.Page < Model.TotalPages)
+            {
+                <a asp-action="Index"
+                   asp-route-q="@Model.Search"
+                   asp-route-role="@Model.SelectedRole"
+                   asp-route-page="@(Model.Page + 1)"
+                   class="btn btn-outline-secondary btn-sm">
+                    Next
+                </a>
+            }
+        </nav>
+    }
+
+</div>

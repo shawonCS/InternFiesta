@@ -77,6 +77,16 @@ using (var scope = app.Services.CreateScope())
         }
     }
 }
+// Create a local test Administrator only in Development.
+// Administrator role must already be seeded above.
+if (app.Environment.IsDevelopment())
+{
+    using var adminScope = app.Services.CreateScope();
+
+    await DevelopmentAdminSeeder.SeedAsync(
+        adminScope.ServiceProvider,
+        app.Configuration);
+}
 // Seed test accounts into the database
 using (var scope = app.Services.CreateScope())
 {

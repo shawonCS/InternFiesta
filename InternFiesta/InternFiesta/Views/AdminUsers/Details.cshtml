@@ -1,0 +1,73 @@
+﻿@model InternFiesta.ViewModels.Admin.AdminUserDetailsViewModel
+
+@{
+    ViewData["Title"] = "Account Details";
+}
+
+<div class="container-fluid px-0">
+
+    <div class="d-flex justify-content-between
+        align-items-center mb-3">
+
+        <div>
+            <h2 class="mb-1">Account Details</h2>
+
+            <p class="text-muted mb-0">
+                Read-only identity information.
+            </p>
+        </div>
+
+        <a asp-controller="AdminUsers"
+           asp-action="Index"
+           class="btn btn-outline-secondary">
+            Back to Users
+        </a>
+    </div>
+
+    <div class="card border-0 shadow-sm">
+        <div class="card-body p-4">
+
+            <dl class="row mb-0">
+
+                <dt class="col-sm-3">Full Name</dt>
+                <dd class="col-sm-9">
+                    @Model.FullName
+                </dd>
+
+                <dt class="col-sm-3">Email</dt>
+                <dd class="col-sm-9">
+                    @Model.Email
+                </dd>
+
+                <dt class="col-sm-3">Username</dt>
+                <dd class="col-sm-9">
+                    @Model.UserName
+                </dd>
+
+                <dt class="col-sm-3">Roles</dt>
+                <dd class="col-sm-9">
+                    @(Model.Roles.Count > 0
+                        ? string.Join(", ", Model.Roles)
+                        : "No role assigned")
+                </dd>
+
+                <dt class="col-sm-3">Email Confirmed</dt>
+                <dd class="col-sm-9">
+                    @(Model.EmailConfirmed ? "Yes" : "No")
+                </dd>
+
+                <dt class="col-sm-3">User ID</dt>
+                <dd class="col-sm-9">
+                    <code>@Model.Id</code>
+                </dd>
+
+            </dl>
+        </div>
+    </div>
+
+    <p class="text-muted small mt-3">
+        Role changes and account disable/restore will be
+        added in T-20.2. Passwords are never displayed.
+    </p>
+
+</div>
