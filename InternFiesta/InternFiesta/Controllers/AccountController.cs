@@ -210,6 +210,19 @@ namespace InternFiesta.Controllers
                 return View(model);
             }
 
+            var loginUser =
+                await _userManager.FindByEmailAsync(model.Email);
+
+            if (loginUser == null || loginUser.IsDisabled)
+            {
+                ModelState.AddModelError(
+                    string.Empty,
+                    "Invalid email or password.");
+
+                return View(model);
+            }
+
+
             var result =
                 await _signInManager.PasswordSignInAsync(
                     model.Email,

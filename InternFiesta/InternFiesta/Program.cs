@@ -20,6 +20,13 @@ builder.Services
     .AddEntityFrameworkStores<ApplicationDbContext>()
     .AddDefaultTokenProviders();
 
+builder.Services.Configure<SecurityStampValidatorOptions>(
+    options =>
+    {
+        options.ValidationInterval = TimeSpan.Zero;
+    });
+
+
 var app = builder.Build();
 if (app.Environment.IsDevelopment())
 {

@@ -98,6 +98,7 @@
                         <th scope="col">Full Name</th>
                         <th scope="col">Email</th>
                         <th scope="col">Roles</th>
+                        <th scope="col">Status</th>
                         <th scope="col">Email Confirmed</th>
                         <th scope="col">Details</th>
                     </tr>
@@ -108,7 +109,7 @@
                     @if (Model.Users.Count == 0)
                     {
                         <tr>
-                            <td colspan="5"
+                            <td colspan="6"
                                 class="text-center py-4">
                                 No matching users found.
                             </td>
@@ -144,6 +145,22 @@
                                         View Details
                                     </a>
                                 </td>
+
+                                <td>
+                                    @if (user.IsDisabled)
+                                    {
+                                        <span class="badge bg-danger">
+                                            Disabled
+                                        </span>
+                                    }
+                                    else
+                                    {
+                                        <span class="badge bg-success">
+                                            Active
+                                        </span>
+                                    }
+                                </td>
+
                             </tr>
                         }
                     }

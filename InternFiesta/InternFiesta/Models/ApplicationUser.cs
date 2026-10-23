@@ -1,5 +1,7 @@
-﻿using Microsoft.AspNetCore.Identity;
+﻿
+using Microsoft.AspNetCore.Identity;
 using System.ComponentModel.DataAnnotations;
+
 namespace InternFiesta.Models
 {
     public class ApplicationUser : IdentityUser
@@ -7,5 +9,9 @@ namespace InternFiesta.Models
         [Required]
         [StringLength(100)]
         public string FullName { get; set; } = string.Empty;
-    } //Identity handles the password hash.
+
+        // Administrative suspension.
+        // Independent from temporary password lockout.
+        public bool IsDisabled { get; set; } = false;
+    }
 }

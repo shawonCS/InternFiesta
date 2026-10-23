@@ -7,42 +7,51 @@
 <div class="container-fluid px-0">
 
     <div class="d-flex justify-content-between
-        align-items-center mb-3">
+        align-items-center mb-4 flex-wrap gap-2">
 
         <div>
             <h2 class="mb-1">Account Details</h2>
-
             <p class="text-muted mb-0">
-                Read-only identity information.
+                Review identity information and manage access.
             </p>
         </div>
 
-        <a asp-controller="AdminUsers"
-           asp-action="Index"
+        <a asp-action="Index"
            class="btn btn-outline-secondary">
             Back to Users
         </a>
     </div>
 
-    <div class="card border-0 shadow-sm">
+    <!-- ACCOUNT INFORMATION -->
+    <div class="card border-0 shadow-sm mb-4">
         <div class="card-body p-4">
+
+            <div class="d-flex justify-content-between
+                align-items-center mb-3">
+
+                <h4 class="mb-0">@Model.FullName</h4>
+
+                @if (Model.IsDisabled)
+                {
+                    <span class="badge bg-danger">
+                        Disabled
+                    </span>
+                }
+                else
+                {
+                    <span class="badge bg-success">
+                        Active
+                    </span>
+                }
+            </div>
 
             <dl class="row mb-0">
 
-                <dt class="col-sm-3">Full Name</dt>
-                <dd class="col-sm-9">
-                    @Model.FullName
-                </dd>
-
                 <dt class="col-sm-3">Email</dt>
-                <dd class="col-sm-9">
-                    @Model.Email
-                </dd>
+                <dd class="col-sm-9">@Model.Email</dd>
 
                 <dt class="col-sm-3">Username</dt>
-                <dd class="col-sm-9">
-                    @Model.UserName
-                </dd>
+                <dd class="col-sm-9">@Model.UserName</dd>
 
                 <dt class="col-sm-3">Roles</dt>
                 <dd class="col-sm-9">
@@ -60,14 +69,156 @@
                 <dd class="col-sm-9">
                     <code>@Model.Id</code>
                 </dd>
-
             </dl>
         </div>
     </div>
 
-    <p class="text-muted small mt-3">
-        Role changes and account disable/restore will be
-        added in T-20.2. Passwords are never displayed.
-    </p>
+    <!-- SAFETY NOTICES -->
+    @if (Model.IsCurrentUser)
+    {
+        <div class="alert alert-info">
+            This is your own Administrator account.
+            You cannot change your own role or disable yourself.
+        </div>
+    }
+    else if (Model.IsLastActiveAdministrator)
+    {
+        <div class="alert alert-warning">
+            This is the last active Administrator.
+            Changing its role or disabling it is prohibited.
+        </div>
+    }
 
+    <div class="row g-3">
+
+        <!-- CHANGE ROLE -->
+        <div class="col-lg-7">
+
+            <div class="card border-0 shadow-sm h-100">
+                <div class="card-body p-4">
+
+                    <h5>Change Account Role</h5>
+
+                    <p class="text-muted small">
+                        Use this feature for exceptional role corrections.
+                        Accounts with existing internship, academic,
+                        mentoring or job-fair activity cannot switch roles.
+                        Privileged roles require a verified email.
+                    </p>
+
+                    <form asp-controller="AdminUsers"
+                          asp-action="ChangeRole"
+                          asp-route-id="@Model.Id"
+                          method="post"
+                          onsubmit="return confirm('Change this user\'s role? Their existing sessions will be signed out.');">
+
+                        @Html.AntiForgeryToken()
+
+                        <label for="newRole"
+                               class="form-label">
+                            New Role
+                        </label>
+
+                        <select id="newRole"
+                                name="newRole"
+                                class="form-select mb-3"
+                                disabled="@(Model.IsCurrentUser ||
+                                                                        Model.IsDisabled ||
+                                                                        Model.IsLastActiveAdministrator)">
+
+                            @foreach (var role in Model.AvailableRoles)
+                            {
+                                if (Model.Roles.Count == 1 &&
+                                    Model.Roles[0] == role)
+                                {
+                                    <option value="@role" selected>
+                                        @role
+                                    </option>
+                                }
+                                else
+                                {
+                                    <option value="@role">
+                                        @role
+                                    </option>
+                                }
+                            }
+                        </select>
+
+                        <button type="submit"
+                                class="btn btn-primary"
+                                disabled="@(Model.IsCurrentUser ||
+                                                                        Model.IsDisabled ||
+                                                                        Model.IsLastActiveAdministrator)">
+                            Change Role
+                        </button>
+
+                    </form>
+                </div>
+            </div>
+        </div>
+
+        <!-- DISABLE / RESTORE -->
+        <div class="col-lg-5">
+
+            <div class="card border-0 shadow-sm h-100">
+                <div class="card-body p-4">
+
+                    <h5>Account Access</h5>
+
+                    <p class="text-muted small">
+                        Disabling blocks sign-in and revokes
+                        existing sessions. Restoring permits
+                        the user to sign in again.
+                        Existing records are not deleted.
+                    </p>
+
+                    @if (Model.IsDisabled)
+                    {
+                        <form asp-controller="AdminUsers"
+                              asp-action="SetStatus"
+                              asp-route-id="@Model.Id"
+                              method="post"
+                              onsubmit="return confirm('Restore this account?');">
+
+                            @Html.AntiForgeryToken()
+
+                            <input type="hidden"
+                                   name="action"
+                                   value="Restore" />
+
+                            <button type="submit"
+                                    class="btn btn-success"
+                                    disabled="@Model.IsCurrentUser">
+                                Restore Account
+                            </button>
+                        </form>
+                    }
+                    else
+                    {
+                        <form asp-controller="AdminUsers"
+                              asp-action="SetStatus"
+                              asp-route-id="@Model.Id"
+                              method="post"
+                              onsubmit="return confirm('Disable this account and revoke its sessions?');">
+
+                            @Html.AntiForgeryToken()
+
+                            <input type="hidden"
+                                   name="action"
+                                   value="Disable" />
+
+                            <button type="submit"
+                                    class="btn btn-outline-danger"
+                                    disabled="@(Model.IsCurrentUser ||
+                                                                                Model.IsLastActiveAdministrator)">
+                                Disable Account
+                            </button>
+                        </form>
+                    }
+
+                </div>
+            </div>
+        </div>
+
+    </div>
 </div>
