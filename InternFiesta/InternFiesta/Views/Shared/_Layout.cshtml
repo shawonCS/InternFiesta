@@ -215,6 +215,16 @@
                         Find Alumni
                     </a>
                 }
+                @if (User.IsInRole("Administrator"))
+                {
+                    <a asp-controller="AdminUsers"
+                       asp-action="Index"
+                       class="sidebar-link">
+
+                        <span class="sidebar-icon">▣</span>
+                        Manage Users
+                    </a>
+                }
 			</nav>
             <div class="sidebar-bottom">
 

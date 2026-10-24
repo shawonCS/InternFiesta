@@ -1,22 +1,35 @@
-﻿@model InternFiesta.ViewModels.Admin.AdminUserDetailsViewModel
+﻿
+@model InternFiesta.ViewModels.Admin.AdminUserDetailsViewModel
 
 @{
     ViewData["Title"] = "Account Details";
+
+    var currentRole = Model.Roles.Count == 1
+        ? Model.Roles[0] : string.Empty;
+
+    bool canChangeRole = !Model.IsCurrentUser
+        && !Model.IsDisabled
+        && !Model.IsLastActiveAdministrator
+        && Model.Roles.Count == 1;
+
+    bool canChangeStatus = !Model.IsCurrentUser
+        && (Model.IsDisabled || !Model.IsLastActiveAdministrator);
+
+    var accountAction = Model.IsDisabled ? "Restore" : "Disable";
 }
 
 <div class="container-fluid px-0">
 
-    <div class="d-flex justify-content-between
-        align-items-center mb-4 flex-wrap gap-2">
-
+    <div class="d-flex justify-content-between align-items-start flex-wrap gap-3 mb-4">
         <div>
             <h2 class="mb-1">Account Details</h2>
             <p class="text-muted mb-0">
-                Review identity information and manage access.
+                Review account information and carefully manage user access.
             </p>
         </div>
 
-        <a asp-action="Index"
+        <a asp-controller="AdminUsers"
+           asp-action="Index"
            class="btn btn-outline-secondary">
             Back to Users
         </a>
@@ -26,48 +39,55 @@
     <div class="card border-0 shadow-sm mb-4">
         <div class="card-body p-4">
 
-            <div class="d-flex justify-content-between
-                align-items-center mb-3">
-
-                <h4 class="mb-0">@Model.FullName</h4>
+            <div class="d-flex align-items-center justify-content-between flex-wrap gap-2 mb-3">
+                <div>
+                    <h4 class="mb-1">@Model.FullName</h4>
+                    <p class="text-muted mb-0">@Model.Email</p>
+                </div>
 
                 @if (Model.IsDisabled)
                 {
-                    <span class="badge bg-danger">
-                        Disabled
-                    </span>
+                    <span class="badge bg-danger">Disabled</span>
                 }
                 else
                 {
-                    <span class="badge bg-success">
-                        Active
-                    </span>
+                    <span class="badge bg-success">Active</span>
                 }
             </div>
 
+            <hr />
+
             <dl class="row mb-0">
-
-                <dt class="col-sm-3">Email</dt>
-                <dd class="col-sm-9">@Model.Email</dd>
-
                 <dt class="col-sm-3">Username</dt>
                 <dd class="col-sm-9">@Model.UserName</dd>
 
-                <dt class="col-sm-3">Roles</dt>
+                <dt class="col-sm-3">Assigned Role(s)</dt>
                 <dd class="col-sm-9">
-                    @(Model.Roles.Count > 0
-                        ? string.Join(", ", Model.Roles)
-                        : "No role assigned")
+                    @if (Model.Roles.Count > 0)
+                    {
+                        @foreach (var role in Model.Roles)
+                        {
+                            <span class="badge bg-light text-dark border me-1">
+                                @role
+                            </span>
+                        }
+                    }
+                    else
+                    {
+                        <span class="text-muted">
+                            No role assigned
+                        </span>
+                    }
                 </dd>
 
-                <dt class="col-sm-3">Email Confirmed</dt>
+                <dt class="col-sm-3">Email Verification</dt>
                 <dd class="col-sm-9">
-                    @(Model.EmailConfirmed ? "Yes" : "No")
+                    @(Model.EmailConfirmed ? "Verified" : "Not verified")
                 </dd>
 
                 <dt class="col-sm-3">User ID</dt>
                 <dd class="col-sm-9">
-                    <code>@Model.Id</code>
+                    <code class="text-break">@Model.Id</code>
                 </dd>
             </dl>
         </div>
@@ -76,16 +96,35 @@
     <!-- SAFETY NOTICES -->
     @if (Model.IsCurrentUser)
     {
-        <div class="alert alert-info">
-            This is your own Administrator account.
-            You cannot change your own role or disable yourself.
+        <div class="alert alert-info" role="status">
+            <strong>Your own account:</strong>
+            For safety, you cannot change your own role
+            or disable your own account.
         </div>
     }
     else if (Model.IsLastActiveAdministrator)
     {
-        <div class="alert alert-warning">
+        <div class="alert alert-warning" role="status">
+            <strong>Protected administrator:</strong>
             This is the last active Administrator.
-            Changing its role or disabling it is prohibited.
+            Its role cannot be removed and its account
+            cannot be disabled.
+        </div>
+    }
+    else if (Model.Roles.Count != 1)
+    {
+        <div class="alert alert-warning" role="status">
+            This account has zero or multiple roles.
+            Role changes are blocked until its assignments are reviewed.
+        </div>
+    }
+
+    @if (!Model.EmailConfirmed)
+    {
+        <div class="alert alert-light border" role="status">
+            This email is not verified. Assigning Administrator,
+            FacultySupervisor or UniversityCoordinator roles
+            requires a verified email.
         </div>
     }
 
@@ -93,132 +132,281 @@
 
         <!-- CHANGE ROLE -->
         <div class="col-lg-7">
-
             <div class="card border-0 shadow-sm h-100">
                 <div class="card-body p-4">
 
-                    <h5>Change Account Role</h5>
+                    <h5 class="mb-2">Change Account Role</h5>
 
-                    <p class="text-muted small">
-                        Use this feature for exceptional role corrections.
-                        Accounts with existing internship, academic,
-                        mentoring or job-fair activity cannot switch roles.
-                        Privileged roles require a verified email.
+                    <p class="text-muted small mb-3">
+                        Role changes are for exceptional corrections,
+                        not normal onboarding. The system blocks changes
+                        that conflict with existing internship,
+                        academic or mentoring records.
                     </p>
 
-                    <form asp-controller="AdminUsers"
-                          asp-action="ChangeRole"
-                          asp-route-id="@Model.Id"
-                          method="post"
-                          onsubmit="return confirm('Change this user\'s role? Their existing sessions will be signed out.');">
+                    <label for="newRoleSelect" class="form-label">
+                        New Role
+                    </label>
 
-                        @Html.AntiForgeryToken()
+                    <select id="newRoleSelect"
+                            class="form-select mb-2"
+                            data-current-role="@currentRole"
+                            disabled="@(!canChangeRole)">
 
-                        <label for="newRole"
-                               class="form-label">
-                            New Role
-                        </label>
-
-                        <select id="newRole"
-                                name="newRole"
-                                class="form-select mb-3"
-                                disabled="@(Model.IsCurrentUser ||
-                                                                        Model.IsDisabled ||
-                                                                        Model.IsLastActiveAdministrator)">
-
-                            @foreach (var role in Model.AvailableRoles)
+                        @foreach (var role in Model.AvailableRoles)
+                        {
+                            if (role == currentRole)
                             {
-                                if (Model.Roles.Count == 1 &&
-                                    Model.Roles[0] == role)
-                                {
-                                    <option value="@role" selected>
-                                        @role
-                                    </option>
-                                }
-                                else
-                                {
-                                    <option value="@role">
-                                        @role
-                                    </option>
-                                }
+                                <option value="@role" selected>
+                                    @role
+                                </option>
                             }
-                        </select>
+                            else
+                            {
+                                <option value="@role">
+                                    @role
+                                </option>
+                            }
+                        }
+                    </select>
 
-                        <button type="submit"
-                                class="btn btn-primary"
-                                disabled="@(Model.IsCurrentUser ||
-                                                                        Model.IsDisabled ||
-                                                                        Model.IsLastActiveAdministrator)">
-                            Change Role
-                        </button>
+                    <div id="roleValidationMessage"
+                         class="form-text mb-3"
+                         aria-live="polite">
+                        Select a different role to continue.
+                    </div>
 
-                    </form>
+                    <button id="reviewRoleChange"
+                            type="button"
+                            class="btn btn-primary"
+                            data-bs-toggle="modal"
+                            data-bs-target="#confirmRoleModal"
+                            disabled="@(!canChangeRole)">
+                        Review Role Change
+                    </button>
                 </div>
             </div>
         </div>
 
         <!-- DISABLE / RESTORE -->
         <div class="col-lg-5">
-
             <div class="card border-0 shadow-sm h-100">
                 <div class="card-body p-4">
 
-                    <h5>Account Access</h5>
+                    <h5 class="mb-2">Account Access</h5>
 
-                    <p class="text-muted small">
-                        Disabling blocks sign-in and revokes
-                        existing sessions. Restoring permits
-                        the user to sign in again.
-                        Existing records are not deleted.
+                    <p class="text-muted small mb-3">
+                        Disabling an account blocks sign-in and
+                        revokes existing sessions. Restoring allows
+                        the user to sign in again. Existing applications
+                        and academic records are not deleted.
                     </p>
 
-                    @if (Model.IsDisabled)
-                    {
-                        <form asp-controller="AdminUsers"
-                              asp-action="SetStatus"
-                              asp-route-id="@Model.Id"
-                              method="post"
-                              onsubmit="return confirm('Restore this account?');">
-
-                            @Html.AntiForgeryToken()
-
-                            <input type="hidden"
-                                   name="action"
-                                   value="Restore" />
-
-                            <button type="submit"
-                                    class="btn btn-success"
-                                    disabled="@Model.IsCurrentUser">
-                                Restore Account
-                            </button>
-                        </form>
-                    }
-                    else
-                    {
-                        <form asp-controller="AdminUsers"
-                              asp-action="SetStatus"
-                              asp-route-id="@Model.Id"
-                              method="post"
-                              onsubmit="return confirm('Disable this account and revoke its sessions?');">
-
-                            @Html.AntiForgeryToken()
-
-                            <input type="hidden"
-                                   name="action"
-                                   value="Disable" />
-
-                            <button type="submit"
-                                    class="btn btn-outline-danger"
-                                    disabled="@(Model.IsCurrentUser ||
-                                                                                Model.IsLastActiveAdministrator)">
-                                Disable Account
-                            </button>
-                        </form>
-                    }
-
+                    <button type="button"
+                            class="btn @(Model.IsDisabled ? "btn-success" : "btn-outline-danger")"
+                            data-bs-toggle="modal"
+                            data-bs-target="#confirmStatusModal"
+                            disabled="@(!canChangeStatus)">
+                        @accountAction Account
+                    </button>
                 </div>
             </div>
         </div>
 
     </div>
 </div>
+
+<!-- ROLE CHANGE CONFIRMATION -->
+@if (canChangeRole)
+{
+    <div class="modal fade"
+         id="confirmRoleModal"
+         tabindex="-1"
+         aria-labelledby="confirmRoleTitle"
+         aria-hidden="true">
+
+        <div class="modal-dialog modal-dialog-centered">
+            <div class="modal-content">
+
+                <div class="modal-header">
+                    <h5 class="modal-title" id="confirmRoleTitle">
+                        Confirm Role Change
+                    </h5>
+
+                    <button type="button"
+                            class="btn-close"
+                            data-bs-dismiss="modal"
+                            aria-label="Close"></button>
+                </div>
+
+                <div class="modal-body">
+                    <p class="mb-2">
+                        Change the role for
+                        <strong>@Model.FullName</strong>?
+                    </p>
+
+                    <p class="mb-2">
+                        <span class="text-muted">Current:</span>
+                        @currentRole
+                    </p>
+
+                    <p class="mb-3">
+                        <span class="text-muted">New:</span>
+                        <strong id="confirmRoleLabel"></strong>
+                    </p>
+
+                    <div class="alert alert-warning small mb-0">
+                        This will update access permissions and
+                        invalidate the user's current sign-in sessions.
+                        Existing activity may prevent the change.
+                    </div>
+                </div>
+
+                <div class="modal-footer">
+                    <button type="button"
+                            class="btn btn-outline-secondary"
+                            data-bs-dismiss="modal">
+                        Cancel
+                    </button>
+
+                    <form asp-controller="AdminUsers"
+                          asp-action="ChangeRole"
+                          asp-route-id="@Model.Id"
+                          method="post"
+                          class="d-inline">
+
+                        @Html.AntiForgeryToken()
+
+                        <input id="confirmedNewRole"
+                               type="hidden"
+                               name="newRole" />
+
+                        <button type="submit"
+                                class="btn btn-primary">
+                            Confirm Change
+                        </button>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+}
+
+<!-- ACCOUNT STATUS CONFIRMATION -->
+@if (canChangeStatus)
+{
+    <div class="modal fade"
+         id="confirmStatusModal"
+         tabindex="-1"
+         aria-labelledby="confirmStatusTitle"
+         aria-hidden="true">
+
+        <div class="modal-dialog modal-dialog-centered">
+            <div class="modal-content">
+
+                <div class="modal-header">
+                    <h5 class="modal-title" id="confirmStatusTitle">
+                        Confirm Account @accountAction
+                    </h5>
+
+                    <button type="button"
+                            class="btn-close"
+                            data-bs-dismiss="modal"
+                            aria-label="Close"></button>
+                </div>
+
+                <div class="modal-body">
+                    <p>
+                        Are you sure you want to
+                        <strong>@accountAction.ToLowerInvariant()</strong>
+                        <strong>@Model.FullName</strong>'s account?
+                    </p>
+
+                    <p class="text-muted small mb-0">
+                        @(Model.IsDisabled
+                            ? "Restoring will allow this user to sign in again."
+                            : "Disabling will block sign-in and revoke existing sessions. It will not delete records.")
+                    </p>
+                </div>
+
+                <div class="modal-footer">
+                    <button type="button"
+                            class="btn btn-outline-secondary"
+                            data-bs-dismiss="modal">
+                        Cancel
+                    </button>
+
+                    <form asp-controller="AdminUsers"
+                          asp-action="SetStatus"
+                          asp-route-id="@Model.Id"
+                          method="post"
+                          class="d-inline">
+
+                        @Html.AntiForgeryToken()
+
+                        <input type="hidden"
+                               name="action"
+                               value="@accountAction" />
+
+                        <button type="submit"
+                                class="btn @(Model.IsDisabled ? "btn-success" : "btn-danger")">
+                            Confirm @accountAction
+                        </button>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+}
+
+@section Scripts {
+    <script>
+        document.addEventListener("DOMContentLoaded", function () {
+
+            const select = document.getElementById("newRoleSelect");
+            const review = document.getElementById("reviewRoleChange");
+            const message = document.getElementById("roleValidationMessage");
+
+            const modal = document.getElementById("confirmRoleModal");
+            const confirmed = document.getElementById("confirmedNewRole");
+            const roleLabel = document.getElementById("confirmRoleLabel");
+
+            if (!select || !review || !message ||
+                !modal || !confirmed || !roleLabel) {
+                return;
+            }
+
+            const currentRole = select.dataset.currentRole;
+            const originallyDisabled = select.disabled;
+
+            function updateRoleValidation() {
+
+                if (originallyDisabled) {
+                    review.disabled = true;
+                    return;
+                }
+
+                const unchanged =
+                    !select.value || select.value === currentRole;
+
+                review.disabled = unchanged;
+
+                message.textContent = unchanged
+                    ? "Select a different role to continue."
+                    : "Review the change before applying it.";
+            }
+
+            select.addEventListener(
+                "change", updateRoleValidation);
+
+            modal.addEventListener("show.bs.modal", function () {
+                confirmed.value = select.value;
+
+                roleLabel.textContent =
+                    select.options[select.selectedIndex].text;
+            });
+
+            updateRoleValidation();
+        });
+    </script>
+}

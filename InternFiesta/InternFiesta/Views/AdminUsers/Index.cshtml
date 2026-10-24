@@ -1,48 +1,63 @@
-﻿@model InternFiesta.ViewModels.Admin.AdminUsersIndexViewModel
+﻿
+@model InternFiesta.ViewModels.Admin.AdminUsersIndexViewModel
 
 @{
     ViewData["Title"] = "Manage Users";
+
+    var firstItem = Model.TotalUsers == 0
+        ? 0 : (Model.Page - 1) * 20 + 1;
+
+    var lastItem = Math.Min(Model.TotalUsers, Model.Page * 20);
 }
 
 <div class="container-fluid px-0">
 
-    <h2 class="mb-1">User Accounts</h2>
+    <div class="d-flex justify-content-between align-items-start flex-wrap gap-3 mb-4">
+        <div>
+            <h2 class="mb-1">User Management</h2>
+            <p class="text-muted mb-0">
+                Find accounts, review assigned roles and manage access safely.
+            </p>
+        </div>
 
-    <p class="text-muted">
-        View registered accounts and their assigned roles.
-    </p>
+        <a asp-controller="Dashboard"
+           asp-action="Index"
+           class="btn btn-outline-secondary">
+            Back to Dashboard
+        </a>
+    </div>
 
-    <!-- SEARCH AND ROLE FILTER -->
-    <div class="card border-0 shadow-sm mb-3">
-        <div class="card-body">
+    <!-- SEARCH AND FILTER -->
+    <div class="card border-0 shadow-sm mb-4">
+        <div class="card-body p-4">
+
+            <h5 class="mb-3">Search &amp; Filter Accounts</h5>
 
             <form asp-controller="AdminUsers"
                   asp-action="Index"
                   method="get"
-                  class="row g-2 align-items-end">
+                  class="row g-3 align-items-end">
 
-                <div class="col-md-6">
-
-                    <label for="q" class="form-label">
-                        Search name or email
+                <div class="col-lg-5 col-md-6">
+                    <label for="userSearch" class="form-label">
+                        Name or Email
                     </label>
 
-                    <input id="q"
+                    <input id="userSearch"
                            name="q"
                            type="search"
+                           class="form-control"
                            maxlength="100"
                            value="@Model.Search"
-                           class="form-control"
-                           placeholder="Search users" />
+                           placeholder="Search registered accounts" />
                 </div>
 
-                <div class="col-md-3">
-
-                    <label for="role" class="form-label">
+                <div class="col-lg-3 col-md-3">
+                    <label for="roleFilter" class="form-label">
                         Role
                     </label>
 
-                    <select id="role"
+                    <select id="roleFilter"
                             name="role"
                             class="form-select">
 
@@ -52,25 +67,51 @@
                         {
                             if (role == Model.SelectedRole)
                             {
-                                <option value="@role" selected>
-                                    @role
-                                </option>
+                                <option value="@role" selected>@role</option>
                             }
                             else
                             {
-                                <option value="@role">
-                                    @role
-                                </option>
+                                <option value="@role">@role</option>
                             }
                         }
                     </select>
                 </div>
 
-                <div class="col-md-3 d-flex gap-2">
+                <div class="col-lg-2 col-md-3">
+                    <label for="statusFilter" class="form-label">
+                        Account Status
+                    </label>
 
+                    <select id="statusFilter"
+                            name="status"
+                            class="form-select">
+
+                        <option value="">All statuses</option>
+
+                        @if (Model.SelectedStatus == "active")
+                        {
+                            <option value="active" selected>Active</option>
+                        }
+                        else
+                        {
+                            <option value="active">Active</option>
+                        }
+
+                        @if (Model.SelectedStatus == "disabled")
+                        {
+                            <option value="disabled" selected>Disabled</option>
+                        }
+                        else
+                        {
+                            <option value="disabled">Disabled</option>
+                        }
+                    </select>
+                </div>
+
+                <div class="col-lg-2 col-md-12 d-flex gap-2">
                     <button type="submit"
-                            class="btn btn-primary">
-                        Search
+                            class="btn btn-primary flex-grow-1">
+                        Apply
                     </button>
 
                     <a asp-controller="AdminUsers"
@@ -83,35 +124,50 @@
         </div>
     </div>
 
-    <p class="text-muted small">
-        @Model.TotalUsers matching account(s)
-    </p>
+    <div class="d-flex justify-content-between align-items-center flex-wrap gap-2 mb-3">
+        <div>
+            <h5 class="mb-0">Accounts</h5>
+            <span class="text-muted small">
+                @Model.TotalUsers matching account(s)
+            </span>
+        </div>
+
+        <span class="text-muted small">
+            Showing @firstItem-@lastItem of @Model.TotalUsers
+        </span>
+    </div>
 
     <!-- USER TABLE -->
     <div class="card border-0 shadow-sm">
         <div class="table-responsive">
 
             <table class="table table-hover align-middle mb-0">
-
-                <thead>
+                <thead class="table-light">
                     <tr>
-                        <th scope="col">Full Name</th>
+                        <th scope="col" class="ps-4">Full Name</th>
                         <th scope="col">Email</th>
-                        <th scope="col">Roles</th>
-                        <th scope="col">Status</th>
-                        <th scope="col">Email Confirmed</th>
-                        <th scope="col">Details</th>
+                        <th scope="col">Assigned Role(s)</th>
+                        <th scope="col">Account Status</th>
+                        <th scope="col">Email Verified</th>
+                        <th scope="col" class="text-end pe-4">Action</th>
                     </tr>
                 </thead>
 
                 <tbody>
-
                     @if (Model.Users.Count == 0)
                     {
                         <tr>
-                            <td colspan="6"
-                                class="text-center py-4">
-                                No matching users found.
+                            <td colspan="6" class="text-center py-5">
+                                <h6>No accounts found</h6>
+
+                                <p class="text-muted mb-2">
+                                    Try changing your search terms or filters.
+                                </p>
+
+                                <a asp-action="Index"
+                                   class="btn btn-outline-primary btn-sm">
+                                    Clear Filters
+                                </a>
                             </td>
                         </tr>
                     }
@@ -120,30 +176,28 @@
                         @foreach (var user in Model.Users)
                         {
                             <tr>
-
-                                <td>@user.FullName</td>
+                                <td class="ps-4 fw-semibold">
+                                    @user.FullName
+                                </td>
 
                                 <td>@user.Email</td>
 
                                 <td>
-                                    @(user.Roles.Count > 0
-                                        ? string.Join(", ", user.Roles)
-                                        : "No role assigned")
-                                </td>
-
-                                <td>
-                                    @(user.EmailConfirmed
-                                        ? "Yes"
-                                        : "No")
-                                </td>
-
-                                <td>
-                                    <a asp-controller="AdminUsers"
-                                       asp-action="Details"
-                                       asp-route-id="@user.Id"
-                                       class="btn btn-outline-primary btn-sm">
-                                        View Details
-                                    </a>
+                                    @if (user.Roles.Count == 0)
+                                    {
+                                        <span class="text-muted">
+                                            No role
+                                        </span>
+                                    }
+                                    else
+                                    {
+                                        @foreach (var role in user.Roles)
+                                        {
+                                            <span class="badge bg-light text-dark border me-1">
+                                                @role
+                                            </span>
+                                        }
+                                    }
                                 </td>
 
                                 <td>
@@ -161,6 +215,29 @@
                                     }
                                 </td>
 
+                                <td>
+                                    @if (user.EmailConfirmed)
+                                    {
+                                        <span class="text-success">
+                                            Verified
+                                        </span>
+                                    }
+                                    else
+                                    {
+                                        <span class="text-muted">
+                                            Not verified
+                                        </span>
+                                    }
+                                </td>
+
+                                <td class="text-end pe-4">
+                                    <a asp-controller="AdminUsers"
+                                       asp-action="Details"
+                                       asp-route-id="@user.Id"
+                                       class="btn btn-outline-primary btn-sm">
+                                        View Details
+                                    </a>
+                                </td>
                             </tr>
                         }
                     }
@@ -172,21 +249,26 @@
     <!-- PAGINATION -->
     @if (Model.TotalPages > 1)
     {
-        <nav class="d-flex align-items-center gap-3 mt-3"
-             aria-label="User list pages">
+        <nav class="d-flex justify-content-between align-items-center mt-3 gap-2"
+             aria-label="Account list pagination">
 
             @if (Model.Page > 1)
             {
                 <a asp-action="Index"
                    asp-route-q="@Model.Search"
                    asp-route-role="@Model.SelectedRole"
+                   asp-route-status="@Model.SelectedStatus"
                    asp-route-page="@(Model.Page - 1)"
                    class="btn btn-outline-secondary btn-sm">
                     Previous
                 </a>
             }
+            else
+            {
+                <span></span>
+            }
 
-            <span>
+            <span class="text-muted small">
                 Page @Model.Page of @Model.TotalPages
             </span>
 
@@ -195,12 +277,16 @@
                 <a asp-action="Index"
                    asp-route-q="@Model.Search"
                    asp-route-role="@Model.SelectedRole"
+                   asp-route-status="@Model.SelectedStatus"
                    asp-route-page="@(Model.Page + 1)"
                    class="btn btn-outline-secondary btn-sm">
                     Next
                 </a>
             }
+            else
+            {
+                <span></span>
+            }
         </nav>
     }
-
 </div>

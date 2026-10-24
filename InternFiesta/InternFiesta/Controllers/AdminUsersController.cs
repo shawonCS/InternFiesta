@@ -43,9 +43,7 @@ namespace InternFiesta.Controllers
         // ADMIN: LIST, SEARCH, FILTER USERS
         [HttpGet("")]
         public async Task<IActionResult> Index(
-            string? q,
-            string? role,
-            int page = 1)
+        string? q, string? role, string? status, int page = 1)
         {
             string search = q?.Trim() ?? string.Empty;
 
@@ -76,8 +74,29 @@ namespace InternFiesta.Controllers
                     return BadRequest("Invalid role filter.");
             }
 
+
+            string selectedStatus =
+                status?.Trim().ToLowerInvariant() ?? string.Empty;
+
+            if (selectedStatus != string.Empty &&
+                selectedStatus != "active" &&
+                selectedStatus != "disabled")
+            {
+                return BadRequest("Invalid account status filter.");
+            }
+
             IQueryable<ApplicationUser> users =
                 _userManager.Users.AsNoTracking();
+
+            if (selectedStatus == "active")
+            {
+                users = users.Where(u => !u.IsDisabled);
+            }
+            else if (selectedStatus == "disabled")
+            {
+                users = users.Where(u => u.IsDisabled);
+            }
+
 
             if (search.Length > 0)
             {
@@ -165,16 +184,19 @@ namespace InternFiesta.Controllers
                 }
             }
 
+
             return View(new AdminUsersIndexViewModel
             {
                 Search = search,
                 SelectedRole = selectedRole,
+                SelectedStatus = selectedStatus,
                 AvailableRoles = availableRoles,
                 Users = pageUsers,
                 TotalUsers = totalUsers,
                 Page = page,
                 TotalPages = totalPages
             });
+
         }
 
         // ADMIN: VIEW ACCOUNT DETAILS
