@@ -2,10 +2,12 @@ using InternFiesta.Data;
 using InternFiesta.Models;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.EntityFrameworkCore;
+using InternFiesta.Services;
 var builder = WebApplication.CreateBuilder(args);
 
 // Add services to the container.
 builder.Services.AddControllersWithViews();
+builder.Services.AddScoped<CoordinatorOverviewService>();
 
 var connectionString =
     builder.Configuration.GetConnectionString("DefaultConnection")
