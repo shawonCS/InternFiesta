@@ -23,10 +23,14 @@ namespace InternFiesta.Controllers
                 return View("Faculty");
             }
 
+
             if (User.IsInRole("UniversityCoordinator"))
             {
-                return View("University");
+                return RedirectToAction(
+                    "Index",
+                    "CoordinatorOverview");
             }
+
 
             if (User.IsInRole("Alumni"))
             {

@@ -164,11 +164,22 @@
                         <span class="sidebar-icon">▦</span>
                         Intern Performance Matrix
                     </a>
-                }
+				}
 
-                @if (User.IsInRole("UniversityCoordinator"))
-                {
-                    <a asp-controller="CoordinatorJobFairs"
+
+				@if (User.IsInRole("UniversityCoordinator"))
+				{
+				<a asp-controller="CoordinatorOverview"
+				   asp-action="Index"
+				   class="sidebar-link">
+					<span class="sidebar-icon">▦</span>
+					Coordinator Overview
+				</a>
+				}
+
+				@if (User.IsInRole("UniversityCoordinator"))
+				{
+				<a asp-controller="CoordinatorJobFairs"
                        asp-action="Index"
                        class="sidebar-link">
                         <span class="sidebar-icon">▣</span>
