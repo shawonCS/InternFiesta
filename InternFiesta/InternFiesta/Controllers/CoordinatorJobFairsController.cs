@@ -242,11 +242,35 @@ namespace InternFiesta.Controllers
             if (fair == null)
                 return NotFound();
 
+
             if (!fair.IsClosed)
             {
+                // T-18.3: Get registered users only
+                var userIds = await _context.JobFairRegistrations
+                    .Where(r => r.JobFairId == id)
+                    .Select(r => r.UserId)
+                    .Distinct()
+                    .ToListAsync();
+
+                // Close the Job Fair
                 fair.IsClosed = true;
+
+                // Notify registered users
+                foreach (var userId in userIds)
+                {
+                    _context.Notifications.Add(new Notification
+                    {
+                        UserId = userId,
+                        Title = "Job Fair Closed",
+                        Message = $"The job fair '{fair.Title}' has been closed.",
+                        IsRead = false,
+                        CreatedAt = DateTime.UtcNow
+                    });
+                }
+
                 await _context.SaveChangesAsync();
             }
+
 
             TempData["SuccessMessage"] =
                 "Job fair closed successfully.";

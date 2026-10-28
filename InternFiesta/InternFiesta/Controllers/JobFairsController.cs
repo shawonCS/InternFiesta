@@ -177,7 +177,15 @@ namespace InternFiesta.Controllers
                     ParticipantRole = role,
                     RegisteredAtUtc = DateTime.UtcNow
                 });
-
+            // T-18.3: Registration notification
+            _db.Notifications.Add(new Notification
+            {
+                UserId = userId,
+                Title = "Job Fair Registration Confirmed",
+                Message = $"You have successfully registered for '{fair.Title}'.",
+                IsRead = false,
+                CreatedAt = DateTime.UtcNow
+            });
             try
             {
                 await _db.SaveChangesAsync();
