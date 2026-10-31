@@ -16,5 +16,8 @@ namespace InternFiesta.Models
         public string Description { get; set; } = string.Empty;
 
         public DateTime SubmittedAt { get; set; } = DateTime.UtcNow;
+
+        public ICollection<AcademicProgressAttachment> Attachments { get; set; }
+          = new List<AcademicProgressAttachment>();
     }
 }

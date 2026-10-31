@@ -1,13 +1,20 @@
-﻿@model InternFiesta.Controllers.AcademicProgressController.ProgressForm
+﻿
+@model InternFiesta.Controllers.AcademicProgressController.ProgressForm
 
 @{
     ViewData["Title"] = "Submit Progress Update";
+
     int internshipId = ViewBag.AcademicInternshipId;
+
+    var history = ViewBag.ProgressHistory as
+        List<InternFiesta.Models.AcademicProgressUpdate>
+        ?? new List<InternFiesta.Models.AcademicProgressUpdate>();
 }
 
 <div class="container py-4">
     <div class="card shadow-sm mx-auto" style="max-width:650px;">
         <div class="card-body p-4">
+
             <h3>Submit Progress Update</h3>
 
             <p class="text-muted">
@@ -17,7 +24,8 @@
             <form asp-controller="AcademicProgress"
                   asp-action="SubmitProgress"
                   asp-route-id="@internshipId"
-                  method="post">
+                  method="post"
+                  enctype="multipart/form-data">
 
                 @Html.AntiForgeryToken()
 
@@ -40,10 +48,80 @@
                           class="text-danger"></span>
                 </div>
 
+                <div class="mb-3">
+                    <label asp-for="EvidenceFiles"
+                           class="form-label">
+                        Supporting Documents (Optional)
+                    </label>
+
+                    <input asp-for="EvidenceFiles"
+                           type="file"
+                           class="form-control"
+                           multiple
+                           accept=".pdf,.docx,.jpg,.jpeg,.png" />
+
+                    <div class="form-text">
+                        Maximum 3 files, 5 MB each.
+                        PDF, DOCX, JPG and PNG supported.
+                    </div>
+
+                    <span asp-validation-for="EvidenceFiles"
+                          class="text-danger"></span>
+                </div>
+
                 <button type="submit" class="btn btn-primary">
-                    Submit Progress
+                    Submit Progress &amp; Evidence
                 </button>
+
             </form>
+
         </div>
     </div>
+
+    <h4 class="mt-4">My Previous Progress Updates</h4>
+
+    @if (!history.Any())
+    {
+        <p class="text-muted">
+            No progress submitted yet.
+        </p>
+    }
+    else
+    {
+        @foreach (var progress in history)
+        {
+            <div class="card mb-3">
+                <div class="card-body">
+
+                    <p>@progress.Description</p>
+
+                    <small class="text-muted">
+                        @progress.SubmittedAt.AddHours(6).ToString("dd MMM yyyy, hh:mm tt") BST
+                    </small>
+
+                    @if (progress.Attachments != null &&
+                         progress.Attachments.Any())
+                    {
+                        <div class="mt-2">
+                            <strong>Attachments</strong>
+
+                            <ul>
+                                @foreach (var item in progress.Attachments)
+                                {
+                                    <li>
+                                        <a asp-controller="AcademicProgress"
+                                           asp-action="DownloadEvidence"
+                                           asp-route-id="@item.Id">
+                                            @item.OriginalFileName
+                                        </a>
+                                    </li>
+                                }
+                            </ul>
+                        </div>
+                    }
+
+                </div>
+            </div>
+        }
+    }
 </div>

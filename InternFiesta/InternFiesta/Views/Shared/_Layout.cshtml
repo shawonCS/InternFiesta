@@ -83,9 +83,8 @@
                     Dashboard
                 </a>
 
-
                 @if (User.IsInRole("Student"))
-                {
+                {                                
                     <a asp-controller="StudentProfile"
                        asp-action="Index"
                        class="sidebar-link">
@@ -126,8 +125,15 @@
                 }
 
 
-                @if (User.IsInRole("Company"))
+               @if (User.IsInRole("Company"))
                 {
+                    <a asp-controller="CompanyMyProfile"
+                       asp-action="Index"
+                       class="sidebar-link">
+                        <span class="sidebar-icon">◉</span>
+                        My Profile
+                    </a>
+
                     <a asp-controller="Internships"
                        asp-action="Index"
                        class="sidebar-link">

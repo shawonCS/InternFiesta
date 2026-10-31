@@ -73,14 +73,38 @@ else
 
                     <div class="card-body">
 
-                        <h5 class="mb-3">
-                            @(item.Student?.FullName ?? "Student")
-                        </h5>
+                       
+                        <div class="d-flex align-items-center gap-3 mb-3">
 
-                        <p>
-                            <strong>Email:</strong>
-                            @(item.Student?.Email ?? "Not provided")
-                        </p>
+                            @if (item.Student != null &&
+                                 !string.IsNullOrWhiteSpace(item.Student.ProfilePhotoFileName))
+                            {
+                                <img src="@Url.Action("Photo", "ProfilePhotos",
+                                                     new { id = item.Student.Id })"
+                                     alt="Student Profile Picture"
+                                     class="rounded-circle border"
+                                     style="width:75px;height:75px;object-fit:cover;flex-shrink:0;" />
+                            }
+                            else
+                            {
+                                <div class="rounded-circle bg-secondary text-white
+                                    d-flex align-items-center justify-content-center"
+                                     style="width:75px;height:75px;font-size:30px;flex-shrink:0;">
+                                    @((item.Student?.FullName ?? "S").Substring(0, 1).ToUpper())
+                                </div>
+                            }
+
+                            <div>
+                                <h5 class="mb-1">
+                                    @(item.Student?.FullName ?? "Student")
+                                </h5>
+
+                                <small class="text-muted">
+                                    @(item.Student?.Email ?? "Not provided")
+                                </small>
+                            </div>
+
+                        </div>                     
 
                         <p>
                             <strong>Student ID:</strong>

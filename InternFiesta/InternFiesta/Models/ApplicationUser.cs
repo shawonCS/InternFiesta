@@ -13,5 +13,8 @@ namespace InternFiesta.Models
         // Administrative suspension.
         // Independent from temporary password lockout.
         public bool IsDisabled { get; set; } = false;
+
+        [StringLength(80)]
+        public string? ProfilePhotoFileName { get; set; }
     }
 }

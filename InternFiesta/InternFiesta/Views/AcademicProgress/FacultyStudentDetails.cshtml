@@ -44,6 +44,26 @@ else
                 <small class="text-muted">
                     @progress.SubmittedAt.AddHours(6).ToString("dd MMM yyyy, hh:mm tt") BST
                 </small>
+
+                @if (progress.Attachments.Any())
+                {
+                    <div class="mt-3">
+                        <strong>Student Supporting Documents</strong>
+
+                        <ul>
+                            @foreach (var item in progress.Attachments)
+                            {
+                                <li>
+                                    <a asp-controller="AcademicProgress"
+                                       asp-action="DownloadEvidence"
+                                       asp-route-id="@item.Id">
+                                        @item.OriginalFileName
+                                    </a>
+                                </li>
+                            }
+                        </ul>
+                    </div>
+                }
             </div>
         </div>
     }

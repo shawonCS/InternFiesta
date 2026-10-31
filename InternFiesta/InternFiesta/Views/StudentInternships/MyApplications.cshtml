@@ -1,8 +1,29 @@
-﻿@model IEnumerable<InternFiesta.Models.InternshipApplication>
+﻿
+@model IEnumerable<InternFiesta.Models.InternshipApplication>
+@using Microsoft.EntityFrameworkCore
+@inject InternFiesta.Data.ApplicationDbContext DbContext
 
 @{
     ViewData["Title"] = "My Applications";
+
+    var companyIds = (Model ?? Enumerable.Empty<InternFiesta.Models.InternshipApplication>())
+        .Where(a => a.InternshipPosting != null)
+        .Select(a => a.InternshipPosting!.CompanyUserId)
+        .Distinct()
+        .ToList();
+
+    var companies = await DbContext.Users
+        .AsNoTracking()
+        .Where(u => companyIds.Contains(u.Id))
+        .Select(u => new
+        {
+            u.Id,
+            u.FullName,
+            u.ProfilePhotoFileName
+        })
+        .ToDictionaryAsync(u => u.Id);
 }
+
 
 <div class="page-heading">
     <h2>My Applications</h2>
@@ -26,6 +47,50 @@ else
                 <div class="card h-100">
 
                     <div class="card-body">
+                        
+                        @{
+                            var companyUserId = application.InternshipPosting?.CompanyUserId;
+
+                            var company = companyUserId != null &&
+                                          companies.TryGetValue(companyUserId, out var foundCompany)
+                                          ? foundCompany
+                                          : null;
+                        }
+
+                        <div class="d-flex align-items-center gap-3 mb-3">
+
+                            @if (company != null &&
+                                 !string.IsNullOrWhiteSpace(company.ProfilePhotoFileName))
+                            {
+                                <img src="@Url.Action("Photo", "ProfilePhotos",
+                                             new { id = company.Id })"
+                                     alt="Company Profile Picture"
+                                     class="rounded-circle border"
+                                     style="width:55px;height:55px;object-fit:cover;flex-shrink:0;" />
+                            }
+                            else
+                            {
+                                <div class="rounded-circle bg-secondary text-white
+                                            d-flex align-items-center justify-content-center"
+                                     style="width:55px;height:55px;font-size:24px;flex-shrink:0;">
+                                    @(string.IsNullOrWhiteSpace(company?.FullName)
+                                        ? "C"
+                                        : company.FullName.Substring(0, 1).ToUpper())
+                                </div>
+                            }
+
+                            <div>
+                                <strong>
+                                    @(company?.FullName ?? "Company")
+                                </strong>
+
+                                <div class="text-muted small">
+                                    Internship posted by
+                                </div>
+                            </div>
+
+                        </div>
+
 
                         <h4 class="card-title">
                             @application.InternshipPosting?.Title
@@ -85,8 +150,8 @@ else
                             <a asp-controller="AcademicProgress"
                                asp-action="SubmitProgress"
                                asp-route-id="@application.Id"
-                               class="btn btn-primary mt-2">
-                                Submit Progress
+                               class="btn btn-primary">
+                                Submit Progress &amp; Evidence
                             </a>
                         }
 

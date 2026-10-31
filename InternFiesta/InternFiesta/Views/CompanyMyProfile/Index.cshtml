@@ -1,0 +1,142 @@
+﻿@model InternFiesta.Controllers.CompanyMyProfileController.CompanyMyProfileViewModel
+
+@{
+    ViewData["Title"] = "My Profile";
+}
+
+<div class="page-heading">
+    <h2>My Profile</h2>
+    <p>
+        Manage your company information and profile picture.
+    </p>
+</div>
+
+<div class="row">
+    <div class="col-xl-9 col-lg-10">
+
+        <div class="card mb-4">
+            <div class="card-body p-4">
+
+                <h5 class="mb-3">Profile Picture</h5>
+
+                <div class="d-flex align-items-center gap-3 mb-4">
+
+                    @if (!string.IsNullOrWhiteSpace(Model.ProfilePhotoFileName))
+                    {
+                        <img src="@Url.Action("Photo", "ProfilePhotos",
+                                                           new { id = Model.UserId })"
+                             alt="Company Profile Picture"
+                             class="rounded-circle border"
+                             style="width:110px;height:110px;object-fit:cover;" />
+                    }
+                    else
+                    {
+                        <div class="rounded-circle bg-secondary text-white
+                            d-flex align-items-center justify-content-center"
+                             style="width:110px;height:110px;
+                            font-size:40px;flex-shrink:0;">
+                            @(string.IsNullOrWhiteSpace(Model.CompanyName)
+                                ? "C"
+                                : Model.CompanyName.Substring(0, 1).ToUpper())
+                        </div>
+                    }
+
+                    <div>
+                        <h5 class="mb-1">
+                            @(Model.CompanyName ?? "Company")
+                        </h5>
+
+                        <p class="text-muted mb-0">
+                            @Model.Email
+                        </p>
+                    </div>
+                </div>
+
+                <form asp-controller="ProfilePhotos"
+                      asp-action="Upload"
+                      method="post"
+                      enctype="multipart/form-data">
+
+                    @Html.AntiForgeryToken()
+
+                    <div class="mb-3">
+                        <label class="form-label">
+                            Upload or replace picture
+                        </label>
+
+                        <input type="file"
+                               name="photo"
+                               class="form-control"
+                               accept=".jpg,.jpeg,.png"
+                               required />
+
+                        <div class="form-text mt-2">
+                            JPG or PNG images only.
+                        </div>
+                    </div>
+
+                    <button type="submit"
+                            class="btn btn-primary">
+                        Save Picture
+                    </button>
+                </form>
+
+                @if (!string.IsNullOrWhiteSpace(Model.ProfilePhotoFileName))
+                {
+                    <form asp-controller="ProfilePhotos"
+                          asp-action="Remove"
+                          method="post"
+                          class="mt-2">
+
+                        @Html.AntiForgeryToken()
+
+                        <button type="submit"
+                                class="btn btn-outline-danger">
+                            Remove Picture
+                        </button>
+                    </form>
+                }
+
+            </div>
+        </div>
+
+        <div class="card mb-4">
+            <div class="card-body p-4">
+
+                <h5 class="mb-3">About Company</h5>
+
+                <form asp-controller="CompanyMyProfile"
+                      asp-action="SaveAbout"
+                      method="post">
+
+                    @Html.AntiForgeryToken()
+
+                    <div class="mb-3">
+                        <label for="about" class="form-label">
+                            Tell us about your company
+                        </label>
+
+                        <textarea id="about"
+                                  name="about"
+                                  class="form-control"
+                                  rows="6"
+                                  maxlength="1500"
+                                  placeholder="Describe your company, what it does, and the opportunities it offers...">@Model.About</textarea>
+
+                        <div class="form-text">
+                            Maximum 1500 characters.
+                        </div>
+                    </div>
+
+                    <button type="submit"
+                            class="btn btn-primary">
+                        Save Company Profile
+                    </button>
+
+                </form>
+
+            </div>
+        </div>
+
+    </div>
+</div>

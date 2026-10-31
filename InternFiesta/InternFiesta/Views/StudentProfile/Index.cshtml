@@ -13,6 +13,96 @@
         projects and experience.
     </p>
 </div>
+
+@inject Microsoft.AspNetCore.Identity.UserManager<InternFiesta.Models.ApplicationUser> UserManager
+
+@{
+    var currentUser = await UserManager.GetUserAsync(User);
+}
+
+<div class="card mb-4">
+    <div class="card-body p-4">
+
+        <h5 class="mb-3">Profile Picture</h5>
+
+        <div class="d-flex align-items-center gap-4 mb-3">
+
+            @if (currentUser != null &&
+                 !string.IsNullOrWhiteSpace(currentUser.ProfilePhotoFileName))
+            {
+                <img src="@Url.Action("Photo", "ProfilePhotos",
+                    new { id = currentUser.Id })"
+                     alt="My Profile Picture"
+                     class="rounded-circle border"
+                     style="width:110px;height:110px;object-fit:cover;" />
+            }
+            else
+            {
+                <div class="rounded-circle bg-secondary text-white
+                            d-flex align-items-center justify-content-center"
+                     style="width:110px;height:110px;font-size:40px;
+                            flex-shrink:0;">
+                    @((currentUser?.FullName ?? currentUser?.UserName ?? "U")
+                        .Substring(0, 1).ToUpper())
+                </div>
+            }
+
+            <div>
+                <h6 class="mb-1">
+                    @(currentUser?.FullName ?? "Student")
+                </h6>
+                <p class="text-muted mb-0">
+                    @(currentUser?.Email ?? "")
+                </p>
+            </div>
+
+        </div>
+
+        <form asp-controller="ProfilePhotos"
+              asp-action="Upload"
+              method="post"
+              enctype="multipart/form-data">
+
+            @Html.AntiForgeryToken()
+
+           <label class="form-label">
+                Upload or replace picture
+            </label>
+
+            <input type="file"
+                   name="photo"
+                   class="form-control mb-2"
+                   accept=".jpg,.jpeg,.png"
+                   required />
+
+            <div class="form-text mb-3">
+                JPG or PNG images only & max 5mb.
+            </div>
+
+            <button type="submit" class="btn btn-primary">
+                Save Picture
+            </button>
+        </form>
+
+        @if (!string.IsNullOrWhiteSpace(currentUser?.ProfilePhotoFileName))
+        {
+            <form asp-controller="ProfilePhotos"
+                  asp-action="Remove"
+                  method="post"
+                  class="mt-2">
+
+                @Html.AntiForgeryToken()
+
+                <button type="submit"
+                        class="btn btn-outline-danger">
+                    Remove Picture
+                </button>
+            </form>
+        }
+
+    </div>
+</div>
+
 <div class="card mb-4">
     <div class="card-body">
 

@@ -123,6 +123,45 @@ namespace InternFiesta.Migrations
                     b.ToTable("AcademicMilestones");
                 });
 
+            modelBuilder.Entity("InternFiesta.Models.AcademicProgressAttachment", b =>
+                {
+                    b.Property<int>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("int");
+
+                    SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("Id"));
+
+                    b.Property<string>("ContentType")
+                        .IsRequired()
+                        .HasMaxLength(100)
+                        .HasColumnType("nvarchar(100)");
+
+                    b.Property<long>("FileSizeBytes")
+                        .HasColumnType("bigint");
+
+                    b.Property<string>("OriginalFileName")
+                        .IsRequired()
+                        .HasMaxLength(180)
+                        .HasColumnType("nvarchar(180)");
+
+                    b.Property<int>("ProgressUpdateId")
+                        .HasColumnType("int");
+
+                    b.Property<string>("StoredFileName")
+                        .IsRequired()
+                        .HasMaxLength(80)
+                        .HasColumnType("nvarchar(80)");
+
+                    b.Property<DateTime>("UploadedAtUtc")
+                        .HasColumnType("datetime2");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("ProgressUpdateId");
+
+                    b.ToTable("AcademicProgressAttachments");
+                });
+
             modelBuilder.Entity("InternFiesta.Models.AcademicProgressUpdate", b =>
                 {
                     b.Property<int>("Id")
@@ -300,6 +339,10 @@ namespace InternFiesta.Migrations
                     b.Property<bool>("PhoneNumberConfirmed")
                         .HasColumnType("bit");
 
+                    b.Property<string>("ProfilePhotoFileName")
+                        .HasMaxLength(80)
+                        .HasColumnType("nvarchar(80)");
+
                     b.Property<string>("SecurityStamp")
                         .HasColumnType("nvarchar(max)");
 
@@ -321,6 +364,39 @@ namespace InternFiesta.Migrations
                         .HasFilter("[NormalizedUserName] IS NOT NULL");
 
                     b.ToTable("AspNetUsers", (string)null);
+                });
+
+            modelBuilder.Entity("InternFiesta.Models.CompanyProfile", b =>
+                {
+                    b.Property<int>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("int");
+
+                    SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("Id"));
+
+                    b.Property<string>("About")
+                        .IsRequired()
+                        .HasMaxLength(1500)
+                        .HasColumnType("nvarchar(1500)");
+
+                    b.Property<string>("CompanyName")
+                        .IsRequired()
+                        .HasMaxLength(150)
+                        .HasColumnType("nvarchar(150)");
+
+                    b.Property<DateTime>("UpdatedAtUtc")
+                        .HasColumnType("datetime2");
+
+                    b.Property<string>("UserId")
+                        .IsRequired()
+                        .HasColumnType("nvarchar(450)");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("UserId")
+                        .IsUnique();
+
+                    b.ToTable("CompanyProfiles");
                 });
 
             modelBuilder.Entity("InternFiesta.Models.FacultyEvaluation", b =>
@@ -917,6 +993,17 @@ namespace InternFiesta.Migrations
                     b.Navigation("AcademicInternship");
                 });
 
+            modelBuilder.Entity("InternFiesta.Models.AcademicProgressAttachment", b =>
+                {
+                    b.HasOne("InternFiesta.Models.AcademicProgressUpdate", "ProgressUpdate")
+                        .WithMany("Attachments")
+                        .HasForeignKey("ProgressUpdateId")
+                        .OnDelete(DeleteBehavior.Restrict)
+                        .IsRequired();
+
+                    b.Navigation("ProgressUpdate");
+                });
+
             modelBuilder.Entity("InternFiesta.Models.AcademicProgressUpdate", b =>
                 {
                     b.HasOne("InternFiesta.Models.AcademicInternship", "AcademicInternship")
@@ -952,6 +1039,17 @@ namespace InternFiesta.Migrations
                     b.HasOne("InternFiesta.Models.ApplicationUser", "User")
                         .WithOne()
                         .HasForeignKey("InternFiesta.Models.AlumniProfile", "UserId")
+                        .OnDelete(DeleteBehavior.Restrict)
+                        .IsRequired();
+
+                    b.Navigation("User");
+                });
+
+            modelBuilder.Entity("InternFiesta.Models.CompanyProfile", b =>
+                {
+                    b.HasOne("InternFiesta.Models.ApplicationUser", "User")
+                        .WithOne()
+                        .HasForeignKey("InternFiesta.Models.CompanyProfile", "UserId")
                         .OnDelete(DeleteBehavior.Restrict)
                         .IsRequired();
 
@@ -1144,6 +1242,11 @@ namespace InternFiesta.Migrations
                     b.Navigation("Milestones");
 
                     b.Navigation("ProgressUpdates");
+                });
+
+            modelBuilder.Entity("InternFiesta.Models.AcademicProgressUpdate", b =>
+                {
+                    b.Navigation("Attachments");
                 });
 
             modelBuilder.Entity("InternFiesta.Models.AlumniProfile", b =>

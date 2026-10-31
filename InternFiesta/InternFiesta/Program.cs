@@ -8,6 +8,7 @@ var builder = WebApplication.CreateBuilder(args);
 // Add services to the container.
 builder.Services.AddControllersWithViews();
 builder.Services.AddScoped<CoordinatorOverviewService>();
+builder.Services.AddSingleton<UploadFileStorage>();
 
 var connectionString =
     builder.Configuration.GetConnectionString("DefaultConnection")
@@ -27,7 +28,6 @@ builder.Services.Configure<SecurityStampValidatorOptions>(
     {
         options.ValidationInterval = TimeSpan.Zero;
     });
-
 
 var app = builder.Build();
 if (app.Environment.IsDevelopment())

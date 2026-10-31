@@ -14,6 +14,8 @@ namespace InternFiesta.Data
 
         public DbSet<StudentProfile> StudentProfiles { get; set; }
 
+        public DbSet<CompanyProfile> CompanyProfiles { get; set; } = null!;
+
         public DbSet<InternshipPosting> InternshipPostings { get; set; }
 
         public DbSet<InternshipApplication> InternshipApplications { get; set; }
@@ -21,6 +23,17 @@ namespace InternFiesta.Data
         protected override void OnModelCreating(ModelBuilder builder)
         {
             base.OnModelCreating(builder);
+
+            builder.Entity<CompanyProfile>()
+                .HasOne(p => p.User)
+                .WithOne()
+                .HasForeignKey<CompanyProfile>(p => p.UserId)
+                .OnDelete(DeleteBehavior.Restrict);
+
+            builder.Entity<CompanyProfile>()
+                .HasIndex(p => p.UserId)
+                .IsUnique();
+
             builder.Entity<InternshipPosting>()
             .HasQueryFilter(i => !i.IsDeleted);
 
@@ -145,6 +158,12 @@ namespace InternFiesta.Data
                 .IsUnique()
                 .HasFilter("[Status] = 'Pending'");
 
+            builder.Entity<AcademicProgressAttachment>()
+                .HasOne(a => a.ProgressUpdate)
+                .WithMany(p => p.Attachments)
+                .HasForeignKey(a => a.ProgressUpdateId)
+                .OnDelete(DeleteBehavior.Restrict);
+
         }
         public DbSet<InterviewSchedule> InterviewSchedules { get; set; }
 
@@ -165,6 +184,8 @@ namespace InternFiesta.Data
     = null!;
 
         public DbSet<AlumniMentoringRequest> AlumniMentoringRequests
+        { get; set; } = null!;
+        public DbSet<AcademicProgressAttachment> AcademicProgressAttachments
         { get; set; } = null!;
     }
 }

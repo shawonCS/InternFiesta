@@ -1,4 +1,4 @@
-﻿
+﻿using InternFiesta.Services;
 using InternFiesta.Data;
 using InternFiesta.Models;
 using Microsoft.AspNetCore.Authorization;
@@ -12,22 +12,28 @@ namespace InternFiesta.Controllers
     [Authorize]
     public class AcademicProgressController : Controller
     {
+
         private readonly ApplicationDbContext _context;
         private readonly UserManager<ApplicationUser> _userManager;
+        private readonly UploadFileStorage? _uploadStorage;
 
         public AcademicProgressController(
             ApplicationDbContext context,
-            UserManager<ApplicationUser> userManager)
+            UserManager<ApplicationUser> userManager,
+            UploadFileStorage? uploadStorage = null)
         {
             _context = context;
             _userManager = userManager;
+            _uploadStorage = uploadStorage;
         }
+
 
         public class ProgressForm
         {
             [Required]
             [StringLength(2000)]
             public string Description { get; set; } = "";
+            public List<IFormFile> EvidenceFiles { get; set; } = new();
         }
 
         public class FeedbackForm
@@ -163,6 +169,7 @@ namespace InternFiesta.Controllers
             }
 
             ViewBag.AcademicInternshipId = academic.Id;
+            ViewBag.ProgressHistory = await LoadProgressHistoryAsync(academic.Id);
             return View(new ProgressForm());
         }
 
@@ -170,8 +177,7 @@ namespace InternFiesta.Controllers
         [HttpPost]
         [ValidateAntiForgeryToken]
         [Authorize(Roles = "Student")]
-        public async Task<IActionResult> SubmitProgress(
-            int id, ProgressForm model)
+        public async Task<IActionResult> SubmitProgress(int id, ProgressForm model)
         {
             var userId = _userManager.GetUserId(User);
             if (userId == null) return Challenge();
@@ -184,39 +190,127 @@ namespace InternFiesta.Controllers
 
             if (academic == null) return NotFound();
 
+            var files = model.EvidenceFiles ?? new List<IFormFile>();
+            if (files.Count > UploadFileStorage.MaxEvidenceFiles)
+            {
+                ModelState.AddModelError(nameof(ProgressForm.EvidenceFiles),
+                    "Upload a maximum of 3 supporting documents.");
+            }
+
             if (!ModelState.IsValid)
             {
                 ViewBag.AcademicInternshipId = id;
+                ViewBag.ProgressHistory = await LoadProgressHistoryAsync(academic.Id);
                 return View(model);
             }
 
-            _context.AcademicProgressUpdates.Add(
-                new AcademicProgressUpdate
+            var savedFiles = new List<string>();
+            try
+            {
+                var progress = new AcademicProgressUpdate
                 {
                     AcademicInternshipId = academic.Id,
                     Description = model.Description.Trim(),
                     SubmittedAt = DateTime.UtcNow
-                });
-            // Notify assigned faculty about student progress
-            if (!string.IsNullOrEmpty(academic.FacultyUserId))
-            {
-                _context.Notifications.Add(new Notification
+                };
+
+                foreach (var file in files)
                 {
-                    UserId = academic.FacultyUserId,
-                    Title = "New Student Progress Update",
-                    Message = "An assigned student has submitted a new internship progress update. Please review it.",
-                    IsRead = false,
-                    CreatedAt = DateTime.UtcNow
-                });
+                    if (_uploadStorage == null)
+                        throw new InvalidOperationException("Upload storage is not registered.");
+
+                    var saved = await _uploadStorage.SaveEvidenceAsync(
+                        file, HttpContext.RequestAborted);
+                    savedFiles.Add(saved.StoredFileName);
+
+                    progress.Attachments.Add(new AcademicProgressAttachment
+                    {
+                        OriginalFileName = saved.OriginalFileName,
+                        StoredFileName = saved.StoredFileName,
+                        ContentType = saved.ContentType,
+                        FileSizeBytes = saved.FileSizeBytes,
+                        UploadedAtUtc = DateTime.UtcNow
+                    });
+                }
+
+                _context.AcademicProgressUpdates.Add(progress);
+
+                // Keep existing faculty notification.
+                if (!string.IsNullOrEmpty(academic.FacultyUserId))
+                {
+                    _context.Notifications.Add(new Notification
+                    {
+                        UserId = academic.FacultyUserId,
+                        Title = "New Student Progress Update",
+                        Message = "An assigned student has submitted a new internship progress update. Please review it.",
+                        IsRead = false,
+                        CreatedAt = DateTime.UtcNow
+                    });
+                }
+
+                await _context.SaveChangesAsync();
             }
-            await _context.SaveChangesAsync();
+            catch (InvalidDataException ex)
+            {
+                foreach (var name in savedFiles)
+                    _uploadStorage?.DeleteEvidence(name);
 
-            TempData["SuccessMessage"] =
-                "Progress submitted successfully.";
+                ModelState.AddModelError(nameof(ProgressForm.EvidenceFiles), ex.Message);
+                ViewBag.AcademicInternshipId = id;
+                ViewBag.ProgressHistory = await LoadProgressHistoryAsync(academic.Id);
+                return View(model);
+            }
+            catch
+            {
+                foreach (var name in savedFiles)
+                    _uploadStorage?.DeleteEvidence(name);
+                throw;
+            }
 
-            return RedirectToAction(
-                nameof(SubmitProgress),
+            TempData["SuccessMessage"] = "Progress and supporting documents submitted successfully.";
+            return RedirectToAction(nameof(SubmitProgress),
                 new { id = academic.InternshipApplicationId });
+        }
+
+        private Task<List<AcademicProgressUpdate>> LoadProgressHistoryAsync(int academicId)
+        {
+            return _context.AcademicProgressUpdates.AsNoTracking()
+                .Where(p => p.AcademicInternshipId == academicId)
+                .Include(p => p.Attachments)
+                .OrderByDescending(p => p.SubmittedAt)
+                .ToListAsync();
+        }
+
+        [HttpGet]
+        [Authorize(Roles = "Student,FacultySupervisor")]
+        public async Task<IActionResult> DownloadEvidence(int id)
+        {
+            var userId = _userManager.GetUserId(User);
+            if (userId == null) return Challenge();
+
+            var attachment = await _context.AcademicProgressAttachments
+                .AsNoTracking()
+                .Where(a => a.Id == id)
+                .Select(a => new
+                {
+                    a.StoredFileName,
+                    a.OriginalFileName,
+                    StudentId = a.ProgressUpdate.AcademicInternship
+                        .InternshipApplication.StudentUserId,
+                    FacultyId = a.ProgressUpdate.AcademicInternship.FacultyUserId
+                })
+                .FirstOrDefaultAsync();
+
+            if (attachment == null) return NotFound();
+            if (attachment.StudentId != userId && attachment.FacultyId != userId)
+                return Forbid();
+
+            var path = _uploadStorage?.EvidencePath(attachment.StoredFileName);
+            if (path == null || !System.IO.File.Exists(path)) return NotFound();
+
+            Response.Headers["Cache-Control"] = "private, no-store";
+            Response.Headers["X-Content-Type-Options"] = "nosniff";
+            return PhysicalFile(path, "application/octet-stream", attachment.OriginalFileName);
         }
 
         // COMPANY: Open form using Application ID
@@ -378,6 +472,7 @@ namespace InternFiesta.Controllers
                 .Include(a => a.InternshipApplication)
                     .ThenInclude(a => a.InternshipPosting)
                 .Include(a => a.ProgressUpdates)
+                .ThenInclude(p => p.Attachments)
                 .Include(a => a.CompanyFeedback)
                 .Include(a => a.Milestones)
                 .AsSplitQuery()
