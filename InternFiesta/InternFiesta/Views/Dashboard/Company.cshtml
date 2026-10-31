@@ -1,67 +1,340 @@
-﻿@{
+﻿@model InternFiesta.ViewModels.Dashboard.CompanyDashboardViewModel
+
+@{
     ViewData["Title"] = "Company Dashboard";
 }
 
-<div class="page-heading">
+<div class="page-heading d-flex flex-wrap justify-content-between align-items-center gap-3 mb-4">
+    <div>
+        <h2>Company Dashboard</h2>
+        <p class="mb-0">
+            Track internship recruitment, manage applicants and schedule interviews.
+        </p>
+    </div>
 
-    <h2>Company Dashboard</h2>
+    <a asp-controller="Internships"
+       asp-action="Create"
+       class="btn btn-primary">
+        + Create Internship
+    </a>
+</div>
 
-    <p>
-        Create and manage internship opportunities through InternFiesta.
-    </p>
+<h5 class="mb-3">Recruitment Overview</h5>
+
+<div class="row g-3 mb-4">
+
+    <div class="col-md-6 col-xl-3">
+        <div class="card h-100">
+            <div class="card-body p-4">
+                <div class="text-muted small mb-2">
+                    Internship Postings
+                </div>
+                <h2 class="mb-1">@Model.TotalPostings</h2>
+                <small class="text-muted">
+                    Your internship postings
+                </small>
+            </div>
+        </div>
+    </div>
+
+    <div class="col-md-6 col-xl-3">
+        <div class="card h-100">
+            <div class="card-body p-4">
+                <div class="text-muted small mb-2">
+                    Total Applications
+                </div>
+                <h2 class="mb-1">@Model.TotalApplications</h2>
+                <small class="text-muted">
+                    Applications received
+                </small>
+            </div>
+        </div>
+    </div>
+
+    <div class="col-md-6 col-xl-3">
+        <div class="card h-100">
+            <div class="card-body p-4">
+                <div class="text-muted small mb-2">
+                    Selected Students
+                </div>
+                <h2 class="mb-1">@Model.SelectedStudents</h2>
+                <small class="text-muted">
+                    Selected applications
+                </small>
+            </div>
+        </div>
+    </div>
+
+    <div class="col-md-6 col-xl-3">
+        <div class="card h-100">
+            <div class="card-body p-4">
+                <div class="text-muted small mb-2">
+                    Interviews Scheduled
+                </div>
+                <h2 class="mb-1">@Model.ScheduledInterviews</h2>
+                <small class="text-muted">
+                    Recorded interview schedules
+                </small>
+            </div>
+        </div>
+    </div>
 
 </div>
 
+<h5 class="mb-3">Application Status Overview</h5>
 
-<div class="row g-4">
+<div class="row g-3 mb-4">
 
-    <div class="col-md-6 col-xl-4">
+    <div class="col-6 col-lg">
+        <div class="card h-100">
+            <div class="card-body">
+                <span class="badge bg-primary mb-2">Applied</span>
+                <h3 class="mb-0">@Model.AppliedCount</h3>
+            </div>
+        </div>
+    </div>
 
-        <div class="dashboard-card">
+    <div class="col-6 col-lg">
+        <div class="card h-100">
+            <div class="card-body">
+                <span class="badge bg-info text-dark mb-2">Shortlisted</span>
+                <h3 class="mb-0">@Model.ShortlistedCount</h3>
+            </div>
+        </div>
+    </div>
 
-            <div class="dashboard-card-icon">
-                💼
+    <div class="col-6 col-lg">
+        <div class="card h-100">
+            <div class="card-body">
+                <span class="badge bg-success mb-2">Selected</span>
+                <h3 class="mb-0">@Model.SelectedCount</h3>
+            </div>
+        </div>
+    </div>
+
+    <div class="col-6 col-lg">
+        <div class="card h-100">
+            <div class="card-body">
+                <span class="badge bg-danger mb-2">Rejected</span>
+                <h3 class="mb-0">@Model.RejectedCount</h3>
+            </div>
+        </div>
+    </div>
+
+    <div class="col-6 col-lg">
+        <div class="card h-100">
+            <div class="card-body">
+                <span class="badge bg-warning text-dark mb-2">Waitlisted</span>
+                <h3 class="mb-0">@Model.WaitlistedCount</h3>
+            </div>
+        </div>
+    </div>
+
+</div>
+
+<div class="d-flex justify-content-between align-items-center mb-3">
+    <h5 class="mb-0">Quick Actions</h5>
+</div>
+
+<div class="row g-3 mb-4">
+
+    <div class="col-md-6">
+        <div class="card h-100">
+            <div class="card-body p-4">
+                <h6>Manage Internships</h6>
+                <p class="text-muted small">
+                    Edit and manage your internship postings.
+                </p>
+                <a asp-controller="Internships"
+                   asp-action="Index"
+                   class="btn btn-outline-primary btn-sm">
+                    Manage Internships
+                </a>
+            </div>
+        </div>
+    </div>
+
+    <div class="col-md-6">
+        <div class="card h-100">
+            <div class="card-body p-4">
+                <h6>My Company Profile</h6>
+                <p class="text-muted small">
+                    Update your company profile picture and About section.
+                </p>
+                <a asp-controller="CompanyMyProfile"
+                   asp-action="Index"
+                   class="btn btn-outline-primary btn-sm">
+                    My Profile
+                </a>
+            </div>
+        </div>
+    </div>
+
+</div>
+
+<div class="card mb-4">
+
+    <div class="card-body p-4">
+
+        <div class="d-flex flex-wrap justify-content-between align-items-center gap-2 mb-3">
+            <div>
+                <h5 class="mb-1">Awaiting Interview Scheduling</h5>
+                <p class="text-muted small mb-0">
+                    Shortlisted applicants who do not have an interview scheduled.
+                </p>
             </div>
 
-            <h5>Internship Postings</h5>
+            <span class="badge bg-warning text-dark">
+                @Model.AwaitingInterviewCount Pending
+            </span>
+        </div>
 
-            <p>
-                Create, edit and manage your company's
-                internship opportunities.
-            </p>
+        @if (Model.PendingInterviews.Count == 0)
+        {
+            <div class="alert alert-light border mb-0">
+                No shortlisted applicants are awaiting interview scheduling.
+            </div>
+        }
+        else
+        {
+            <div class="table-responsive">
+                <table class="table align-middle">
+                    <thead>
+                        <tr>
+                            <th>Student</th>
+                            <th>Internship</th>
+                            <th>Applied</th>
+                            <th>Action</th>
+                        </tr>
+                    </thead>
+
+                    <tbody>
+                        @foreach (var candidate in Model.PendingInterviews)
+                        {
+                            <tr>
+                                <td>
+                                    <strong>@candidate.StudentName</strong>
+                                </td>
+
+                                <td>
+                                    @candidate.InternshipTitle
+                                </td>
+
+                                <td>
+                                    @candidate.AppliedAt.ToString("dd MMM yyyy")
+                                </td>
+
+                                <td>
+                                    <a asp-controller="Interview"
+                                       asp-action="Schedule"
+                                       asp-route-applicationId="@candidate.ApplicationId"
+                                       class="btn btn-primary btn-sm">
+                                        Schedule Interview
+                                    </a>
+                                </td>
+                            </tr>
+                        }
+                    </tbody>
+                </table>
+            </div>
+        }
+
+    </div>
+</div>
+
+<div class="card mb-4">
+    <div class="card-body p-4">
+
+        <div class="d-flex flex-wrap justify-content-between align-items-center gap-2 mb-3">
+            <div>
+                <h5 class="mb-1">Recent Internship Postings</h5>
+                <p class="text-muted small mb-0">
+                    Your latest five internship postings.
+                </p>
+            </div>
 
             <a asp-controller="Internships"
                asp-action="Index"
-               class="dashboard-action">
-                Manage Internships →
+               class="btn btn-outline-primary btn-sm">
+                View All
             </a>
-
         </div>
 
-    </div>
+        @if (Model.RecentPostings.Count == 0)
+        {
+            <div class="text-center py-4">
+                <p class="text-muted">
+                    You have not created any internship postings yet.
+                </p>
 
-
-    <div class="col-md-6 col-xl-4">
-
-        <div class="dashboard-card">
-
-            <div class="dashboard-card-icon">
-                👥
+                <a asp-controller="Internships"
+                   asp-action="Create"
+                   class="btn btn-primary">
+                    Create Your First Internship
+                </a>
             </div>
+        }
+        else
+        {
+            <div class="table-responsive">
+                <table class="table align-middle">
 
-            <h5>Applications</h5>
+                    <thead>
+                        <tr>
+                            <th>Internship</th>
+                            <th>Applications</th>
+                            <th>Deadline</th>
+                            <th>Status</th>
+                            <th>Action</th>
+                        </tr>
+                    </thead>
 
-            <p>
-                Candidate applications will be available
-                here in a later sprint.
-            </p>
+                    <tbody>
+                        @foreach (var posting in Model.RecentPostings)
+                        {
+                            <tr>
+                                <td>
+                                    <strong>@posting.Title</strong>
+                                </td>
 
-            <span class="text-muted small">
-                Coming soon
-            </span>
+                                <td>
+                                    @posting.ApplicationCount
+                                </td>
 
-        </div>
+                                <td>
+                                    @posting.Deadline.ToString("dd MMM yyyy")
+                                </td>
+
+                                <td>
+                                    @if (posting.IsActive)
+                                    {
+                                        <span class="badge bg-success">
+                                            Active
+                                        </span>
+                                    }
+                                    else
+                                    {
+                                        <span class="badge bg-secondary">
+                                            Closed
+                                        </span>
+                                    }
+                                </td>
+
+                                <td>
+                                    <a asp-controller="CompanyApplications"
+                                       asp-action="Index"
+                                       asp-route-id="@posting.Id"
+                                       class="btn btn-outline-primary btn-sm">
+                                        View Applicants
+                                    </a>
+                                </td>
+                            </tr>
+                        }
+                    </tbody>
+
+                </table>
+            </div>
+        }
 
     </div>
-
 </div>
