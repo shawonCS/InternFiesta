@@ -9,6 +9,9 @@
     var history = ViewBag.ProgressHistory as
         List<InternFiesta.Models.AcademicProgressUpdate>
         ?? new List<InternFiesta.Models.AcademicProgressUpdate>();
+    var assignedTasks = ViewBag.AssignedTasks as
+        List<InternFiesta.Models.AssignedTask>
+        ?? new List<InternFiesta.Models.AssignedTask>();
 }
 
 <div class="container py-4">
@@ -31,6 +34,61 @@
 
                 <div asp-validation-summary="ModelOnly"
                      class="text-danger"></div>
+
+                <div class="mb-3">
+                    <label asp-for="AssignedTaskId" class="form-label">
+                        Select Assigned Task
+                    </label>
+
+                    <select asp-for="AssignedTaskId"
+                            class="form-select"
+                            required>
+
+                        <option value="">-- Select Task --</option>
+
+                        @foreach (var task in assignedTasks)
+                        {
+                            <option value="@task.Id">
+                                @task.Title
+                                (@task.Status)
+                            </option>
+                        }
+                    </select>
+
+                    <span asp-validation-for="AssignedTaskId"
+                          class="text-danger"></span>
+
+                    <div class="mt-3">
+                        <h6>Assigned Task Details</h6>
+
+                        @foreach (var task in assignedTasks)
+                        {
+                            <div class="border rounded p-3 mb-2">
+                                <strong>@task.Title</strong>
+
+                                <p class="mb-1 mt-2">
+                                    <strong>Description:</strong>
+                                    @task.Description
+                                </p>
+
+                                <p class="mb-1">
+                                    <strong>Deadline:</strong>
+                                    @(task.DueDate?.ToString("dd MMM yyyy")
+                                        ?? "No deadline")
+                                </p>
+
+                                <p class="mb-0">
+                                    <strong>Status:</strong>
+                                    @task.Status
+                                </p>
+                            </div>
+                        }
+                    </div>
+
+                    <div class="form-text">
+                        Submit your report and evidence for the selected company task.
+                    </div>
+                </div>
 
                 <div class="mb-3">
                     <label asp-for="Description"
@@ -88,10 +146,25 @@
     }
     else
     {
+
         @foreach (var progress in history)
         {
             <div class="card mb-3">
                 <div class="card-body">
+
+                    @if (progress.AssignedTask != null)
+                    {
+                        <p class="mb-2">
+                            <strong>Assigned Task:</strong>
+                            @progress.AssignedTask.Title
+                        </p>
+                    }
+                    else
+                    {
+                        <p class="text-muted mb-2">
+                            Previous Progress Update
+                        </p>
+                    }
 
                     <p>@progress.Description</p>
 

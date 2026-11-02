@@ -104,28 +104,113 @@ else
 }
 else
 {
-    <table class="table table-bordered">
-        <thead>
-            <tr>
-                <th>Title</th>
-                <th>Description</th>
-                <th>Due Date</th>
-                <th>Status</th>
-            </tr>
-        </thead>
-        <tbody>
-            @foreach (var milestone in Model.Milestones
-                .OrderBy(m => m.DueDate))
-            {
-                <tr>
-                    <td>@milestone.Title</td>
-                    <td>@milestone.Description</td>
-                    <td>
-                        @(milestone.DueDate?.ToString("dd MMM yyyy") ?? "N/A")
-                    </td>
-                    <td>@milestone.Status</td>
-                </tr>
-            }
-        </tbody>
-    </table>
+
+    <h4 class="mt-4">Assigned Tasks</h4>
+
+    @if (!Model.AssignedTasks.Any())
+    {
+        <div class="alert alert-info">
+            No tasks have been assigned by the company.
+        </div>
+    }
+    else
+    {
+        <div class="table-responsive">
+            <table class="table table-bordered align-middle">
+                <thead>
+                    <tr>
+                        <th>Task</th>
+                        <th>Deadline</th>
+                        <th>Status</th>
+                        <th>Progress Reports</th>
+                        <th>Action</th>
+                    </tr>
+                </thead>
+
+                <tbody>
+                    @foreach (var task in Model.AssignedTasks
+                        .OrderBy(t => t.DueDate))
+                    {
+                        var taskProgress = Model.ProgressUpdates
+                            .Where(p => p.AssignedTaskId == task.Id)
+                            .OrderByDescending(p => p.SubmittedAt)
+                            .ToList();
+
+                        <tr>
+                            <td>
+                                <strong>@task.Title</strong>
+                                <p class="mb-0">@task.Description</p>
+                            </td>
+
+                            <td>
+                                @(task.DueDate?.ToString("dd MMM yyyy")
+                                    ?? "No deadline")
+                            </td>
+
+                            <td>
+                                @task.Status
+                            </td>
+
+                            <td>
+                                @taskProgress.Count
+
+                                @foreach (var progress in taskProgress)
+                                {
+                                    <div class="border rounded p-2 mt-2">
+                                        <p>@progress.Description</p>
+
+                                        @foreach (var attachment in progress.Attachments)
+                                        {
+                                            <div>
+                                                <a asp-controller="AcademicProgress"
+                                                   asp-action="DownloadEvidence"
+                                                   asp-route-id="@attachment.Id">
+                                                    @attachment.OriginalFileName
+                                                </a>
+                                            </div>
+                                        }
+                                    </div>
+                                }
+                            </td>
+
+                            <td>
+                                @if (task.Status == "Submitted" &&
+                                     taskProgress.Any())
+                                {
+                                    <form asp-controller="AcademicProgress"
+                                          asp-action="CompleteTask"
+                                          method="post">
+
+                                        @Html.AntiForgeryToken()
+
+                                        <input type="hidden"
+                                               name="taskId"
+                                               value="@task.Id" />
+
+                                        <button type="submit"
+                                                class="btn btn-success btn-sm">
+                                            Mark Completed
+                                        </button>
+                                    </form>
+                                }
+                                else if (task.Status == "Completed")
+                                {
+                                    <span class="badge bg-success">
+                                        Completed
+                                    </span>
+                                }
+                                else
+                                {
+                                    <span class="text-muted">
+                                        Awaiting Submission
+                                    </span>
+                                }
+                            </td>
+                        </tr>
+                    }
+                </tbody>
+            </table>
+        </div>
+    }
+
 }

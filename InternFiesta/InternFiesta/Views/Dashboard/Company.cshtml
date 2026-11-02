@@ -173,83 +173,13 @@
 </div>
 
 <div class="card mb-4">
-
-    <div class="card-body p-4">
-
-        <div class="d-flex flex-wrap justify-content-between align-items-center gap-2 mb-3">
-            <div>
-                <h5 class="mb-1">Awaiting Interview Scheduling</h5>
-                <p class="text-muted small mb-0">
-                    Shortlisted applicants who do not have an interview scheduled.
-                </p>
-            </div>
-
-            <span class="badge bg-warning text-dark">
-                @Model.AwaitingInterviewCount Pending
-            </span>
-        </div>
-
-        @if (Model.PendingInterviews.Count == 0)
-        {
-            <div class="alert alert-light border mb-0">
-                No shortlisted applicants are awaiting interview scheduling.
-            </div>
-        }
-        else
-        {
-            <div class="table-responsive">
-                <table class="table align-middle">
-                    <thead>
-                        <tr>
-                            <th>Student</th>
-                            <th>Internship</th>
-                            <th>Applied</th>
-                            <th>Action</th>
-                        </tr>
-                    </thead>
-
-                    <tbody>
-                        @foreach (var candidate in Model.PendingInterviews)
-                        {
-                            <tr>
-                                <td>
-                                    <strong>@candidate.StudentName</strong>
-                                </td>
-
-                                <td>
-                                    @candidate.InternshipTitle
-                                </td>
-
-                                <td>
-                                    @candidate.AppliedAt.ToString("dd MMM yyyy")
-                                </td>
-
-                                <td>
-                                    <a asp-controller="Interview"
-                                       asp-action="Schedule"
-                                       asp-route-applicationId="@candidate.ApplicationId"
-                                       class="btn btn-primary btn-sm">
-                                        Schedule Interview
-                                    </a>
-                                </td>
-                            </tr>
-                        }
-                    </tbody>
-                </table>
-            </div>
-        }
-
-    </div>
-</div>
-
-<div class="card mb-4">
     <div class="card-body p-4">
 
         <div class="d-flex flex-wrap justify-content-between align-items-center gap-2 mb-3">
             <div>
                 <h5 class="mb-1">Recent Internship Postings</h5>
                 <p class="text-muted small mb-0">
-                    Your latest five internship postings.
+                    Your latest internship postings.
                 </p>
             </div>
 

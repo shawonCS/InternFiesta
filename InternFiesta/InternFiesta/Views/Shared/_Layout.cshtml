@@ -122,6 +122,12 @@
 					     <span class="sidebar-icon">◷</span>
 					My Interviews
 				    </a>
+                    <a asp-controller="AcademicProgress"
+                       asp-action="MyTasks"
+                       class="sidebar-link">
+                        <span class="sidebar-icon">▣</span>
+                        My Internship Tasks
+                    </a>
                 }
 
 
@@ -140,6 +146,14 @@
                         <span class="sidebar-icon">▤</span>
                         Internships
                     </a>
+                    
+                    <a asp-controller="CompanyTasks"
+                       asp-action="SelectedStudents"
+                       class="sidebar-link">
+                        <span class="sidebar-icon">▣</span>
+                        Selected Students
+                    </a>
+
                 }
 
                 @* NEW: Coordinator Faculty Assignment *@

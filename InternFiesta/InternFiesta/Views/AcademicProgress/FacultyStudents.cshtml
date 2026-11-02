@@ -31,7 +31,7 @@ else
                 .OrderByDescending(f => f.SubmittedAt)
                 .FirstOrDefault();
 
-            var completed = internship.Milestones
+            var completed = internship.AssignedTasks
                 .Count(m => m.Status == "Completed");
 
             <div class="col-md-6">
@@ -50,7 +50,7 @@ else
 
                         <p>
                             <strong>Milestones:</strong>
-                            @completed / @internship.Milestones.Count completed
+                            @completed / internship.AssignedTasks.Count completed
                         </p>
 
                         <p>

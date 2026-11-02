@@ -164,6 +164,19 @@ namespace InternFiesta.Data
                 .HasForeignKey(a => a.ProgressUpdateId)
                 .OnDelete(DeleteBehavior.Restrict);
 
+            builder.Entity<AssignedTask>()
+                .HasOne(t => t.AcademicInternship)
+                .WithMany(a => a.AssignedTasks)
+                .HasForeignKey(t => t.AcademicInternshipId)
+                .OnDelete(DeleteBehavior.Restrict);
+
+            builder.Entity<AcademicProgressUpdate>()
+                .HasOne(p => p.AssignedTask)
+                .WithMany(t => t.ProgressUpdates)
+                .HasForeignKey(p => p.AssignedTaskId)
+                .OnDelete(DeleteBehavior.Restrict);
+
+
         }
         public DbSet<InterviewSchedule> InterviewSchedules { get; set; }
 
@@ -187,5 +200,6 @@ namespace InternFiesta.Data
         { get; set; } = null!;
         public DbSet<AcademicProgressAttachment> AcademicProgressAttachments
         { get; set; } = null!;
+        public DbSet<AssignedTask> AssignedTasks { get; set; } = null!;
     }
 }

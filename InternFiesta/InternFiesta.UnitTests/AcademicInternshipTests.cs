@@ -128,13 +128,26 @@ namespace InternFiesta.UnitTests
             using var db = CreateContext();
             await SeedAsync(db);
 
+            var assignedTask = new AssignedTask
+            {
+                AcademicInternshipId = 1,
+                Title = "Complete Login Module",
+                Description = "Implement login and logout functionality",
+                Status = "Assigned",
+                AssignedAt = DateTime.UtcNow
+            };
+
+            db.AssignedTasks.Add(assignedTask);
+            await db.SaveChangesAsync();
+
             var controller = CreateController(db, "student-1");
 
             var result = await controller.SubmitProgress(
                 1,
                 new AcademicProgressController.ProgressForm
                 {
-                    Description = "  Finished milestone  "
+                    AssignedTaskId = assignedTask.Id,
+                    Description = "  Finished login module  "
                 });
 
             Assert.That(result,
@@ -148,8 +161,18 @@ namespace InternFiesta.UnitTests
                 await db.AcademicProgressUpdates.SingleAsync();
 
             Assert.That(progress.Description,
-                Is.EqualTo("Finished milestone"));
+                Is.EqualTo("Finished login module"));
+
+            Assert.That(progress.AssignedTaskId,
+                Is.EqualTo(assignedTask.Id));
+
+            var updatedTask = await db.AssignedTasks
+                .SingleAsync(t => t.Id == assignedTask.Id);
+
+            Assert.That(updatedTask.Status,
+                Is.EqualTo("Submitted"));
         }
+
 
         [Test]
         public async Task SubmitProgress_OtherStudent_ReturnsNotFound()

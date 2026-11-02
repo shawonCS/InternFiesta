@@ -313,6 +313,20 @@ namespace InternFiesta.Controllers
                     .OrderByDescending(a => a.AppliedAt)
                     .ToListAsync();
 
+            var eligibleApplicationIds = await _context.AcademicInternships
+                .AsNoTracking()
+                .Where(a =>
+                    a.InternshipApplication.StudentUserId == studentUserId &&
+                    a.InternshipApplication.Status == "Selected" &&
+                    a.FacultyUserId != null &&
+                    a.FacultyUserId != "" &&
+                    a.AssignedTasks.Any(t => t.Status != "Completed"))
+                .Select(a => a.InternshipApplicationId)
+                .ToListAsync();
+
+            ViewBag.ProgressEligibleApplications =
+                eligibleApplicationIds.ToHashSet();
+
             return View(applications);
         }
     }

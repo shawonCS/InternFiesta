@@ -113,7 +113,8 @@ namespace InternFiesta.Controllers
         [ValidateAntiForgeryToken]
         public async Task<IActionResult> UpdateStatus(
             int applicationId,
-            string status)
+            string status,
+            string? rejectionReason = null)
         {
             var companyUserId = _userManager.GetUserId(User);
 
@@ -152,7 +153,32 @@ namespace InternFiesta.Controllers
 
             var internship = application.InternshipPosting!;
 
+
+            if (status == "Rejected" &&
+                !string.IsNullOrWhiteSpace(rejectionReason) &&
+                rejectionReason.Trim().Length > 1000)
+            {
+                TempData["StatusError"] =
+                    "Rejection reason cannot exceed 1000 characters.";
+
+                return RedirectToAction(
+                    nameof(Index),
+                    new { id = internship.Id });
+            }
+
+
             var oldStatus = application.Status;
+
+            if (oldStatus == "Selected" && status != "Selected")
+            {
+                TempData["StatusError"] =
+                    "This student has already been selected. " +
+                    "The recruitment status cannot be changed.";
+
+                return RedirectToAction(
+                    nameof(Index),
+                    new { id = internship.Id });
+            }
 
             // No need to update the same status again.
             if (oldStatus == status)
@@ -191,14 +217,31 @@ namespace InternFiesta.Controllers
             // Update candidate status.
             application.Status = status;
 
+            if (status == "Rejected")
+            {
+                application.RejectionReason =
+                    string.IsNullOrWhiteSpace(rejectionReason)
+                        ? null
+                        : rejectionReason.Trim();
+            }
+            else
+            {
+                application.RejectionReason = null;
+            }
+
             // Notify student only when status changes.
             _context.Notifications.Add(new Notification
             {
                 UserId = application.StudentUserId,
                 Title = "Application Status Updated",
-                Message =
-                    $"Your application for {internship.Title} " +
-                    $"has been updated to {status}.",
+
+                Message = status == "Rejected"
+                        ? (string.IsNullOrWhiteSpace(application.RejectionReason)
+                            ? $"Your application for {internship.Title} was rejected."
+                            : $"Your application for {internship.Title} was rejected. " +
+                              $"Reason: {application.RejectionReason}")
+                        : $"Your application for {internship.Title} " +
+                          $"has been updated to {status}.",
                 IsRead = false,
                 CreatedAt = DateTime.UtcNow
             });
@@ -208,9 +251,9 @@ namespace InternFiesta.Controllers
             if (transaction != null)
                 await transaction.CommitAsync();
 
-            TempData["StatusMessage"] =
-                $"Application status updated to {status}.";
-
+            TempData["StatusMessage"] = status == "Rejected"
+                 ? "Application rejected. The student has been notified."
+                 : $"Application status updated to {status}.";
             return RedirectToAction(
                 nameof(Index),
                 new { id = internship.Id });

@@ -22,6 +22,9 @@
             u.ProfilePhotoFileName
         })
         .ToDictionaryAsync(u => u.Id);
+      var eligibleApplications =
+        ViewBag.ProgressEligibleApplications as HashSet<int>
+        ?? new HashSet<int>();
 }
 
 
@@ -145,7 +148,7 @@ else
                                     </span>
                                 }
                             </p>
-                        @if (application.Status == "Selected")
+                        @if (application.Status == "Selected" && eligibleApplications.Contains(application.Id))
                         {
                             <a asp-controller="AcademicProgress"
                                asp-action="SubmitProgress"
@@ -154,6 +157,16 @@ else
                                 Submit Progress &amp; Evidence
                             </a>
                         }
+
+                        @if (application.Status == "Selected")
+                        {
+                            <a asp-controller="AcademicProgress"
+                               asp-action="MyTasks"
+                               class="btn btn-outline-primary">
+                                View My Tasks
+                            </a>
+                        }
+
 
                     </div>
 

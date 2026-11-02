@@ -30,7 +30,7 @@ else
                             <th>Internship</th>
                             <th>Progress Updates</th>
                             <th>Latest Progress</th>
-                            <th>Milestones</th>
+                            <th>Tasks Completed / Assigned</th>
                             <th>Company Rating</th>
                             <th>Latest Feedback</th>
                             <th>Action</th>
@@ -44,10 +44,12 @@ else
                                 .OrderByDescending(p => p.SubmittedAt)
                                 .FirstOrDefault();
 
-                            var completedMilestones = internship.Milestones
-                                .Count(m => m.Status == "Completed");
+                           
+                            var completedTasks = internship.AssignedTasks
+                                .Count(t => t.Status == "Completed");
 
-                            var totalMilestones = internship.Milestones.Count;
+                            var totalTasks = internship.AssignedTasks.Count;
+
 
                             var latestFeedback = internship.CompanyFeedback
                                 .OrderByDescending(f => f.SubmittedAt)
@@ -97,20 +99,20 @@ else
 
                                 <td>
                                     <strong>
-                                        @completedMilestones / @totalMilestones
+                                        @completedTasks / @totalTasks
                                     </strong>
 
-                                    @if (totalMilestones > 0)
+                                    @if (@totalTasks > 0)
                                     {
                                         <div class="text-muted small">
-                                            @((completedMilestones * 100.0 / totalMilestones).ToString("0"))%
+                                            @((@completedTasks * 100.0 / @totalTasks).ToString("0"))%
                                             completed
                                         </div>
                                     }
                                     else
                                     {
                                         <div class="text-muted small">
-                                            No milestones
+                                            None
                                         </div>
                                     }
                                 </td>

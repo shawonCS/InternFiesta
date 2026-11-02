@@ -11,6 +11,10 @@ namespace InternFiesta.Models
 
         public AcademicInternship AcademicInternship { get; set; } = null!;
 
+        public int? AssignedTaskId { get; set; }
+
+        public AssignedTask? AssignedTask { get; set; }
+
         [Required]
         [StringLength(2000)]
         public string Description { get; set; } = string.Empty;

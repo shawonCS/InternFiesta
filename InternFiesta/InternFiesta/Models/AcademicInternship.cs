@@ -23,6 +23,9 @@ namespace InternFiesta.Models
         public ICollection<AcademicMilestone> Milestones { get; set; }
             = new List<AcademicMilestone>();
 
+        public ICollection<AssignedTask> AssignedTasks { get; set; }
+            = new List<AssignedTask>();
+
         public ICollection<AcademicProgressUpdate> ProgressUpdates { get; set; }
             = new List<AcademicProgressUpdate>();
 

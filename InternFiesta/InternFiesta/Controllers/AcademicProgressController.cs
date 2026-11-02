@@ -30,6 +30,8 @@ namespace InternFiesta.Controllers
 
         public class ProgressForm
         {
+            [Range(1, int.MaxValue, ErrorMessage = "Please select an assigned task.")]
+            public int AssignedTaskId { get; set; }
             [Required]
             [StringLength(2000)]
             public string Description { get; set; } = "";
@@ -144,6 +146,43 @@ namespace InternFiesta.Controllers
             return RedirectToAction(nameof(AssignFaculty));
         }
 
+        // STUDENT: View own internship tasks
+        [HttpGet]
+        [Authorize(Roles = "Student")]
+        public async Task<IActionResult> MyTasks()
+        {
+            var studentId = _userManager.GetUserId(User);
+
+            if (studentId == null)
+                return Challenge();
+
+            var selectedApplications =
+                await _context.InternshipApplications
+                    .AsNoTracking()
+                    .Where(a =>
+                        a.StudentUserId == studentId &&
+                        a.Status == "Selected")
+                    .Include(a => a.InternshipPosting)
+                    .OrderByDescending(a => a.AppliedAt)
+                    .ToListAsync();
+
+            var selectedIds = selectedApplications
+                .Select(a => a.Id)
+                .ToList();
+
+            var academicInternships =
+                await _context.AcademicInternships
+                    .AsNoTracking()
+                    .Where(a =>
+                        selectedIds.Contains(a.InternshipApplicationId))
+                    .Include(a => a.AssignedTasks)
+                    .ToListAsync();
+
+            ViewBag.AcademicInternships = academicInternships;
+
+            return View(selectedApplications);
+        }
+
         // STUDENT: Open form using Application ID
         [HttpGet]
         [Authorize(Roles = "Student")]
@@ -152,23 +191,33 @@ namespace InternFiesta.Controllers
             var userId = _userManager.GetUserId(User);
             if (userId == null) return Challenge();
 
+
             var academic = await _context.AcademicInternships
                 .AsNoTracking()
+                .Include(a => a.AssignedTasks)
                 .FirstOrDefaultAsync(a =>
                     a.InternshipApplicationId == id &&
                     a.InternshipApplication.StudentUserId == userId &&
-                    a.InternshipApplication.Status == "Selected");
+                    a.InternshipApplication.Status == "Selected" &&
+                    a.FacultyUserId != "" &&
+                    a.AssignedTasks.Any(t => t.Status != "Completed"));
 
             if (academic == null)
             {
                 TempData["StatusMessage"] =
-                    "Faculty assignment is required before submitting progress.";
+                    "Faculty assignment and an active company task are required before submitting progress.";
 
                 return RedirectToAction(
                     "MyApplications", "StudentInternships");
             }
 
             ViewBag.AcademicInternshipId = academic.Id;
+
+            ViewBag.AssignedTasks = academic.AssignedTasks
+                .Where(t => t.Status != "Completed")
+                .OrderBy(t => t.DueDate)
+                .ToList();
+
             ViewBag.ProgressHistory = await LoadProgressHistoryAsync(academic.Id);
             return View(new ProgressForm());
         }
@@ -190,6 +239,22 @@ namespace InternFiesta.Controllers
 
             if (academic == null) return NotFound();
 
+            if (string.IsNullOrWhiteSpace(academic.FacultyUserId))
+                return Forbid();
+
+            var assignedTask = await _context.AssignedTasks
+                .FirstOrDefaultAsync(t =>
+                    t.Id == model.AssignedTaskId &&
+                    t.AcademicInternshipId == academic.Id &&
+                    t.Status != "Completed");
+
+            if (assignedTask == null)
+            {
+                ModelState.AddModelError(
+                    nameof(ProgressForm.AssignedTaskId),
+                    "Please select a valid assigned task.");
+            }
+
             var files = model.EvidenceFiles ?? new List<IFormFile>();
             if (files.Count > UploadFileStorage.MaxEvidenceFiles)
             {
@@ -201,15 +266,24 @@ namespace InternFiesta.Controllers
             {
                 ViewBag.AcademicInternshipId = id;
                 ViewBag.ProgressHistory = await LoadProgressHistoryAsync(academic.Id);
+                ViewBag.AssignedTasks = await _context.AssignedTasks
+                .AsNoTracking()
+                .Where(t =>
+                    t.AcademicInternshipId == academic.Id &&
+                    t.Status != "Completed")
+                .OrderBy(t => t.DueDate)
+                .ToListAsync();
                 return View(model);
             }
 
             var savedFiles = new List<string>();
             try
             {
+
                 var progress = new AcademicProgressUpdate
                 {
                     AcademicInternshipId = academic.Id,
+                    AssignedTaskId = assignedTask!.Id,
                     Description = model.Description.Trim(),
                     SubmittedAt = DateTime.UtcNow
                 };
@@ -234,7 +308,7 @@ namespace InternFiesta.Controllers
                 }
 
                 _context.AcademicProgressUpdates.Add(progress);
-
+                assignedTask!.Status = "Submitted";
                 // Keep existing faculty notification.
                 if (!string.IsNullOrEmpty(academic.FacultyUserId))
                 {
@@ -258,6 +332,13 @@ namespace InternFiesta.Controllers
                 ModelState.AddModelError(nameof(ProgressForm.EvidenceFiles), ex.Message);
                 ViewBag.AcademicInternshipId = id;
                 ViewBag.ProgressHistory = await LoadProgressHistoryAsync(academic.Id);
+                ViewBag.AssignedTasks = await _context.AssignedTasks
+                .AsNoTracking()
+                .Where(t =>
+                    t.AcademicInternshipId == academic.Id &&
+                    t.Status != "Completed")
+                .OrderBy(t => t.DueDate)
+                .ToListAsync();
                 return View(model);
             }
             catch
@@ -277,6 +358,7 @@ namespace InternFiesta.Controllers
             return _context.AcademicProgressUpdates.AsNoTracking()
                 .Where(p => p.AcademicInternshipId == academicId)
                 .Include(p => p.Attachments)
+                .Include(p => p.AssignedTask)
                 .OrderByDescending(p => p.SubmittedAt)
                 .ToListAsync();
         }
@@ -425,6 +507,7 @@ namespace InternFiesta.Controllers
                 .Include(a => a.ProgressUpdates)
                 .Include(a => a.CompanyFeedback)
                 .Include(a => a.Milestones)
+                .Include(a => a.AssignedTasks)
                 .AsSplitQuery()
                 .OrderByDescending(a => a.StartedAt)
                 .ToListAsync();
@@ -450,6 +533,7 @@ namespace InternFiesta.Controllers
                     .ThenInclude(a => a.InternshipPosting)
                 .Include(a => a.ProgressUpdates)
                 .Include(a => a.Milestones)
+                .Include(a => a.AssignedTasks)
                 .Include(a => a.CompanyFeedback)
                 .AsSplitQuery()
                 .OrderByDescending(a => a.StartedAt)
@@ -472,9 +556,13 @@ namespace InternFiesta.Controllers
                 .Include(a => a.InternshipApplication)
                     .ThenInclude(a => a.InternshipPosting)
                 .Include(a => a.ProgressUpdates)
-                .ThenInclude(p => p.Attachments)
+                    .ThenInclude(p => p.Attachments)
+                .Include(a => a.ProgressUpdates)
+                    .ThenInclude(p => p.AssignedTask)
                 .Include(a => a.CompanyFeedback)
                 .Include(a => a.Milestones)
+                .Include(a => a.AssignedTasks)
+
                 .AsSplitQuery()
                 .FirstOrDefaultAsync();
 
@@ -483,5 +571,66 @@ namespace InternFiesta.Controllers
 
             return View(internship);
         }
+
+        [HttpPost]
+        [ValidateAntiForgeryToken]
+        [Authorize(Roles = "FacultySupervisor")]
+        public async Task<IActionResult> CompleteTask(int taskId)
+        {
+            var facultyId = _userManager.GetUserId(User);
+            if (facultyId == null) return Challenge();
+
+            var task = await _context.AssignedTasks
+                .Include(t => t.AcademicInternship)
+                    .ThenInclude(a => a.InternshipApplication)
+                .FirstOrDefaultAsync(t =>
+                    t.Id == taskId &&
+                    t.AcademicInternship.FacultyUserId == facultyId &&
+                    t.AcademicInternship.InternshipApplication.Status
+                        == "Selected");
+
+            if (task == null) return NotFound();
+
+            if (task.Status != "Submitted")
+            {
+                TempData["StatusMessage"] =
+                    "Only submitted tasks can be marked completed.";
+
+                return RedirectToAction(
+                    nameof(FacultyStudentDetails),
+                    new { id = task.AcademicInternshipId });
+            }
+
+            bool hasProgress = await _context.AcademicProgressUpdates
+                .AnyAsync(p =>
+                    p.AssignedTaskId == task.Id &&
+                    p.AcademicInternshipId == task.AcademicInternshipId);
+
+            if (!hasProgress)
+                return BadRequest("No submitted progress found for this task.");
+
+            task.Status = "Completed";
+            task.CompletedAt = DateTime.UtcNow;
+
+            _context.Notifications.Add(new Notification
+            {
+                UserId = task.AcademicInternship
+                    .InternshipApplication.StudentUserId,
+                Title = "Internship Task Completed",
+                Message = $"Your task '{task.Title}' has been approved as completed.",
+                IsRead = false,
+                CreatedAt = DateTime.UtcNow
+            });
+
+            await _context.SaveChangesAsync();
+
+            TempData["StatusMessage"] =
+                "Task marked completed successfully.";
+
+            return RedirectToAction(
+                nameof(FacultyStudentDetails),
+                new { id = task.AcademicInternshipId });
+        }
+
     }
 }
