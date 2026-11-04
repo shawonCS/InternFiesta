@@ -9,8 +9,10 @@ using System.ComponentModel.DataAnnotations;
 
 namespace InternFiesta.Controllers
 {
-    [Authorize(Roles = "FacultySupervisor")]
+
+    [Authorize]
     public class FacultyEvaluationsController : Controller
+
     {
         private readonly ApplicationDbContext _context;
         private readonly UserManager<ApplicationUser> _userManager;
@@ -58,6 +60,7 @@ namespace InternFiesta.Controllers
                     .ThenInclude(a => a.InternshipPosting)
                 .Include(a => a.ProgressUpdates)
                 .Include(a => a.Milestones)
+                .Include(a => a.AssignedTasks)
                 .Include(a => a.CompanyFeedback)
                 .AsSplitQuery()
                 .FirstOrDefaultAsync();
@@ -65,6 +68,7 @@ namespace InternFiesta.Controllers
 
         // Open evaluation form
         [HttpGet]
+        [Authorize(Roles = "FacultySupervisor")]
         public async Task<IActionResult> Edit(int id)
         {
             var facultyId = _userManager.GetUserId(User);
@@ -96,6 +100,7 @@ namespace InternFiesta.Controllers
         // Save or update evaluation
         [HttpPost]
         [ValidateAntiForgeryToken]
+        [Authorize(Roles = "FacultySupervisor")]
         public async Task<IActionResult> Edit(
             int id, EvaluationForm model)
         {
@@ -136,6 +141,7 @@ namespace InternFiesta.Controllers
                     e.AcademicInternshipId == id);
 
             bool isNewEvaluation = evaluation == null;
+            var previousGrade = evaluation?.Grade;
 
             if (evaluation == null)
             {
@@ -153,7 +159,9 @@ namespace InternFiesta.Controllers
             evaluation.EvaluatedAt = DateTime.UtcNow;
 
             // Notify the student on first evaluation.
-            if (isNewEvaluation)
+
+            // Notify the student when a grade is first saved or changed.
+            if (isNewEvaluation || previousGrade != evaluation.Grade)
             {
                 var studentId =
                     internship.InternshipApplication.StudentUserId;
@@ -163,10 +171,17 @@ namespace InternFiesta.Controllers
                     _context.Notifications.Add(new Notification
                     {
                         UserId = studentId,
-                        Title = "Faculty Evaluation Completed",
+                        Title = isNewEvaluation
+                            ? "Faculty Evaluation Completed"
+                            : "Faculty Grade Updated",
+
                         Message =
-                            "Your faculty supervisor has completed " +
-                            "your academic internship evaluation.",
+                            $"Your faculty supervisor has " +
+                            $"assigned grade {evaluation.Grade} " +
+                            $"for your internship. " +
+                            $"You can view the evaluation details " +
+                            $"from My Evaluation.",
+
                         IsRead = false,
                         CreatedAt = DateTime.UtcNow
                     });
@@ -185,6 +200,7 @@ namespace InternFiesta.Controllers
 
         // Printable evaluation report
         [HttpGet]
+        [Authorize(Roles = "FacultySupervisor")]
         public async Task<IActionResult> Summary(int id)
         {
             var facultyId = _userManager.GetUserId(User);
@@ -210,6 +226,8 @@ namespace InternFiesta.Controllers
                 .Include(e => e.AcademicInternship)
                     .ThenInclude(a => a.Milestones)
                 .Include(e => e.AcademicInternship)
+                    .ThenInclude(a => a.AssignedTasks)
+                .Include(e => e.AcademicInternship)
                     .ThenInclude(a => a.CompanyFeedback)
                 .AsSplitQuery()
                 .FirstOrDefaultAsync();
@@ -219,5 +237,34 @@ namespace InternFiesta.Controllers
 
             return View(evaluation);
         }
+
+        [HttpGet]
+        [Authorize(Roles = "Student")]
+        public async Task<IActionResult> MyEvaluation()
+        {
+            var studentId = _userManager.GetUserId(User);
+
+            if (string.IsNullOrWhiteSpace(studentId))
+                return Challenge();
+
+            var evaluations = await _context.FacultyEvaluations
+                .AsNoTracking()
+                .Where(e =>
+                    e.AcademicInternship.InternshipApplication
+                        .StudentUserId == studentId &&
+                    e.AcademicInternship.InternshipApplication
+                        .Status == "Selected")
+                .Include(e => e.AcademicInternship)
+                    .ThenInclude(a => a.InternshipApplication)
+                        .ThenInclude(a => a.InternshipPosting)
+                .Include(e => e.AcademicInternship)
+                    .ThenInclude(a => a.AssignedTasks)
+                .AsSplitQuery()
+                .OrderByDescending(e => e.EvaluatedAt)
+                .ToListAsync();
+
+            return View(evaluations);
+        }
+
     }
 }

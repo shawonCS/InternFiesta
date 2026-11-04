@@ -18,9 +18,6 @@
         .Take(3)
         .ToList();
 
-    var completedMilestones = internship.Milestones
-        .Count(m => m.Status == "Completed");
-
     var evaluatedAtBST = Model.EvaluatedAt.AddHours(6);
 }
 
@@ -325,12 +322,16 @@
                 </div>
             </div>
 
+            
             <div>
-                <div class="label">Completed Milestones</div>
+                <div class="label">Completed Tasks</div>
                 <div class="value">
-                    @completedMilestones / @internship.Milestones.Count
+                    @internship.AssignedTasks.Count(t => t.Status == "Completed")
+                    /
+                    @internship.AssignedTasks.Count
                 </div>
             </div>
+
 
             <div>
                 <div class="label">Latest Company Rating</div>
