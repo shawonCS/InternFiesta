@@ -184,12 +184,12 @@
                                                     ?? "No deadline")
                                             </p>
 
+                                          
                                             <p>
                                                 <strong>Assigned On:</strong>
-                                                @task.AssignedAt
-                                                .AddHours(6)
-                                                .ToString("dd MMM yyyy")
+                                                @(task.AssignedAt.AddHours(6).ToString("dd MMM yyyy"))
                                             </p>
+
 
                                             @if (task.Status == "Completed")
                                             {

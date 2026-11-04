@@ -75,12 +75,12 @@
                         @evaluation.Comments
                     </div>
 
+                   
                     <p class="text-muted small mb-0">
                         Evaluated On:
-                        @evaluation.EvaluatedAt
-                        .AddHours(6)
-                        .ToString("dd MMM yyyy, hh:mm tt") BST
+                        @(evaluation.EvaluatedAt.AddHours(6).ToString("dd MMM yyyy, hh:mm tt")) BST
                     </p>
+
 
                 </div>
             </div>

@@ -171,7 +171,8 @@
                             <tr>
                                 <th>Student</th>
                                 <th>Internship</th>
-                                <th>Tasks Completed</th>
+                                <th>Tasks Completed / Total</th>
+                                <th>Awaiting Review</th>
                                 <th>Progress Updates</th>
                                 <th>Action</th>
                             </tr>
@@ -191,6 +192,8 @@
                                     .Count(t => t.Status == "Completed");
 
                                 var tasksAssigned = internship.AssignedTasks.Count;
+                                var tasksAwaitingReview = internship.AssignedTasks
+                                    .Count(t => t.Status == "Submitted");
 
                                 var progressCount = internship.ProgressUpdates.Count;
 
@@ -210,6 +213,20 @@
                                         <span class="badge bg-success">
                                             @tasksDone / @tasksAssigned
                                         </span>
+                                    </td>
+                                    <td>
+                                        @if (tasksAwaitingReview > 0)
+                                        {
+                                            <span class="badge bg-warning text-dark">
+                                                @tasksAwaitingReview Pending
+                                            </span>
+                                        }
+                                        else
+                                        {
+                                            <span class="badge bg-success">
+                                                0 Pending
+                                            </span>
+                                        }
                                     </td>
 
                                     <td>
