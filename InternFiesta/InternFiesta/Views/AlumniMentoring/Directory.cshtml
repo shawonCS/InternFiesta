@@ -1,0 +1,159 @@
+﻿
+@model List<InternFiesta.ViewModels.Alumni.AlumniPublicProfile>
+
+@{
+    ViewData["Title"] = "Find Alumni";
+}
+
+<div class="container-fluid px-0">
+
+    <!-- PAGE HEADER -->
+    <div class="mb-4">
+        <h2 class="mb-1">Find Alumni</h2>
+
+        <p class="text-muted">
+            Connect with graduates, explore career paths,
+            and find alumni mentors.
+        </p>
+    </div>
+
+    <!-- SEARCH BAR -->
+    <form asp-controller="AlumniMentoring"
+          asp-action="Directory"
+          method="get"
+          class="d-flex flex-wrap gap-2 mb-4">
+
+        <input type="search"
+               name="q"
+               value="@ViewBag.Search"
+               class="form-control flex-grow-1"
+               style="min-width: 200px;"
+               placeholder="Search by name, industry, job title or company"
+               aria-label="Search alumni" />
+
+        <button type="submit"
+                class="btn btn-primary">
+            Search
+        </button>
+
+        @if (!string.IsNullOrWhiteSpace(
+             ViewBag.Search as string))
+        {
+            <a asp-controller="AlumniMentoring"
+               asp-action="Directory"
+               class="btn btn-outline-secondary">
+                Clear
+            </a>
+        }
+    </form>
+
+    <!-- EMPTY STATE -->
+    @if (!Model.Any())
+    {
+        <div class="card border-0 shadow-sm">
+            <div class="card-body text-center py-5">
+
+                <h5>No Alumni Found</h5>
+
+                <p class="text-muted mb-3">
+                    No alumni profiles match your search,
+                    or no alumni have made their profiles
+                    visible to students yet.
+                </p>
+
+                <a asp-controller="AlumniMentoring"
+                   asp-action="Directory"
+                   class="btn btn-outline-primary">
+                    View All Alumni
+                </a>
+
+            </div>
+        </div>
+    }
+    else
+    {
+        <!-- ALUMNI CARDS -->
+        <div class="row g-3">
+
+            @foreach (var alumni in Model)
+            {
+                <div class="col-md-6 col-xl-4">
+
+                    <div class="card border-0 shadow-sm h-100">
+
+                        <div class="card-body p-4 d-flex flex-column">
+
+                            <!-- NAME -->
+                            <h5 class="fw-bold mb-2">
+                                @alumni.FullName
+                            </h5>
+
+                            <!-- OPTIONAL JOB TITLE -->
+                            @if (!string.IsNullOrWhiteSpace(
+                                 alumni.JobTitle))
+                            {
+                                <p class="fw-semibold text-primary mb-2">
+                                    @alumni.JobTitle
+                                </p>
+                            }
+
+                            <!-- OPTIONAL INDUSTRY -->
+                            @if (!string.IsNullOrWhiteSpace(
+                                 alumni.Industry))
+                            {
+                                <p class="text-muted mb-2">
+                                    <strong>Industry:</strong>
+                                    @alumni.Industry
+                                </p>
+                            }
+
+                            <!-- OPTIONAL COMPANY -->
+                            @if (!string.IsNullOrWhiteSpace(
+                                 alumni.CompanyName))
+                            {
+                                <p class="text-muted mb-2">
+                                    <strong>Company:</strong>
+                                    @alumni.CompanyName
+                                </p>
+                            }
+
+                            <!-- MENTORING STATUS -->
+                            <div class="mb-3 mt-2">
+
+                                @if (alumni.IsAvailableForMentoring)
+                                {
+                                    <span class="badge bg-success">
+                                        Available for Mentoring
+                                    </span>
+                                }
+                                else
+                                {
+                                    <span class="badge bg-secondary">
+                                        Not Accepting Mentoring Requests
+                                    </span>
+                                }
+
+                            </div>
+
+                            <!-- VIEW PROFILE -->
+                            <div class="mt-auto">
+
+                                <a asp-controller="AlumniMentoring"
+                                   asp-action="Profile"
+                                   asp-route-id="@alumni.Id"
+                                   class="btn btn-outline-primary">
+                                    View Profile
+                                </a>
+
+                            </div>
+
+                        </div>
+                    </div>
+
+                </div>
+            }
+
+        </div>
+    }
+
+</div>

@@ -1,0 +1,136 @@
+﻿@model InternFiesta.Controllers.CoordinatorJobFairsController.JobFairForm
+
+@{
+    var isEdit = ViewBag.IsEdit is bool b && b;
+    int? editId = isEdit ? (int)ViewBag.EditId : null;
+
+    ViewData["Title"] = isEdit ? "Edit Job Fair" : "Create Job Fair";
+}
+
+<div class="container-fluid px-0">
+
+    <div class="d-flex flex-wrap justify-content-between
+        align-items-center gap-3 mb-4">
+        <div>
+            <h2>@ViewData["Title"]</h2>
+            <p class="text-muted">
+                Enter the event details below.
+                All event times use Bangladesh Time (BST).
+            </p>
+        </div>
+
+        <a asp-controller="CoordinatorJobFairs"
+           asp-action="Index"
+           class="btn btn-outline-secondary">
+            Back to Job Fairs
+        </a>
+    </div>
+
+    <div class="card border-0 shadow-sm">
+        <div class="card-body p-4">
+
+            <form asp-controller="CoordinatorJobFairs"
+                  asp-action="@(isEdit ? "Edit" : "Create")"
+                  asp-route-id="@editId"
+                  method="post">
+
+                @Html.AntiForgeryToken()
+
+                <div asp-validation-summary="ModelOnly"
+                     class="text-danger mb-3"></div>
+
+                <div class="mb-3">
+                    <label asp-for="Title"
+                           class="form-label fw-semibold">
+                        Job Fair Title
+                    </label>
+
+                    <input asp-for="Title"
+                           class="form-control"
+                           maxlength="150"
+                           placeholder="e.g. UAP Career Fair 2026" />
+
+                    <span asp-validation-for="Title"
+                          class="text-danger small"></span>
+                </div>
+
+                <div class="mb-3">
+                    <label asp-for="Venue"
+                           class="form-label fw-semibold">
+                        Venue
+                    </label>
+
+                    <input asp-for="Venue"
+                           class="form-control"
+                           maxlength="200"
+                           placeholder="e.g. UAP Campus Auditorium, Dhaka" />
+
+                    <span asp-validation-for="Venue"
+                          class="text-danger small"></span>
+                </div>
+
+                <div class="row g-3 mb-3">
+                    <div class="col-md-6">
+                        <label asp-for="StartsAt"
+                               class="form-label fw-semibold">
+                            Start Date & Time (BST)
+                        </label>
+
+                        <input asp-for="StartsAt"
+                               asp-format="{0:yyyy-MM-ddTHH:mm}"
+                               type="datetime-local"
+                               class="form-control" />
+
+                        <span asp-validation-for="StartsAt"
+                              class="text-danger small"></span>
+                    </div>
+
+                    <div class="col-md-6">
+                        <label asp-for="EndsAt"
+                               class="form-label fw-semibold">
+                            End Date & Time (BST)
+                        </label>
+
+                        <input asp-for="EndsAt"
+                               asp-format="{0:yyyy-MM-ddTHH:mm}"
+                               type="datetime-local"
+                               class="form-control" />
+
+                        <span asp-validation-for="EndsAt"
+                              class="text-danger small"></span>
+                    </div>
+                </div>
+
+                <div class="mb-4">
+                    <label asp-for="Description"
+                           class="form-label fw-semibold">
+                        Event Description
+                    </label>
+
+                    <textarea asp-for="Description"
+                              class="form-control"
+                              rows="5"
+                              maxlength="2000"
+                              placeholder="Describe event activities and participating organizations."></textarea>
+
+                    <span asp-validation-for="Description"
+                          class="text-danger small"></span>
+                </div>
+
+                <div class="d-flex gap-2">
+                    <button type="submit"
+                            class="btn btn-primary">
+                        @(isEdit ? "Save Changes" : "Create Job Fair")
+                    </button>
+
+                    <a asp-controller="CoordinatorJobFairs"
+                       asp-action="Index"
+                       class="btn btn-outline-secondary">
+                        Cancel
+                    </a>
+                </div>
+
+            </form>
+        </div>
+    </div>
+</div>

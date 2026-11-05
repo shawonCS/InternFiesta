@@ -1,0 +1,239 @@
+﻿@model List<InternFiesta.Models.InternshipApplication>
+
+@{
+    ViewData["Title"] = "My Internship Tasks";
+
+    var academicInternships =
+        ViewBag.AcademicInternships as
+        List<InternFiesta.Models.AcademicInternship>
+        ?? new List<InternFiesta.Models.AcademicInternship>();
+
+    var academicByApplication = academicInternships
+        .ToDictionary(a => a.InternshipApplicationId);
+
+    var allTasks = academicInternships
+        .SelectMany(a => a.AssignedTasks)
+        .ToList();
+
+    var totalTasks = allTasks.Count;
+
+    var assignedCount = allTasks.Count(t =>
+        t.Status == "Assigned");
+
+    var submittedCount = allTasks.Count(t =>
+        t.Status == "Submitted");
+
+    var completedCount = allTasks.Count(t =>
+        t.Status == "Completed");
+}
+
+<div class="container-fluid py-4">
+
+    <h2 class="mb-1">My Internship Tasks</h2>
+
+    <p class="text-muted mb-4">
+        View your company-assigned tasks, deadlines
+        and submission status.
+    </p>
+
+    <div class="row g-3 mb-4">
+
+        <div class="col-6 col-lg-3">
+            <div class="card h-100">
+                <div class="card-body">
+                    <p class="text-muted mb-2">Total Tasks</p>
+                    <h3>@totalTasks</h3>
+                </div>
+            </div>
+        </div>
+
+        <div class="col-6 col-lg-3">
+            <div class="card h-100">
+                <div class="card-body">
+                    <p class="text-muted mb-2">Assigned</p>
+                    <h3>@assignedCount</h3>
+                </div>
+            </div>
+        </div>
+
+        <div class="col-6 col-lg-3">
+            <div class="card h-100">
+                <div class="card-body">
+                    <p class="text-muted mb-2">Submitted</p>
+                    <h3>@submittedCount</h3>
+                </div>
+            </div>
+        </div>
+
+        <div class="col-6 col-lg-3">
+            <div class="card h-100">
+                <div class="card-body">
+                    <p class="text-muted mb-2">Completed</p>
+                    <h3 class="text-success">@completedCount</h3>
+                </div>
+            </div>
+        </div>
+
+    </div>
+
+    @if (!Model.Any())
+    {
+        <div class="alert alert-info">
+            You do not have any selected internships yet.
+            Tasks will appear here after you are selected
+            and your company assigns work.
+        </div>
+    }
+    else
+    {
+        @foreach (var application in Model)
+        {
+            academicByApplication.TryGetValue(
+                application.Id, out var academic);
+
+            var facultyAssigned = academic != null &&
+                !string.IsNullOrWhiteSpace(academic.FacultyUserId);
+
+            var tasks = academic?.AssignedTasks
+                .OrderBy(t => t.DueDate)
+                .ThenBy(t => t.AssignedAt)
+                .ToList()
+                ?? new List<InternFiesta.Models.AssignedTask>();
+
+            var canSubmit = facultyAssigned &&
+                tasks.Any(t => t.Status != "Completed");
+
+            <div class="card shadow-sm mb-4">
+                <div class="card-body">
+
+                    <div class="d-flex flex-wrap justify-content-between align-items-center gap-2 mb-3">
+                        <div>
+                            <h4 class="mb-1">
+                                @(application.InternshipPosting?.Title
+                                    ?? "Internship")
+                            </h4>
+
+                            <span class="badge bg-success">
+                                Selected
+                            </span>
+                        </div>
+
+                        <span class="text-muted small">
+                            @tasks.Count Assigned Task(s)
+                        </span>
+                    </div>
+
+                    @if (!facultyAssigned)
+                    {
+                        <div class="alert alert-warning">
+                            Faculty supervisor has not been assigned yet.
+                            Progress submission is unavailable.
+                        </div>
+                    }
+                    else if (!tasks.Any())
+                    {
+                        <div class="alert alert-light border">
+                            No tasks have been assigned by the
+                            company yet.
+                        </div>
+                    }
+                    else
+                    {
+                        <div class="row g-3">
+
+                            @foreach (var task in tasks)
+                            {
+                                <div class="col-md-6">
+                                    <div class="card h-100 border">
+                                        <div class="card-body">
+
+                                            <div class="d-flex flex-wrap justify-content-between align-items-start gap-2 mb-3">
+
+                                                <h5 class="mb-0">
+                                                    @task.Title
+                                                </h5>
+
+                                                @if (task.Status == "Completed")
+                                                {
+                                                    <span class="badge bg-success">
+                                                        Completed
+                                                    </span>
+                                                }
+                                                else if (task.Status == "Submitted")
+                                                {
+                                                    <span class="badge bg-info text-dark">
+                                                        Submitted
+                                                    </span>
+                                                }
+                                                else
+                                                {
+                                                    <span class="badge bg-warning text-dark">
+                                                        Assigned
+                                                    </span>
+                                                }
+                                            </div>
+
+                                            <p>
+                                                <strong>Description:</strong>
+                                                @task.Description
+                                            </p>
+
+                                            <p>
+                                                <strong>Deadline:</strong>
+                                                @(task.DueDate?.ToString("dd MMM yyyy")
+                                                    ?? "No deadline")
+                                            </p>
+
+                                          
+                                            <p>
+                                                <strong>Assigned On:</strong>
+                                                @(task.AssignedAt.AddHours(6).ToString("dd MMM yyyy"))
+                                            </p>
+
+
+                                            @if (task.Status == "Completed")
+                                            {
+                                                <p class="text-success small mb-0">
+                                                    Approved by faculty supervisor.
+                                                </p>
+                                            }
+                                            else if (task.Status == "Submitted")
+                                            {
+                                                <p class="text-muted small mb-0">
+                                                    Progress submitted.
+                                                    Awaiting faculty review.
+                                                </p>
+                                            }
+                                            else
+                                            {
+                                                <p class="text-muted small mb-0">
+                                                    You can submit progress
+                                                    and evidence for this task.
+                                                </p>
+                                            }
+
+                                        </div>
+                                    </div>
+                                </div>
+                            }
+
+                        </div>
+
+                        @if (canSubmit)
+                        {
+                            <div class="mt-3">
+                                <a asp-controller="AcademicProgress"
+                                   asp-action="SubmitProgress"
+                                   asp-route-id="@application.Id"
+                                   class="btn btn-primary">
+                                    Submit Progress &amp; Evidence
+                                </a>
+                            </div>
+                        }
+                    }
+
+                </div>
+            </div>
+        }
+    }
+</div>

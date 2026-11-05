@@ -1,0 +1,103 @@
+﻿@model InternFiesta.Controllers.CompanyTasksController.TaskForm
+@{
+    ViewData["Title"] = "Assign Internship Tasks";
+    var academic =
+        (InternFiesta.Models.AcademicInternship)ViewBag.Academic;
+}
+
+<h2>Assign Internship Tasks</h2>
+
+<p>
+    <strong>Student:</strong>
+    @academic.InternshipApplication.Student?.FullName
+</p>
+
+<p>
+    <strong>Internship:</strong>
+    @academic.InternshipApplication.InternshipPosting?.Title
+</p>
+
+@if (TempData["StatusMessage"] != null)
+{
+    <div class="alert alert-success">
+        @TempData["StatusMessage"]
+    </div>
+}
+
+<h4>Assign New Task</h4>
+
+<form asp-controller="CompanyTasks"
+      asp-action="Create"
+      asp-route-applicationId="@academic.InternshipApplicationId"
+      method="post">
+
+    @Html.AntiForgeryToken()
+
+    <div asp-validation-summary="All" class="text-danger"></div>
+
+    <div class="mb-3">
+        <label asp-for="Title" class="form-label"></label>
+        <input asp-for="Title" class="form-control" maxlength="150" />
+        <span asp-validation-for="Title" class="text-danger"></span>
+    </div>
+
+    <div class="mb-3">
+        <label asp-for="Description" class="form-label"></label>
+        <textarea asp-for="Description"
+                  class="form-control"
+                  rows="4"
+                  maxlength="2000"></textarea>
+        <span asp-validation-for="Description"
+              class="text-danger"></span>
+    </div>
+
+    <div class="mb-3">
+        <label asp-for="DueDate" class="form-label"></label>
+        <input asp-for="DueDate"
+               type="date"
+               class="form-control" />
+        <span asp-validation-for="DueDate"
+              class="text-danger"></span>
+    </div>
+
+    <button type="submit" class="btn btn-primary">
+        Assign Task
+    </button>
+</form>
+
+<hr />
+
+<h4>Assigned Tasks</h4>
+
+@if (!academic.AssignedTasks.Any())
+{
+    <p>No tasks assigned yet.</p>
+}
+else
+{
+    <table class="table table-bordered">
+        <thead>
+            <tr>
+                <th>Task</th>
+                <th>Deadline</th>
+                <th>Status</th>
+            </tr>
+        </thead>
+        <tbody>
+            @foreach (var task in academic.AssignedTasks
+                .OrderByDescending(t => t.AssignedAt))
+            {
+                <tr>
+                    <td>
+                        <strong>@task.Title</strong>
+                        <div>@task.Description</div>
+                    </td>
+                    <td>
+                        @(task.DueDate?.ToString("dd MMM yyyy") ?? "None")
+                    </td>
+                    <td>@task.Status</td>
+                </tr>
+            }
+        </tbody>
+    </table>
+}

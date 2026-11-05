@@ -1,4 +1,5 @@
-﻿using System.ComponentModel.DataAnnotations;
+﻿
+using System.ComponentModel.DataAnnotations;
 
 namespace InternFiesta.ViewModels.Account
 {
@@ -26,5 +27,30 @@ namespace InternFiesta.ViewModels.Account
 
         [Required]
         public string Role { get; set; } = "Student";
+
+        // Optional Alumni fields
+        [StringLength(100)]
+        public string? AlumniIndustry { get; set; }
+
+        [StringLength(120)]
+        [Display(Name = "Job Title")]
+        public string? AlumniJobTitle { get; set; }
+
+        [StringLength(150)]
+        [Display(Name = "Company / Organization")]
+        public string? AlumniCompanyName { get; set; }
+
+        [StringLength(1000)]
+        [Display(Name = "About")]
+        public string? AlumniAbout { get; set; }
+
+        [StringLength(300)]
+        [Display(Name = "Skills")]
+        public string? AlumniSkills { get; set; }
+
+        [StringLength(250)]
+        [Url(ErrorMessage = "Enter a valid URL.")]
+        [Display(Name = "LinkedIn URL")]
+        public string? AlumniLinkedInUrl { get; set; }
     }
 }

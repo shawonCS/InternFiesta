@@ -1,4 +1,27 @@
-﻿<!DOCTYPE html>
+﻿@using Microsoft.AspNetCore.Identity
+@using Microsoft.EntityFrameworkCore
+@using InternFiesta.Data
+@using InternFiesta.Models
+
+@inject ApplicationDbContext DbContext
+@inject UserManager<ApplicationUser> UserManager
+
+@{
+    var unreadNotificationCount = 0;
+
+    if (User.Identity != null && User.Identity.IsAuthenticated)
+    {
+        var currentUserId = UserManager.GetUserId(User);
+
+        if (currentUserId != null)
+        {
+            unreadNotificationCount = await DbContext.Notifications
+                .CountAsync(n => n.UserId == currentUserId && !n.IsRead);
+        }
+    }
+}
+
+<!DOCTYPE html>
 <html lang="en">
 <head>
     <meta charset="utf-8" />
@@ -37,7 +60,22 @@
             </div>
 
             <nav class="sidebar-nav">
+                <a asp-controller="Notifications"
+                 asp-action="Index"
+                 class="sidebar-link">
 
+                 <span class="sidebar-icon">●</span>
+
+                 My Notifications
+
+                @if (unreadNotificationCount > 0)
+             {
+                  <span class="badge bg-danger ms-2">
+                  @unreadNotificationCount
+                </span>
+             }
+
+                </a>
                 <a asp-controller="Dashboard"
                    asp-action="Index"
                    class="sidebar-link">
@@ -45,9 +83,8 @@
                     Dashboard
                 </a>
 
-
                 @if (User.IsInRole("Student"))
-                {
+                {                                
                     <a asp-controller="StudentProfile"
                        asp-action="Index"
                        class="sidebar-link">
@@ -79,22 +116,155 @@
                         <span class="sidebar-icon">✓</span>
                        My Applications
                     </a>
+				   <a asp-controller="StudentInterviews"
+                       asp-action="Index"
+                       class="sidebar-link">
+					     <span class="sidebar-icon">◷</span>
+					My Interviews
+				    </a>
+                    <a asp-controller="AcademicProgress"
+                       asp-action="MyTasks"
+                       class="sidebar-link">
+                        <span class="sidebar-icon">▣</span>
+                        My Internship Tasks
+                    </a>
+                    
+                    <a asp-controller="FacultyEvaluations"
+                       asp-action="MyEvaluation"
+                       class="sidebar-link">
+                        <span class="sidebar-icon">▤</span>
+                        My Evaluation
+                    </a>
+
                 }
 
 
-                @if (User.IsInRole("Company"))
+               @if (User.IsInRole("Company"))
                 {
+                    <a asp-controller="CompanyMyProfile"
+                       asp-action="Index"
+                       class="sidebar-link">
+                        <span class="sidebar-icon">◉</span>
+                        My Profile
+                    </a>
+
                     <a asp-controller="Internships"
                        asp-action="Index"
                        class="sidebar-link">
                         <span class="sidebar-icon">▤</span>
                         Internships
                     </a>
+                    
+                    <a asp-controller="CompanyTasks"
+                       asp-action="SelectedStudents"
+                       class="sidebar-link">
+                        <span class="sidebar-icon">▣</span>
+                        Selected Students
+                    </a>
+
                 }
 
-            </nav>
+                @* NEW: Coordinator Faculty Assignment *@
+                @if (User.IsInRole("UniversityCoordinator"))
+                {
+                    <a asp-controller="AcademicProgress"
+                       asp-action="AssignFaculty"
+                       class="sidebar-link">
+                        <span class="sidebar-icon">▣</span>
+                        Assign Faculty
+                    </a>
+                }
+
+                 @if (User.IsInRole("FacultySupervisor"))
+                {
+                    <a asp-controller="AcademicProgress"
+                       asp-action="FacultyStudents"
+                       class="sidebar-link">
+                        <span class="sidebar-icon">▤</span>
+                        Assigned Students Progress
+                    </a>
+                }
+                @if (User.IsInRole("FacultySupervisor"))
+                {
+                    <a asp-controller="AcademicProgress"
+                       asp-action="PerformanceMatrix"
+                       class="sidebar-link">
+                        <span class="sidebar-icon">▦</span>
+                        Intern Performance Matrix
+                    </a>
+				}
 
 
+				@if (User.IsInRole("UniversityCoordinator"))
+				{
+				<a asp-controller="CoordinatorOverview"
+				   asp-action="Index"
+				   class="sidebar-link">
+					<span class="sidebar-icon">▦</span>
+					Coordinator Overview
+				</a>
+				}
+
+				@if (User.IsInRole("UniversityCoordinator"))
+				{
+				<a asp-controller="CoordinatorJobFairs"
+                       asp-action="Index"
+                       class="sidebar-link">
+                        <span class="sidebar-icon">▣</span>
+                        Manage Job Fairs
+                    </a>
+				}
+				@if (User.IsInRole("Student") || User.IsInRole("Company"))
+				{
+				    <a asp-controller="JobFairs"
+				       asp-action="Index"
+				       class="sidebar-link">
+					    <span class="sidebar-icon">▣</span>
+					    Job Fairs
+				    </a>
+
+				    <a asp-controller="JobFairs"
+				       asp-action="MyEvents"
+				       class="sidebar-link">
+					    <span class="sidebar-icon">✓</span>
+					    My Job Fairs
+				    </a>
+				}
+                @if (User.IsInRole("Alumni"))
+                {
+                   <a asp-controller="AlumniProfiles"
+                       asp-action="Index"
+                       class="sidebar-link">
+                        <span class="sidebar-icon">◉</span>
+                        My Profile
+                   </a>
+                    <a asp-controller="AlumniMentoring"
+                       asp-action="Inbox"
+                       class="sidebar-link">
+                        <span class="sidebar-icon">▤</span>
+                        Mentoring Requests
+                    </a>
+                }
+                @if (User.IsInRole("Student"))
+                {
+                    <a asp-controller="AlumniMentoring"
+                       asp-action="Directory"
+                       class="sidebar-link">
+                        <span class="sidebar-icon">◎</span>
+                        Find Alumni
+                    </a>
+                }
+                @if (User.IsInRole("Administrator"))
+                {
+                    <a asp-controller="AdminUsers"
+                       asp-action="Index"
+                       class="sidebar-link">
+
+                        <span class="sidebar-icon">▣</span>
+                        Manage Users
+                    </a>
+                }
+			</nav>
             <div class="sidebar-bottom">
 
                 <div class="sidebar-user">
@@ -231,7 +401,85 @@ else
         @RenderBody()
     </main>
 }
+@{
+    var toastSuccess = TempData["SuccessMessage"] as string;
+    var toastError = TempData["ErrorMessage"] as string;
+    var toastWarning = TempData["WarningMessage"] as string;
+}
 
+<div class="toast-container position-fixed top-0 end-0 p-3"
+     id="globalToastContainer"
+     style="z-index: 1090;"
+     aria-live="polite"
+     aria-atomic="false">
+
+    @if (!string.IsNullOrWhiteSpace(toastSuccess))
+    {
+        <div class="toast internfiesta-toast border-0 shadow"
+             role="status"
+             data-bs-delay="6500">
+
+            <div class="toast-header">
+                <span class="text-success me-2">✔</span>
+                <strong class="me-auto">Success</strong>
+
+                <button type="button"
+                        class="btn-close"
+                        data-bs-dismiss="toast"
+                        aria-label="Close"></button>
+            </div>
+
+            <div class="toast-body">
+                @toastSuccess
+            </div>
+        </div>
+    }
+
+    @if (!string.IsNullOrWhiteSpace(toastError))
+    {
+        <div class="toast internfiesta-toast border-0 shadow"
+             role="alert"
+             aria-live="assertive"
+             data-bs-delay="6500">
+
+            <div class="toast-header">
+                <span class="text-danger me-2">✖</span>
+                <strong class="me-auto">Error</strong>
+
+                <button type="button"
+                        class="btn-close"
+                        data-bs-dismiss="toast"
+                        aria-label="Close"></button>
+            </div>
+
+            <div class="toast-body">
+                @toastError
+            </div>
+        </div>
+    }
+
+    @if (!string.IsNullOrWhiteSpace(toastWarning))
+    {
+        <div class="toast internfiesta-toast border-0 shadow"
+             role="status"
+             data-bs-delay="6500">
+
+            <div class="toast-header">
+                <span class="text-warning me-2">⚠</span>
+                <strong class="me-auto">Warning</strong>
+
+                <button type="button"
+                        class="btn-close"
+                        data-bs-dismiss="toast"
+                        aria-label="Close"></button>
+            </div>
+
+            <div class="toast-body">
+                @toastWarning
+            </div>
+        </div>
+    }
+</div>
 
 <script src="~/lib/jquery/dist/jquery.min.js"></script>
 

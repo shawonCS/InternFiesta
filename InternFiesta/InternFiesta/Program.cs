@@ -2,10 +2,13 @@ using InternFiesta.Data;
 using InternFiesta.Models;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.EntityFrameworkCore;
+using InternFiesta.Services;
 var builder = WebApplication.CreateBuilder(args);
 
 // Add services to the container.
 builder.Services.AddControllersWithViews();
+builder.Services.AddScoped<CoordinatorOverviewService>();
+builder.Services.AddSingleton<UploadFileStorage>();
 
 var connectionString =
     builder.Configuration.GetConnectionString("DefaultConnection")
@@ -20,7 +23,22 @@ builder.Services
     .AddEntityFrameworkStores<ApplicationDbContext>()
     .AddDefaultTokenProviders();
 
+builder.Services.Configure<SecurityStampValidatorOptions>(
+    options =>
+    {
+        options.ValidationInterval = TimeSpan.Zero;
+    });
+
 var app = builder.Build();
+if (app.Environment.IsDevelopment())
+{
+    using var demoScope = app.Services.CreateScope();
+
+    await DemoAcademicUsersSeeder.SeedAsync(
+        demoScope.ServiceProvider,
+        demoScope.ServiceProvider
+            .GetRequiredService<IConfiguration>());
+}
 
 // Configure the HTTP request pipeline.
 if (!app.Environment.IsDevelopment())
@@ -67,6 +85,16 @@ using (var scope = app.Services.CreateScope())
                 new IdentityRole(role));
         }
     }
+}
+// Create a local test Administrator only in Development.
+// Administrator role must already be seeded above.
+if (app.Environment.IsDevelopment())
+{
+    using var adminScope = app.Services.CreateScope();
+
+    await DevelopmentAdminSeeder.SeedAsync(
+        adminScope.ServiceProvider,
+        app.Configuration);
 }
 // Seed test accounts into the database
 using (var scope = app.Services.CreateScope())

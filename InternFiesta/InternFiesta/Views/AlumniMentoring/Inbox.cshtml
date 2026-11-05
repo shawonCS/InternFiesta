@@ -1,0 +1,98 @@
+﻿
+@model List<InternFiesta.Models.AlumniMentoringRequest>
+
+@{
+    ViewData["Title"] = "Mentoring Requests";
+}
+
+<div class="container-fluid px-0">
+
+    <div class="mb-4">
+        <h2>Mentoring Requests</h2>
+        <p class="text-muted">
+            Review requests from students seeking career guidance.
+        </p>
+    </div>
+
+    @if (!Model.Any())
+    {
+        <div class="alert alert-info">
+            You have no mentoring requests yet.
+        </div>
+    }
+    else
+    {
+        <div class="row g-3">
+
+            @foreach (var request in Model)
+            {
+                <div class="col-12">
+                    <div class="card border-0 shadow-sm">
+                        <div class="card-body p-4">
+
+                            <div class="d-flex justify-content-between
+                                        align-items-start gap-2">
+
+                                <div>
+                                    <h5>
+                                        @request.StudentUser.FullName
+                                    </h5>
+
+                                    <p class="text-muted small">
+                                        @request.CreatedAtUtc.AddHours(6).ToString("dd MMM yyyy, hh:mm tt") BST
+                                    </p>
+                                </div>
+
+                                <span class="badge bg-secondary">
+                                    @request.Status
+                                </span>
+                            </div>
+
+                            <p>@request.Message</p>
+
+                            @if (request.Status == "Pending")
+                            {
+                                <div class="d-flex gap-2">
+
+                                    <form asp-action="Respond"
+                                          asp-route-id="@request.Id"
+                                          method="post">
+
+                                        @Html.AntiForgeryToken()
+
+                                        <input type="hidden"
+                                               name="decision"
+                                               value="Accepted" />
+
+                                        <button type="submit"
+                                                class="btn btn-success">
+                                            Accept
+                                        </button>
+                                    </form>
+
+                                    <form asp-action="Respond"
+                                          asp-route-id="@request.Id"
+                                          method="post">
+
+                                        @Html.AntiForgeryToken()
+
+                                        <input type="hidden"
+                                               name="decision"
+                                               value="Declined" />
+
+                                        <button type="submit"
+                                                class="btn btn-outline-danger">
+                                            Decline
+                                        </button>
+                                    </form>
+
+                                </div>
+                            }
+                        </div>
+                    </div>
+                </div>
+            }
+
+        </div>
+    }
+</div>

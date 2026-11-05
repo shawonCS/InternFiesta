@@ -22,6 +22,278 @@ namespace InternFiesta.Migrations
 
             SqlServerModelBuilderExtensions.UseIdentityColumns(modelBuilder);
 
+            modelBuilder.Entity("InternFiesta.Models.AcademicCompanyFeedback", b =>
+                {
+                    b.Property<int>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("int");
+
+                    SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("Id"));
+
+                    b.Property<int>("AcademicInternshipId")
+                        .HasColumnType("int");
+
+                    b.Property<string>("Comments")
+                        .IsRequired()
+                        .HasMaxLength(2000)
+                        .HasColumnType("nvarchar(2000)");
+
+                    b.Property<string>("CompanyUserId")
+                        .IsRequired()
+                        .HasColumnType("nvarchar(450)");
+
+                    b.Property<int>("Rating")
+                        .HasColumnType("int");
+
+                    b.Property<DateTime>("SubmittedAt")
+                        .HasColumnType("datetime2");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("AcademicInternshipId");
+
+                    b.HasIndex("CompanyUserId");
+
+                    b.ToTable("AcademicCompanyFeedbacks");
+                });
+
+            modelBuilder.Entity("InternFiesta.Models.AcademicInternship", b =>
+                {
+                    b.Property<int>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("int");
+
+                    SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("Id"));
+
+                    b.Property<string>("FacultyUserId")
+                        .IsRequired()
+                        .HasColumnType("nvarchar(450)");
+
+                    b.Property<int>("InternshipApplicationId")
+                        .HasColumnType("int");
+
+                    b.Property<DateTime>("StartedAt")
+                        .HasColumnType("datetime2");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("FacultyUserId");
+
+                    b.HasIndex("InternshipApplicationId")
+                        .IsUnique();
+
+                    b.ToTable("AcademicInternships");
+                });
+
+            modelBuilder.Entity("InternFiesta.Models.AcademicMilestone", b =>
+                {
+                    b.Property<int>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("int");
+
+                    SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("Id"));
+
+                    b.Property<int>("AcademicInternshipId")
+                        .HasColumnType("int");
+
+                    b.Property<DateTime?>("CompletedAt")
+                        .HasColumnType("datetime2");
+
+                    b.Property<string>("Description")
+                        .HasMaxLength(1000)
+                        .HasColumnType("nvarchar(1000)");
+
+                    b.Property<DateTime?>("DueDate")
+                        .HasColumnType("datetime2");
+
+                    b.Property<string>("Status")
+                        .IsRequired()
+                        .HasMaxLength(20)
+                        .HasColumnType("nvarchar(20)");
+
+                    b.Property<string>("Title")
+                        .IsRequired()
+                        .HasMaxLength(150)
+                        .HasColumnType("nvarchar(150)");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("AcademicInternshipId");
+
+                    b.ToTable("AcademicMilestones");
+                });
+
+            modelBuilder.Entity("InternFiesta.Models.AcademicProgressAttachment", b =>
+                {
+                    b.Property<int>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("int");
+
+                    SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("Id"));
+
+                    b.Property<string>("ContentType")
+                        .IsRequired()
+                        .HasMaxLength(100)
+                        .HasColumnType("nvarchar(100)");
+
+                    b.Property<long>("FileSizeBytes")
+                        .HasColumnType("bigint");
+
+                    b.Property<string>("OriginalFileName")
+                        .IsRequired()
+                        .HasMaxLength(180)
+                        .HasColumnType("nvarchar(180)");
+
+                    b.Property<int>("ProgressUpdateId")
+                        .HasColumnType("int");
+
+                    b.Property<string>("StoredFileName")
+                        .IsRequired()
+                        .HasMaxLength(80)
+                        .HasColumnType("nvarchar(80)");
+
+                    b.Property<DateTime>("UploadedAtUtc")
+                        .HasColumnType("datetime2");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("ProgressUpdateId");
+
+                    b.ToTable("AcademicProgressAttachments");
+                });
+
+            modelBuilder.Entity("InternFiesta.Models.AcademicProgressUpdate", b =>
+                {
+                    b.Property<int>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("int");
+
+                    SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("Id"));
+
+                    b.Property<int>("AcademicInternshipId")
+                        .HasColumnType("int");
+
+                    b.Property<int?>("AssignedTaskId")
+                        .HasColumnType("int");
+
+                    b.Property<string>("Description")
+                        .IsRequired()
+                        .HasMaxLength(2000)
+                        .HasColumnType("nvarchar(2000)");
+
+                    b.Property<DateTime>("SubmittedAt")
+                        .HasColumnType("datetime2");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("AcademicInternshipId");
+
+                    b.HasIndex("AssignedTaskId");
+
+                    b.ToTable("AcademicProgressUpdates");
+                });
+
+            modelBuilder.Entity("InternFiesta.Models.AlumniMentoringRequest", b =>
+                {
+                    b.Property<int>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("int");
+
+                    SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("Id"));
+
+                    b.Property<int>("AlumniProfileId")
+                        .HasColumnType("int");
+
+                    b.Property<DateTime>("CreatedAtUtc")
+                        .HasColumnType("datetime2");
+
+                    b.Property<string>("Message")
+                        .IsRequired()
+                        .HasMaxLength(800)
+                        .HasColumnType("nvarchar(800)");
+
+                    b.Property<DateTime?>("RespondedAtUtc")
+                        .HasColumnType("datetime2");
+
+                    b.Property<string>("Status")
+                        .IsRequired()
+                        .HasMaxLength(20)
+                        .HasColumnType("nvarchar(20)");
+
+                    b.Property<string>("StudentUserId")
+                        .IsRequired()
+                        .HasColumnType("nvarchar(450)");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("StudentUserId");
+
+                    b.HasIndex("AlumniProfileId", "StudentUserId")
+                        .IsUnique()
+                        .HasFilter("[Status] = 'Pending'");
+
+                    b.ToTable("AlumniMentoringRequests");
+                });
+
+            modelBuilder.Entity("InternFiesta.Models.AlumniProfile", b =>
+                {
+                    b.Property<int>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("int");
+
+                    SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("Id"));
+
+                    b.Property<string>("About")
+                        .HasMaxLength(1000)
+                        .HasColumnType("nvarchar(1000)");
+
+                    b.Property<string>("CompanyName")
+                        .HasMaxLength(150)
+                        .HasColumnType("nvarchar(150)");
+
+                    b.Property<string>("Headline")
+                        .IsRequired()
+                        .HasMaxLength(180)
+                        .HasColumnType("nvarchar(180)");
+
+                    b.Property<string>("Industry")
+                        .IsRequired()
+                        .HasMaxLength(100)
+                        .HasColumnType("nvarchar(100)");
+
+                    b.Property<bool>("IsAvailableForMentoring")
+                        .HasColumnType("bit");
+
+                    b.Property<bool>("IsVisibleToStudents")
+                        .HasColumnType("bit");
+
+                    b.Property<string>("JobTitle")
+                        .HasMaxLength(120)
+                        .HasColumnType("nvarchar(120)");
+
+                    b.Property<string>("LinkedInUrl")
+                        .HasMaxLength(250)
+                        .HasColumnType("nvarchar(250)");
+
+                    b.Property<string>("Skills")
+                        .HasMaxLength(300)
+                        .HasColumnType("nvarchar(300)");
+
+                    b.Property<DateTime>("UpdatedAtUtc")
+                        .HasColumnType("datetime2");
+
+                    b.Property<string>("UserId")
+                        .IsRequired()
+                        .HasColumnType("nvarchar(450)");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("UserId")
+                        .IsUnique();
+
+                    b.ToTable("AlumniProfiles");
+                });
+
             modelBuilder.Entity("InternFiesta.Models.ApplicationUser", b =>
                 {
                     b.Property<string>("Id")
@@ -46,6 +318,9 @@ namespace InternFiesta.Migrations
                         .HasMaxLength(100)
                         .HasColumnType("nvarchar(100)");
 
+                    b.Property<bool>("IsDisabled")
+                        .HasColumnType("bit");
+
                     b.Property<bool>("LockoutEnabled")
                         .HasColumnType("bit");
 
@@ -68,6 +343,10 @@ namespace InternFiesta.Migrations
 
                     b.Property<bool>("PhoneNumberConfirmed")
                         .HasColumnType("bit");
+
+                    b.Property<string>("ProfilePhotoFileName")
+                        .HasMaxLength(80)
+                        .HasColumnType("nvarchar(80)");
 
                     b.Property<string>("SecurityStamp")
                         .HasColumnType("nvarchar(max)");
@@ -92,6 +371,117 @@ namespace InternFiesta.Migrations
                     b.ToTable("AspNetUsers", (string)null);
                 });
 
+            modelBuilder.Entity("InternFiesta.Models.AssignedTask", b =>
+                {
+                    b.Property<int>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("int");
+
+                    SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("Id"));
+
+                    b.Property<int>("AcademicInternshipId")
+                        .HasColumnType("int");
+
+                    b.Property<DateTime>("AssignedAt")
+                        .HasColumnType("datetime2");
+
+                    b.Property<DateTime?>("CompletedAt")
+                        .HasColumnType("datetime2");
+
+                    b.Property<string>("Description")
+                        .IsRequired()
+                        .HasMaxLength(2000)
+                        .HasColumnType("nvarchar(2000)");
+
+                    b.Property<DateTime?>("DueDate")
+                        .HasColumnType("datetime2");
+
+                    b.Property<string>("Status")
+                        .IsRequired()
+                        .HasMaxLength(20)
+                        .HasColumnType("nvarchar(20)");
+
+                    b.Property<string>("Title")
+                        .IsRequired()
+                        .HasMaxLength(150)
+                        .HasColumnType("nvarchar(150)");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("AcademicInternshipId");
+
+                    b.ToTable("AssignedTasks");
+                });
+
+            modelBuilder.Entity("InternFiesta.Models.CompanyProfile", b =>
+                {
+                    b.Property<int>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("int");
+
+                    SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("Id"));
+
+                    b.Property<string>("About")
+                        .IsRequired()
+                        .HasMaxLength(1500)
+                        .HasColumnType("nvarchar(1500)");
+
+                    b.Property<string>("CompanyName")
+                        .IsRequired()
+                        .HasMaxLength(150)
+                        .HasColumnType("nvarchar(150)");
+
+                    b.Property<DateTime>("UpdatedAtUtc")
+                        .HasColumnType("datetime2");
+
+                    b.Property<string>("UserId")
+                        .IsRequired()
+                        .HasColumnType("nvarchar(450)");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("UserId")
+                        .IsUnique();
+
+                    b.ToTable("CompanyProfiles");
+                });
+
+            modelBuilder.Entity("InternFiesta.Models.FacultyEvaluation", b =>
+                {
+                    b.Property<int>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("int");
+
+                    SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("Id"));
+
+                    b.Property<int>("AcademicInternshipId")
+                        .HasColumnType("int");
+
+                    b.Property<string>("Comments")
+                        .IsRequired()
+                        .HasMaxLength(2000)
+                        .HasColumnType("nvarchar(2000)");
+
+                    b.Property<DateTime>("EvaluatedAt")
+                        .HasColumnType("datetime2");
+
+                    b.Property<string>("FacultyUserId")
+                        .IsRequired()
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<string>("Grade")
+                        .IsRequired()
+                        .HasMaxLength(3)
+                        .HasColumnType("nvarchar(3)");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("AcademicInternshipId")
+                        .IsUnique();
+
+                    b.ToTable("FacultyEvaluations");
+                });
+
             modelBuilder.Entity("InternFiesta.Models.InternshipApplication", b =>
                 {
                     b.Property<int>("Id")
@@ -105,6 +495,10 @@ namespace InternFiesta.Migrations
 
                     b.Property<int>("InternshipPostingId")
                         .HasColumnType("int");
+
+                    b.Property<string>("RejectionReason")
+                        .HasMaxLength(1000)
+                        .HasColumnType("nvarchar(1000)");
 
                     b.Property<string>("Status")
                         .IsRequired()
@@ -141,12 +535,18 @@ namespace InternFiesta.Migrations
                     b.Property<DateTime>("Deadline")
                         .HasColumnType("datetime2");
 
+                    b.Property<DateTime?>("DeletedAt")
+                        .HasColumnType("datetime2");
+
                     b.Property<string>("Description")
                         .IsRequired()
                         .HasMaxLength(2000)
                         .HasColumnType("nvarchar(2000)");
 
                     b.Property<bool>("IsActive")
+                        .HasColumnType("bit");
+
+                    b.Property<bool>("IsDeleted")
                         .HasColumnType("bit");
 
                     b.Property<string>("Location")
@@ -171,6 +571,228 @@ namespace InternFiesta.Migrations
                     b.HasIndex("CompanyUserId");
 
                     b.ToTable("InternshipPostings");
+                });
+
+            modelBuilder.Entity("InternFiesta.Models.InterviewSchedule", b =>
+                {
+                    b.Property<int>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("int");
+
+                    SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("Id"));
+
+                    b.Property<DateTime>("CreatedAt")
+                        .HasColumnType("datetime2");
+
+                    b.Property<int>("InternshipApplicationId")
+                        .HasColumnType("int");
+
+                    b.Property<DateTime>("InterviewDateTime")
+                        .HasColumnType("datetime2");
+
+                    b.Property<string>("LocationOrLink")
+                        .IsRequired()
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<string>("Notes")
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<DateTime?>("UpdatedAt")
+                        .HasColumnType("datetime2");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("InternshipApplicationId")
+                        .IsUnique();
+
+                    b.ToTable("InterviewSchedules");
+                });
+
+            modelBuilder.Entity("InternFiesta.Models.JobFair", b =>
+                {
+                    b.Property<int>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("int");
+
+                    SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("Id"));
+
+                    b.Property<DateTime>("CreatedAtUtc")
+                        .HasColumnType("datetime2");
+
+                    b.Property<string>("CreatedByCoordinatorId")
+                        .IsRequired()
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<string>("Description")
+                        .IsRequired()
+                        .HasMaxLength(2000)
+                        .HasColumnType("nvarchar(2000)");
+
+                    b.Property<DateTime>("EndsAtUtc")
+                        .HasColumnType("datetime2");
+
+                    b.Property<bool>("IsClosed")
+                        .HasColumnType("bit");
+
+                    b.Property<DateTime>("StartsAtUtc")
+                        .HasColumnType("datetime2");
+
+                    b.Property<string>("Title")
+                        .IsRequired()
+                        .HasMaxLength(150)
+                        .HasColumnType("nvarchar(150)");
+
+                    b.Property<string>("Venue")
+                        .IsRequired()
+                        .HasMaxLength(200)
+                        .HasColumnType("nvarchar(200)");
+
+                    b.HasKey("Id");
+
+                    b.ToTable("JobFairs");
+                });
+
+            modelBuilder.Entity("InternFiesta.Models.JobFairBooth", b =>
+                {
+                    b.Property<int>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("int");
+
+                    SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("Id"));
+
+                    b.Property<string>("BoothLocation")
+                        .HasMaxLength(100)
+                        .HasColumnType("nvarchar(100)");
+
+                    b.Property<string>("BoothName")
+                        .IsRequired()
+                        .HasMaxLength(150)
+                        .HasColumnType("nvarchar(150)");
+
+                    b.Property<string>("CompanyUserId")
+                        .IsRequired()
+                        .HasColumnType("nvarchar(450)");
+
+                    b.Property<string>("ContactEmail")
+                        .IsRequired()
+                        .HasMaxLength(200)
+                        .HasColumnType("nvarchar(200)");
+
+                    b.Property<string>("Description")
+                        .IsRequired()
+                        .HasMaxLength(1000)
+                        .HasColumnType("nvarchar(1000)");
+
+                    b.Property<int>("JobFairId")
+                        .HasColumnType("int");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("CompanyUserId");
+
+                    b.HasIndex("JobFairId", "CompanyUserId")
+                        .IsUnique();
+
+                    b.ToTable("JobFairBooths");
+                });
+
+            modelBuilder.Entity("InternFiesta.Models.JobFairFeedback", b =>
+                {
+                    b.Property<int>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("int");
+
+                    SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("Id"));
+
+                    b.Property<string>("Comments")
+                        .IsRequired()
+                        .HasMaxLength(1000)
+                        .HasColumnType("nvarchar(1000)");
+
+                    b.Property<int>("JobFairRegistrationId")
+                        .HasColumnType("int");
+
+                    b.Property<int>("Rating")
+                        .HasColumnType("int");
+
+                    b.Property<DateTime>("SubmittedAtUtc")
+                        .HasColumnType("datetime2");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("JobFairRegistrationId")
+                        .IsUnique();
+
+                    b.ToTable("JobFairFeedbacks");
+                });
+
+            modelBuilder.Entity("InternFiesta.Models.JobFairRegistration", b =>
+                {
+                    b.Property<int>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("int");
+
+                    SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("Id"));
+
+                    b.Property<DateTime?>("AttendedAtUtc")
+                        .HasColumnType("datetime2");
+
+                    b.Property<int>("JobFairId")
+                        .HasColumnType("int");
+
+                    b.Property<string>("ParticipantRole")
+                        .IsRequired()
+                        .HasMaxLength(20)
+                        .HasColumnType("nvarchar(20)");
+
+                    b.Property<DateTime>("RegisteredAtUtc")
+                        .HasColumnType("datetime2");
+
+                    b.Property<string>("UserId")
+                        .IsRequired()
+                        .HasColumnType("nvarchar(450)");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("UserId");
+
+                    b.HasIndex("JobFairId", "UserId")
+                        .IsUnique();
+
+                    b.ToTable("JobFairRegistrations");
+                });
+
+            modelBuilder.Entity("InternFiesta.Models.Notification", b =>
+                {
+                    b.Property<int>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("int");
+
+                    SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("Id"));
+
+                    b.Property<DateTime>("CreatedAt")
+                        .HasColumnType("datetime2");
+
+                    b.Property<bool>("IsRead")
+                        .HasColumnType("bit");
+
+                    b.Property<string>("Message")
+                        .IsRequired()
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<string>("Title")
+                        .IsRequired()
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<string>("UserId")
+                        .IsRequired()
+                        .HasColumnType("nvarchar(450)");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("UserId");
+
+                    b.ToTable("Notifications");
                 });
 
             modelBuilder.Entity("InternFiesta.Models.SavedInternship", b =>
@@ -373,6 +995,147 @@ namespace InternFiesta.Migrations
                     b.ToTable("AspNetUserTokens", (string)null);
                 });
 
+            modelBuilder.Entity("InternFiesta.Models.AcademicCompanyFeedback", b =>
+                {
+                    b.HasOne("InternFiesta.Models.AcademicInternship", "AcademicInternship")
+                        .WithMany("CompanyFeedback")
+                        .HasForeignKey("AcademicInternshipId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.HasOne("InternFiesta.Models.ApplicationUser", "CompanyUser")
+                        .WithMany()
+                        .HasForeignKey("CompanyUserId")
+                        .OnDelete(DeleteBehavior.Restrict)
+                        .IsRequired();
+
+                    b.Navigation("AcademicInternship");
+
+                    b.Navigation("CompanyUser");
+                });
+
+            modelBuilder.Entity("InternFiesta.Models.AcademicInternship", b =>
+                {
+                    b.HasOne("InternFiesta.Models.ApplicationUser", "FacultyUser")
+                        .WithMany()
+                        .HasForeignKey("FacultyUserId")
+                        .OnDelete(DeleteBehavior.Restrict)
+                        .IsRequired();
+
+                    b.HasOne("InternFiesta.Models.InternshipApplication", "InternshipApplication")
+                        .WithMany()
+                        .HasForeignKey("InternshipApplicationId")
+                        .OnDelete(DeleteBehavior.Restrict)
+                        .IsRequired();
+
+                    b.Navigation("FacultyUser");
+
+                    b.Navigation("InternshipApplication");
+                });
+
+            modelBuilder.Entity("InternFiesta.Models.AcademicMilestone", b =>
+                {
+                    b.HasOne("InternFiesta.Models.AcademicInternship", "AcademicInternship")
+                        .WithMany("Milestones")
+                        .HasForeignKey("AcademicInternshipId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.Navigation("AcademicInternship");
+                });
+
+            modelBuilder.Entity("InternFiesta.Models.AcademicProgressAttachment", b =>
+                {
+                    b.HasOne("InternFiesta.Models.AcademicProgressUpdate", "ProgressUpdate")
+                        .WithMany("Attachments")
+                        .HasForeignKey("ProgressUpdateId")
+                        .OnDelete(DeleteBehavior.Restrict)
+                        .IsRequired();
+
+                    b.Navigation("ProgressUpdate");
+                });
+
+            modelBuilder.Entity("InternFiesta.Models.AcademicProgressUpdate", b =>
+                {
+                    b.HasOne("InternFiesta.Models.AcademicInternship", "AcademicInternship")
+                        .WithMany("ProgressUpdates")
+                        .HasForeignKey("AcademicInternshipId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.HasOne("InternFiesta.Models.AssignedTask", "AssignedTask")
+                        .WithMany("ProgressUpdates")
+                        .HasForeignKey("AssignedTaskId")
+                        .OnDelete(DeleteBehavior.Restrict);
+
+                    b.Navigation("AcademicInternship");
+
+                    b.Navigation("AssignedTask");
+                });
+
+            modelBuilder.Entity("InternFiesta.Models.AlumniMentoringRequest", b =>
+                {
+                    b.HasOne("InternFiesta.Models.AlumniProfile", "AlumniProfile")
+                        .WithMany("MentoringRequests")
+                        .HasForeignKey("AlumniProfileId")
+                        .OnDelete(DeleteBehavior.Restrict)
+                        .IsRequired();
+
+                    b.HasOne("InternFiesta.Models.ApplicationUser", "StudentUser")
+                        .WithMany()
+                        .HasForeignKey("StudentUserId")
+                        .OnDelete(DeleteBehavior.Restrict)
+                        .IsRequired();
+
+                    b.Navigation("AlumniProfile");
+
+                    b.Navigation("StudentUser");
+                });
+
+            modelBuilder.Entity("InternFiesta.Models.AlumniProfile", b =>
+                {
+                    b.HasOne("InternFiesta.Models.ApplicationUser", "User")
+                        .WithOne()
+                        .HasForeignKey("InternFiesta.Models.AlumniProfile", "UserId")
+                        .OnDelete(DeleteBehavior.Restrict)
+                        .IsRequired();
+
+                    b.Navigation("User");
+                });
+
+            modelBuilder.Entity("InternFiesta.Models.AssignedTask", b =>
+                {
+                    b.HasOne("InternFiesta.Models.AcademicInternship", "AcademicInternship")
+                        .WithMany("AssignedTasks")
+                        .HasForeignKey("AcademicInternshipId")
+                        .OnDelete(DeleteBehavior.Restrict)
+                        .IsRequired();
+
+                    b.Navigation("AcademicInternship");
+                });
+
+            modelBuilder.Entity("InternFiesta.Models.CompanyProfile", b =>
+                {
+                    b.HasOne("InternFiesta.Models.ApplicationUser", "User")
+                        .WithOne()
+                        .HasForeignKey("InternFiesta.Models.CompanyProfile", "UserId")
+                        .OnDelete(DeleteBehavior.Restrict)
+                        .IsRequired();
+
+                    b.Navigation("User");
+                });
+
+            modelBuilder.Entity("InternFiesta.Models.FacultyEvaluation", b =>
+                {
+                    b.HasOne("InternFiesta.Models.AcademicInternship", "AcademicInternship")
+                        .WithMany()
+                        .HasForeignKey("AcademicInternshipId")
+                        .OnDelete(DeleteBehavior.Restrict)
+                        .IsRequired();
+
+                    b.Navigation("AcademicInternship");
+                });
+
             modelBuilder.Entity("InternFiesta.Models.InternshipApplication", b =>
                 {
                     b.HasOne("InternFiesta.Models.InternshipPosting", "InternshipPosting")
@@ -401,6 +1164,71 @@ namespace InternFiesta.Migrations
                         .IsRequired();
 
                     b.Navigation("CompanyUser");
+                });
+
+            modelBuilder.Entity("InternFiesta.Models.InterviewSchedule", b =>
+                {
+                    b.HasOne("InternFiesta.Models.InternshipApplication", "InternshipApplication")
+                        .WithOne()
+                        .HasForeignKey("InternFiesta.Models.InterviewSchedule", "InternshipApplicationId")
+                        .OnDelete(DeleteBehavior.NoAction)
+                        .IsRequired();
+
+                    b.Navigation("InternshipApplication");
+                });
+
+            modelBuilder.Entity("InternFiesta.Models.JobFairBooth", b =>
+                {
+                    b.HasOne("InternFiesta.Models.ApplicationUser", null)
+                        .WithMany()
+                        .HasForeignKey("CompanyUserId")
+                        .OnDelete(DeleteBehavior.Restrict)
+                        .IsRequired();
+
+                    b.HasOne("InternFiesta.Models.JobFair", null)
+                        .WithMany()
+                        .HasForeignKey("JobFairId")
+                        .OnDelete(DeleteBehavior.Restrict)
+                        .IsRequired();
+                });
+
+            modelBuilder.Entity("InternFiesta.Models.JobFairFeedback", b =>
+                {
+                    b.HasOne("InternFiesta.Models.JobFairRegistration", null)
+                        .WithMany()
+                        .HasForeignKey("JobFairRegistrationId")
+                        .OnDelete(DeleteBehavior.Restrict)
+                        .IsRequired();
+                });
+
+            modelBuilder.Entity("InternFiesta.Models.JobFairRegistration", b =>
+                {
+                    b.HasOne("InternFiesta.Models.JobFair", "JobFair")
+                        .WithMany("Registrations")
+                        .HasForeignKey("JobFairId")
+                        .OnDelete(DeleteBehavior.Restrict)
+                        .IsRequired();
+
+                    b.HasOne("InternFiesta.Models.ApplicationUser", "User")
+                        .WithMany()
+                        .HasForeignKey("UserId")
+                        .OnDelete(DeleteBehavior.Restrict)
+                        .IsRequired();
+
+                    b.Navigation("JobFair");
+
+                    b.Navigation("User");
+                });
+
+            modelBuilder.Entity("InternFiesta.Models.Notification", b =>
+                {
+                    b.HasOne("InternFiesta.Models.ApplicationUser", "User")
+                        .WithMany()
+                        .HasForeignKey("UserId")
+                        .OnDelete(DeleteBehavior.NoAction)
+                        .IsRequired();
+
+                    b.Navigation("User");
                 });
 
             modelBuilder.Entity("InternFiesta.Models.SavedInternship", b =>
@@ -474,6 +1302,37 @@ namespace InternFiesta.Migrations
                         .HasForeignKey("UserId")
                         .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired();
+                });
+
+            modelBuilder.Entity("InternFiesta.Models.AcademicInternship", b =>
+                {
+                    b.Navigation("AssignedTasks");
+
+                    b.Navigation("CompanyFeedback");
+
+                    b.Navigation("Milestones");
+
+                    b.Navigation("ProgressUpdates");
+                });
+
+            modelBuilder.Entity("InternFiesta.Models.AcademicProgressUpdate", b =>
+                {
+                    b.Navigation("Attachments");
+                });
+
+            modelBuilder.Entity("InternFiesta.Models.AlumniProfile", b =>
+                {
+                    b.Navigation("MentoringRequests");
+                });
+
+            modelBuilder.Entity("InternFiesta.Models.AssignedTask", b =>
+                {
+                    b.Navigation("ProgressUpdates");
+                });
+
+            modelBuilder.Entity("InternFiesta.Models.JobFair", b =>
+                {
+                    b.Navigation("Registrations");
                 });
 #pragma warning restore 612, 618
         }

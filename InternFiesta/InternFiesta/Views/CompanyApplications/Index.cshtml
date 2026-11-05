@@ -1,0 +1,342 @@
+﻿@model InternFiesta.ViewModels.CompanyApplicationsViewModel
+
+@{
+    ViewData["Title"] = "Applications";
+}
+
+<div class="page-heading">
+    <h2>Applications</h2>
+    <p>
+        Applicants for @Model.Internship.Title
+    </p>
+</div>
+
+@if (TempData["InterviewMessage"] != null)
+{
+    <div class="alert alert-success">
+        @TempData["InterviewMessage"]
+    </div>
+}
+
+@if (TempData["InterviewError"] != null)
+{
+    <div class="alert alert-warning">
+        @TempData["InterviewError"]
+    </div>
+}
+
+@if (TempData["StatusMessage"] != null)
+{
+    <div class="alert alert-success">
+        @TempData["StatusMessage"]
+    </div>
+}
+
+@if (TempData["StatusError"] != null)
+{
+    <div class="alert alert-danger">
+        @TempData["StatusError"]
+    </div>
+}
+
+<div class="alert alert-light border mb-3">
+    <strong>Total Positions:</strong>
+    @Model.Internship.Positions
+
+    <span class="mx-2">|</span>
+
+    <strong>Selected:</strong>
+    @Model.SelectedCount
+
+    <span class="mx-2">|</span>
+
+    <strong>Remaining:</strong>
+    @Model.RemainingPositions
+</div>
+
+@if (Model.Applicants.Count == 0)
+{
+    <div class="alert alert-info">
+        No students have applied for this internship yet.
+    </div>
+}
+else
+{
+    <div class="row g-4">
+
+        @foreach (var item in Model.Applicants)
+        {
+            <div class="col-md-6">
+
+                <div class="card h-100">
+                    <div class="card-body">
+
+                        <div class="d-flex align-items-center gap-3 mb-3">
+
+                            @if (item.Student != null &&
+                                 !string.IsNullOrWhiteSpace(
+                                     item.Student.ProfilePhotoFileName))
+                            {
+                                <img src="@Url.Action(
+                                         "Photo",
+                                         "ProfilePhotos",
+                                         new { id = item.Student.Id })"
+                                     alt="Student Profile Picture"
+                                     class="rounded-circle border"
+                                     style="width:75px;height:75px;object-fit:cover;flex-shrink:0;" />
+                            }
+                            else
+                            {
+                                <div class="rounded-circle bg-secondary text-white d-flex align-items-center justify-content-center"
+                                     style="width:75px;height:75px;font-size:30px;flex-shrink:0;">
+                                    @(string.IsNullOrWhiteSpace(item.Student?.FullName)
+                                        ? "S"
+                                        : item.Student.FullName.Substring(0, 1).ToUpper())
+                                </div>
+                            }
+
+                            <div>
+                                <h5 class="mb-1">
+                                    @(item.Student?.FullName ?? "Student")
+                                </h5>
+
+                                <small class="text-muted">
+                                    @(item.Student?.Email ?? "Not provided")
+                                </small>
+                            </div>
+
+                        </div>
+
+                        <p>
+                            <strong>Student ID:</strong>
+                            @(item.Profile?.StudentId ?? "Not provided")
+                        </p>
+
+                        <p>
+                            <strong>Department:</strong>
+                            @(item.Profile?.Department ?? "Not provided")
+                        </p>
+
+                        <p>
+                            <strong>CGPA:</strong>
+                            @(item.Profile != null
+                                ? item.Profile.CGPA.ToString()
+                                : "Not provided")
+                        </p>
+
+                        <p>
+                            <strong>Skills:</strong>
+                            @(item.Profile?.Skills ?? "Not provided")
+                        </p>
+
+                        <p>
+                            <strong>Candidate Match:</strong>
+
+                            @if (item.MatchScore >= 70)
+                            {
+                                <span class="badge bg-success">
+                                    @item.MatchScore% - @item.MatchLabel
+                                </span>
+                            }
+                            else if (item.MatchScore >= 40)
+                            {
+                                <span class="badge bg-warning text-dark">
+                                    @item.MatchScore% - @item.MatchLabel
+                                </span>
+                            }
+                            else
+                            {
+                                <span class="badge bg-secondary">
+                                    @item.MatchScore% - @item.MatchLabel
+                                </span>
+                            }
+                        </p>
+
+                        <p>
+                            <strong>Applied:</strong>
+                            @item.Application.AppliedAt.ToString("dd MMM yyyy")
+                        </p>
+
+                        <p>
+                            <strong>Current Status:</strong>
+
+                            @if (item.Application.Status == "Shortlisted")
+                            {
+                                <span class="badge bg-info text-dark">
+                                    Shortlisted
+                                </span>
+                            }
+                            else if (item.Application.Status == "Selected")
+                            {
+                                <span class="badge bg-success">
+                                    Selected
+                                </span>
+                            }
+                            else if (item.Application.Status == "Rejected")
+                            {
+                                <span class="badge bg-danger">
+                                    Rejected
+                                </span>
+                            }
+                            else if (item.Application.Status == "Waitlisted")
+                            {
+                                <span class="badge bg-warning text-dark">
+                                    Waitlisted
+                                </span>
+                            }
+                            else
+                            {
+                                <span class="badge bg-primary">
+                                    @item.Application.Status
+                                </span>
+                            }
+                        </p>
+
+                       
+                        @if (item.Application.Status == "Shortlisted")
+                        {
+                            <a asp-controller="Interview"
+                               asp-action="Schedule"
+                               asp-route-applicationId="@item.Application.Id"
+                               class="btn btn-primary mb-3">
+                                Schedule / Reschedule Interview
+                            </a>
+                        }
+
+                        @if (item.Application.Status == "Selected")
+                        {
+                            <a asp-controller="CompanyTasks"
+                               asp-action="Index"
+                               asp-route-applicationId="@item.Application.Id"
+                               class="btn btn-primary mb-3">
+                                Assign / View Tasks
+                            </a>
+                        }
+
+
+                        <hr />
+                        @if (item.Application.Status != "Selected")
+                        {
+                        <form asp-controller="CompanyApplications"
+                              asp-action="UpdateStatus"
+                              method="post"
+                              class="d-flex flex-wrap gap-2 mb-3">
+
+                            @Html.AntiForgeryToken()
+
+                            <input type="hidden"
+                                   name="applicationId"
+                                   value="@item.Application.Id" />
+
+                            <button type="submit"
+                                    name="status"
+                                    value="Shortlisted"
+                                    class="btn btn-info">
+                                Shortlist
+                            </button>
+
+                            @if (item.Application.Status == "Selected")
+                            {
+                                <button type="button"
+                                        class="btn btn-success"
+                                        disabled>
+                                    Selected
+                                </button>
+                            }
+                            else if (Model.RemainingPositions > 0)
+                            {
+                                <button type="submit"
+                                        name="status"
+                                        value="Selected"
+                                        class="btn btn-success">
+                                    Select
+                                </button>
+                            }
+                            else
+                            {
+                                <button type="button"
+                                        class="btn btn-secondary"
+                                        disabled>
+                                    Positions Full
+                                </button>
+                            }
+
+                            <button type="submit"
+                                    name="status"
+                                    value="Waitlisted"
+                                    class="btn btn-warning">
+                                Waitlist
+                            </button>
+
+                        </form>
+                        }
+                        else
+                        {
+                            <div class="alert alert-success">
+                                This student has been selected.
+                                Recruitment screening is complete.
+                            </div>
+                        }
+                        @if (item.Application.Status != "Rejected" && item.Application.Status != "Selected")
+                        {
+                            <details class="border rounded p-3">
+
+                                <summary class="text-danger fw-semibold"
+                                         style="cursor:pointer;">
+                                    Reject Application
+                                </summary>
+
+                                <div class="mt-3">
+
+                                    <form asp-controller="CompanyApplications"
+                                          asp-action="UpdateStatus"
+                                          method="post">
+
+                                        @Html.AntiForgeryToken()
+
+                                        <input type="hidden"
+                                               name="applicationId"
+                                               value="@item.Application.Id" />
+
+                                        <input type="hidden"
+                                               name="status"
+                                               value="Rejected" />
+
+                                        <div class="mb-3">
+                                            <label class="form-label fw-semibold">
+                                                Reason for Rejection
+                                            </label>
+
+                                            
+                                            <textarea name="rejectionReason"
+                                                      class="form-control"
+                                                      rows="4"
+                                                      maxlength="1000"
+                                                      placeholder="Optional: Explain why this application is being rejected..."></textarea>
+
+                                            <div class="form-text">
+                                                Optional. Maximum 1000 characters.
+                                                If provided, the reason will be shared with the student.
+                                            </div>
+
+                                        </div>
+
+                                        <button type="submit"
+                                                class="btn btn-danger">
+                                            Confirm Rejection
+                                        </button>
+
+                                    </form>
+
+                                </div>
+
+                            </details>
+                        }
+
+                    </div>
+                </div>
+            </div>
+        }
+
+    </div>
+}

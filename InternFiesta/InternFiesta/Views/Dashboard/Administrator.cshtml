@@ -2,5 +2,34 @@
     ViewData["Title"] = "Administrator Dashboard";
 }
 
-<h2>Administrator Dashboard</h2>
-<p>Welcome to InternFiesta.</p>
+<div class="container-fluid px-0">
+
+    <h2>Administrator Dashboard</h2>
+
+    <p class="text-muted">
+        Manage platform accounts and permissions.
+        Students, companies, alumni and academic staff
+        can continue their normal workflows independently.
+    </p>
+
+    <div class="card border-0 shadow-sm">
+
+        <div class="card-body p-4">
+
+            <h4>User Accounts</h4>
+
+            <p class="text-muted">
+                Search registered users and view their
+                roles and account details.
+            </p>
+
+            <a asp-controller="AdminUsers"
+               asp-action="Index"
+               class="btn btn-primary">
+                View User Accounts
+            </a>
+
+        </div>
+    </div>
+
+</div>

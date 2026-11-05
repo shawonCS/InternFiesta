@@ -1,0 +1,66 @@
+﻿@model InternFiesta.Controllers.AcademicProgressController.FeedbackForm
+
+@{
+    ViewData["Title"] = "Company Feedback";
+    int internshipId = ViewBag.AcademicInternshipId;
+}
+
+<div class="container py-4">
+    <div class="card shadow-sm mx-auto" style="max-width:650px;">
+        <div class="card-body p-4">
+            <h3>Company Feedback</h3>
+
+            <p class="text-muted">
+                Evaluate the student's internship performance.
+            </p>
+
+            <form asp-controller="AcademicProgress"
+                  asp-action="SubmitFeedback"
+                  asp-route-id="@internshipId"
+                  method="post">
+
+                @Html.AntiForgeryToken()
+
+                <div asp-validation-summary="ModelOnly"
+                     class="text-danger"></div>
+
+                <div class="mb-3">
+                    <label asp-for="Rating" class="form-label">
+                        Performance Rating
+                    </label>
+
+                    <select asp-for="Rating" class="form-select">
+                        <option value="0">Select a rating</option>
+                        <option value="1">1 - Poor</option>
+                        <option value="2">2 - Fair</option>
+                        <option value="3">3 - Good</option>
+                        <option value="4">4 - Very Good</option>
+                        <option value="5">5 - Excellent</option>
+                    </select>
+
+                    <span asp-validation-for="Rating"
+                          class="text-danger"></span>
+                </div>
+
+                <div class="mb-3">
+                    <label asp-for="Comments" class="form-label">
+                        Feedback Comments
+                    </label>
+
+                    <textarea asp-for="Comments"
+                              class="form-control"
+                              rows="5"
+                              maxlength="2000"
+                              placeholder="Describe the student's strengths and areas for improvement..."></textarea>
+
+                    <span asp-validation-for="Comments"
+                          class="text-danger"></span>
+                </div>
+
+                <button type="submit" class="btn btn-primary">
+                    Submit Feedback
+                </button>
+            </form>
+        </div>
+    </div>
+</div>

@@ -1,0 +1,263 @@
+﻿using System.Data;
+using InternFiesta.Data;
+using InternFiesta.Models;
+using InternFiesta.Services;
+using InternFiesta.ViewModels;
+using Microsoft.AspNetCore.Authorization;
+using Microsoft.AspNetCore.Identity;
+using Microsoft.AspNetCore.Mvc;
+using Microsoft.EntityFrameworkCore;
+
+namespace InternFiesta.Controllers
+{
+    [Authorize(Roles = "Company")]
+    public class CompanyApplicationsController : Controller
+    {
+        private readonly ApplicationDbContext _context;
+
+        private readonly
+            UserManager<ApplicationUser> _userManager;
+
+        public CompanyApplicationsController(
+            ApplicationDbContext context,
+            UserManager<ApplicationUser> userManager)
+        {
+            _context = context;
+            _userManager = userManager;
+        }
+
+        [HttpGet]
+        public async Task<IActionResult> Index(int id)
+        {
+            var companyUserId =
+                _userManager.GetUserId(User);
+
+            if (companyUserId == null)
+            {
+                return Challenge();
+            }
+
+            var internship =
+                await _context.InternshipPostings
+                    .FirstOrDefaultAsync(i =>
+                        i.Id == id &&
+                        i.CompanyUserId == companyUserId);
+
+            if (internship == null)
+            {
+                return NotFound();
+            }
+
+            var applications =
+                await _context.InternshipApplications
+                    .Where(a =>
+                        a.InternshipPostingId == id)
+                    .Include(a => a.Student)
+                    .OrderByDescending(a =>
+                        a.AppliedAt)
+                    .ToListAsync();
+
+            var studentIds =
+                applications
+                    .Select(a => a.StudentUserId)
+                    .Distinct()
+                    .ToList();
+
+            var profiles =
+                await _context.StudentProfiles
+                    .Where(p =>
+                        studentIds.Contains(p.UserId))
+                    .ToDictionaryAsync(
+                        p => p.UserId);
+
+            var model =
+                new CompanyApplicationsViewModel
+                {
+                    Internship = internship,
+
+                    SelectedCount = applications.Count(
+                    a => a.Status == "Selected"),
+                    RemainingPositions = Math.Max( 0,
+                    internship.Positions -
+                    applications.Count(a => a.Status == "Selected")),
+
+                    Applicants =
+                        applications
+                            .Select(a =>
+                            {
+                                var profile =
+                                    profiles.GetValueOrDefault(
+                                        a.StudentUserId);
+
+                                var match =
+                                    CandidateMatchService.Calculate(
+                                        internship.RequiredSkills,
+                                        profile?.Skills);
+
+                                return new CompanyApplicantViewModel
+                                {
+                                    Application = a,
+                                    Student = a.Student,
+                                    Profile = profile,
+                                    MatchScore = match.Score,
+                                    MatchLabel = match.Label
+                                };
+                            })
+                            .ToList()
+                };
+
+            return View(model);
+        }
+
+        [HttpPost]
+        [ValidateAntiForgeryToken]
+        public async Task<IActionResult> UpdateStatus(
+            int applicationId,
+            string status,
+            string? rejectionReason = null)
+        {
+            var companyUserId = _userManager.GetUserId(User);
+
+            if (companyUserId == null)
+                return Challenge();
+
+            var allowedStatuses = new[]
+            {
+             "Shortlisted",
+             "Selected",
+             "Rejected",
+             "Waitlisted"
+            };
+
+            if (!allowedStatuses.Contains(status))
+                return BadRequest();
+
+            // SQL Server transaction prevents simultaneous
+            // selections from exceeding available positions.
+            // InMemory unit tests do not need a transaction.
+            await using var transaction =
+                _context.Database.IsRelational()
+                    ? await _context.Database.BeginTransactionAsync(
+                        IsolationLevel.Serializable)
+                    : null;
+
+            var application = await _context.InternshipApplications
+                .Include(a => a.InternshipPosting)
+                .FirstOrDefaultAsync(a =>
+                    a.Id == applicationId &&
+                    a.InternshipPosting != null &&
+                    a.InternshipPosting.CompanyUserId == companyUserId);
+
+            if (application == null)
+                return NotFound();
+
+            var internship = application.InternshipPosting!;
+
+
+            if (status == "Rejected" &&
+                !string.IsNullOrWhiteSpace(rejectionReason) &&
+                rejectionReason.Trim().Length > 1000)
+            {
+                TempData["StatusError"] =
+                    "Rejection reason cannot exceed 1000 characters.";
+
+                return RedirectToAction(
+                    nameof(Index),
+                    new { id = internship.Id });
+            }
+
+
+            var oldStatus = application.Status;
+
+            if (oldStatus == "Selected" && status != "Selected")
+            {
+                TempData["StatusError"] =
+                    "This student has already been selected. " +
+                    "The recruitment status cannot be changed.";
+
+                return RedirectToAction(
+                    nameof(Index),
+                    new { id = internship.Id });
+            }
+
+            // No need to update the same status again.
+            if (oldStatus == status)
+            {
+                TempData["StatusMessage"] =
+                    $"Application is already {status}.";
+
+                return RedirectToAction(
+                    nameof(Index),
+                    new { id = application.InternshipPostingId });
+            }
+
+            // IMPORTANT: Apply position limit only
+            // when a new candidate is being selected.
+            if (status == "Selected")
+            {
+                int selectedCount =
+                    await _context.InternshipApplications
+                        .CountAsync(a =>
+                            a.InternshipPostingId == internship.Id &&
+                            a.Status == "Selected");
+
+                if (selectedCount >= internship.Positions)
+                {
+                    TempData["StatusError"] =
+                        $"Cannot select more candidates. " +
+                        $"This internship has {internship.Positions} " +
+                        $"position(s), and all positions are filled.";
+
+                    return RedirectToAction(
+                        nameof(Index),
+                        new { id = internship.Id });
+                }
+            }
+
+            // Update candidate status.
+            application.Status = status;
+
+            if (status == "Rejected")
+            {
+                application.RejectionReason =
+                    string.IsNullOrWhiteSpace(rejectionReason)
+                        ? null
+                        : rejectionReason.Trim();
+            }
+            else
+            {
+                application.RejectionReason = null;
+            }
+
+            // Notify student only when status changes.
+            _context.Notifications.Add(new Notification
+            {
+                UserId = application.StudentUserId,
+                Title = "Application Status Updated",
+
+                Message = status == "Rejected"
+                        ? (string.IsNullOrWhiteSpace(application.RejectionReason)
+                            ? $"Your application for {internship.Title} was rejected."
+                            : $"Your application for {internship.Title} was rejected. " +
+                              $"Reason: {application.RejectionReason}")
+                        : $"Your application for {internship.Title} " +
+                          $"has been updated to {status}.",
+                IsRead = false,
+                CreatedAt = DateTime.UtcNow
+            });
+
+            await _context.SaveChangesAsync();
+
+            if (transaction != null)
+                await transaction.CommitAsync();
+
+            TempData["StatusMessage"] = status == "Rejected"
+                 ? "Application rejected. The student has been notified."
+                 : $"Application status updated to {status}.";
+            return RedirectToAction(
+                nameof(Index),
+                new { id = internship.Id });
+        }
+
+    }
+}

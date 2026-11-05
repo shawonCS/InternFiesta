@@ -1,12 +1,16 @@
-﻿using InternFiesta.Controllers;
+﻿
+using InternFiesta.Controllers;
 using InternFiesta.Data;
 using InternFiesta.Models;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.AspNetCore.Mvc.ViewFeatures;
 using Microsoft.EntityFrameworkCore;
 using Moq;
 using NUnit.Framework;
+using System;
 using System.Security.Claims;
+using System.Threading.Tasks;
 
 namespace InternFiesta.UnitTests
 {
@@ -16,18 +20,16 @@ namespace InternFiesta.UnitTests
         {
             var options =
                 new DbContextOptionsBuilder<ApplicationDbContext>()
-                    .UseInMemoryDatabase(
-                        Guid.NewGuid().ToString())
+                    .UseInMemoryDatabase(Guid.NewGuid().ToString())
                     .Options;
 
             return new ApplicationDbContext(options);
         }
 
-        private UserManager<ApplicationUser>
-            CreateUserManager(string userId)
+        private UserManager<ApplicationUser> CreateUserManager(
+            string userId)
         {
-            var store =
-                new Mock<IUserStore<ApplicationUser>>();
+            var store = new Mock<IUserStore<ApplicationUser>>();
 
             var userManager =
                 new Mock<UserManager<ApplicationUser>>(
@@ -42,12 +44,18 @@ namespace InternFiesta.UnitTests
                     null!);
 
             userManager
-                .Setup(u =>
-                    u.GetUserId(
-                        It.IsAny<ClaimsPrincipal>()))
+                .Setup(u => u.GetUserId(
+                    It.IsAny<ClaimsPrincipal>()))
                 .Returns(userId);
 
             return userManager.Object;
+        }
+
+        private static void InitializeTempData(
+            StudentInternshipsController controller)
+        {
+            controller.TempData =
+                new Mock<ITempDataDictionary>().Object;
         }
 
         [Test]
@@ -55,47 +63,41 @@ namespace InternFiesta.UnitTests
         {
             using var context = CreateContext();
 
-            var internship =
-                new InternshipPosting
-                {
-                    Id = 1,
-                    CompanyUserId = "company-1",
-                    Title = "Software Intern",
-                    Description = "Test internship",
-                    RequiredSkills = "C#",
-                    Location = "Dhaka",
-                    Deadline = DateTime.Now.AddDays(30),
-                    Positions = 2,
-                    IsActive = true,
-                    CreatedAt = DateTime.Now
-                };
+            var internship = new InternshipPosting
+            {
+                Id = 1,
+                CompanyUserId = "company-1",
+                Title = "Software Intern",
+                Description = "Test internship",
+                RequiredSkills = "C#",
+                Location = "Dhaka",
+                Deadline = DateTime.UtcNow.AddDays(30),
+                Positions = 2,
+                IsActive = true,
+                CreatedAt = DateTime.UtcNow
+            };
 
             context.InternshipPostings.Add(internship);
-
             await context.SaveChangesAsync();
 
-            var userManager =
-                CreateUserManager("student-1");
+            var userManager = CreateUserManager("student-1");
 
-            var controller =
-                new StudentInternshipsController(
-                    context,
-                    userManager);
+            var controller = new StudentInternshipsController(
+                context,
+                userManager);
 
-            var result =
-                await controller.Save(1);
+            InitializeTempData(controller);
+
+            var result = await controller.Save(1);
 
             Assert.That(
                 result,
                 Is.TypeOf<RedirectToActionResult>());
 
             var savedInternships =
-                await context.SavedInternships
-                    .ToListAsync();
+                await context.SavedInternships.ToListAsync();
 
-            Assert.That(
-                savedInternships.Count,
-                Is.EqualTo(1));
+            Assert.That(savedInternships.Count, Is.EqualTo(1));
 
             Assert.That(
                 savedInternships[0].InternshipPostingId,
@@ -111,59 +113,51 @@ namespace InternFiesta.UnitTests
         {
             using var context = CreateContext();
 
-            var internship =
-                new InternshipPosting
-                {
-                    Id = 1,
-                    CompanyUserId = "company-1",
-                    Title = "Software Intern",
-                    Description = "Test internship",
-                    RequiredSkills = "C#",
-                    Location = "Dhaka",
-                    Deadline = DateTime.Now.AddDays(30),
-                    Positions = 2,
-                    IsActive = true,
-                    CreatedAt = DateTime.Now
-                };
+            var internship = new InternshipPosting
+            {
+                Id = 1,
+                CompanyUserId = "company-1",
+                Title = "Software Intern",
+                Description = "Test internship",
+                RequiredSkills = "C#",
+                Location = "Dhaka",
+                Deadline = DateTime.UtcNow.AddDays(30),
+                Positions = 2,
+                IsActive = true,
+                CreatedAt = DateTime.UtcNow
+            };
 
             context.InternshipPostings.Add(internship);
 
-            var savedInternship =
-                new SavedInternship
-                {
-                    Id = 1,
-                    InternshipPostingId = 1,
-                    StudentUserId = "student-1",
-                    SavedAt = DateTime.Now
-                };
+            var savedInternship = new SavedInternship
+            {
+                Id = 1,
+                InternshipPostingId = 1,
+                StudentUserId = "student-1",
+                SavedAt = DateTime.UtcNow
+            };
 
-            context.SavedInternships.Add(
-                savedInternship);
-
+            context.SavedInternships.Add(savedInternship);
             await context.SaveChangesAsync();
 
-            var userManager =
-                CreateUserManager("student-1");
+            var userManager = CreateUserManager("student-1");
 
-            var controller =
-                new StudentInternshipsController(
-                    context,
-                    userManager);
+            var controller = new StudentInternshipsController(
+                context,
+                userManager);
 
-            var result =
-                await controller.RemoveSaved(1);
+            InitializeTempData(controller);
+
+            var result = await controller.RemoveSaved(1);
 
             Assert.That(
                 result,
                 Is.TypeOf<RedirectToActionResult>());
 
             var savedInternships =
-                await context.SavedInternships
-                    .ToListAsync();
+                await context.SavedInternships.ToListAsync();
 
-            Assert.That(
-                savedInternships.Count,
-                Is.EqualTo(0));
+            Assert.That(savedInternships.Count, Is.EqualTo(0));
         }
     }
 }

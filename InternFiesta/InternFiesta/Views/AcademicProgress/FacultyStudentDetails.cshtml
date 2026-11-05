@@ -1,0 +1,255 @@
+﻿
+@model InternFiesta.Models.AcademicInternship
+
+@{
+    ViewData["Title"] = "Student Internship Progress";
+
+    var student = Model.InternshipApplication.Student;
+    var posting = Model.InternshipApplication.InternshipPosting;
+}
+
+<a asp-controller="AcademicProgress"
+   asp-action="FacultyStudents"
+   class="btn btn-outline-secondary mb-3">
+    Back to Assigned Students
+</a>
+
+<h2>Student Internship Progress</h2>
+
+<div class="card mb-4">
+    <div class="card-body">
+        <h4>@(student?.FullName ?? "Unknown Student")</h4>
+        <p><strong>Email:</strong> @(student?.Email ?? "N/A")</p>
+        <p><strong>Internship:</strong> @(posting?.Title ?? "N/A")</p>
+        <p><strong>Status:</strong> @Model.InternshipApplication.Status</p>
+    </div>
+</div>
+
+<h4>Progress Updates</h4>
+
+@if (!Model.ProgressUpdates.Any())
+{
+    <div class="alert alert-info">
+        No progress updates submitted yet.
+    </div>
+}
+else
+{
+    @foreach (var progress in Model.ProgressUpdates
+        .OrderByDescending(p => p.SubmittedAt))
+    {
+        <div class="card mb-3">
+            <div class="card-body">
+                <p>@progress.Description</p>
+                <small class="text-muted">
+                    @progress.SubmittedAt.AddHours(6).ToString("dd MMM yyyy, hh:mm tt") BST
+                </small>
+
+                @if (progress.Attachments.Any())
+                {
+                    <div class="mt-3">
+                        <strong>Student Supporting Documents</strong>
+
+                        <ul>
+                            @foreach (var item in progress.Attachments)
+                            {
+                                <li>
+                                    <a asp-controller="AcademicProgress"
+                                       asp-action="DownloadEvidence"
+                                       asp-route-id="@item.Id">
+                                        @item.OriginalFileName
+                                    </a>
+                                </li>
+                            }
+                        </ul>
+                    </div>
+                }
+            </div>
+        </div>
+    }
+}
+
+<h4 class="mt-4">Company Feedback</h4>
+
+@if (!Model.CompanyFeedback.Any())
+{
+    <div class="alert alert-info">
+        No company feedback submitted yet.
+    </div>
+}
+else
+{
+    @foreach (var feedback in Model.CompanyFeedback
+        .OrderByDescending(f => f.SubmittedAt))
+    {
+        <div class="card mb-3">
+            <div class="card-body">
+                <h5>Rating: @feedback.Rating / 5</h5>
+                <p>@feedback.Comments</p>
+                <small class="text-muted">
+                    @feedback.SubmittedAt.AddHours(6).ToString("dd MMM yyyy, hh:mm tt") BST
+                </small>
+            </div>
+        </div>
+    }
+}
+
+
+<h4 class="mt-4">Assigned Tasks</h4>
+
+@if (!Model.AssignedTasks.Any())
+{
+    <div class="alert alert-info">
+        No tasks have been assigned by the company.
+    </div>
+}
+else
+{
+    <div class="table-responsive">
+        <table class="table table-bordered align-middle">
+
+            <thead>
+                <tr>
+                    <th>Task</th>
+                    <th>Deadline</th>
+                    <th>Status</th>
+                    <th>Progress Reports &amp; Evidence</th>
+                    <th>Action</th>
+                </tr>
+            </thead>
+
+            <tbody>
+                @foreach (var task in Model.AssignedTasks
+                    .OrderBy(t => t.DueDate))
+                {
+                    var taskProgress = Model.ProgressUpdates
+                        .Where(p => p.AssignedTaskId == task.Id)
+                        .OrderByDescending(p => p.SubmittedAt)
+                        .ToList();
+
+                    <tr>
+                        <td>
+                            <strong>@task.Title</strong>
+                            <p class="mb-0">@task.Description</p>
+                        </td>
+
+                        <td>
+                            @(task.DueDate?.ToString("dd MMM yyyy")
+                                ?? "No deadline")
+                        </td>
+
+                        <td>
+                            @if (task.Status == "Assigned")
+                            {
+                                <span class="badge bg-warning text-dark">
+                                    Assigned
+                                </span>
+                            }
+                            else if (task.Status == "Submitted")
+                            {
+                                <span class="badge bg-info text-dark">
+                                    Awaiting Review
+                                </span>
+                            }
+                            else if (task.Status == "Completed")
+                            {
+                                <span class="badge bg-success">
+                                    Completed
+                                </span>
+                            }
+                            else
+                            {
+                                <span>@task.Status</span>
+                            }
+                        </td>
+
+                        <td>
+                            @if (!taskProgress.Any())
+                            {
+                                <span class="text-muted">
+                                    No submission yet
+                                </span>
+                            }
+                            else
+                            {
+                                <strong>
+                                    @taskProgress.Count report(s)
+                                </strong>
+
+                                @foreach (var progress in taskProgress)
+                                {
+                                    <div class="border rounded p-2 mt-2">
+
+                                        <p>@progress.Description</p>
+
+                                        <small class="text-muted">
+                                            Submitted:
+                                            @(progress.SubmittedAt.AddHours(6).ToString("dd MMM yyyy, hh:mm tt")) BST
+                                        </small>
+
+                                        @if (progress.Attachments != null &&
+                                             progress.Attachments.Any())
+                                        {
+                                            <div class="mt-2">
+                                                <strong>
+                                                    Supporting Documents
+                                                </strong>
+
+                                                <ul class="mb-0">
+                                                    @foreach (var attachment in progress.Attachments)
+                                                    {
+                                                        <li>
+                                                            <a asp-controller="AcademicProgress"
+                                                               asp-action="DownloadEvidence"
+                                                               asp-route-id="@attachment.Id">
+                                                                @attachment.OriginalFileName
+                                                            </a>
+                                                        </li>
+                                                    }
+                                                </ul>
+                                            </div>
+                                        }
+                                    </div>
+                                }
+                            }
+                        </td>
+
+                        <td>
+                            @if (task.Status == "Submitted" &&
+                                 taskProgress.Any())
+                            {
+                                <form asp-controller="AcademicProgress"
+                                      asp-action="CompleteTask"
+                                      method="post">
+
+                                    @Html.AntiForgeryToken()
+
+                                    <input type="hidden"
+                                           name="taskId"
+                                           value="@task.Id" />
+
+                                    <button type="submit"
+                                            class="btn btn-success btn-sm">
+                                        Mark Completed
+                                    </button>
+                                </form>
+                            }
+                            else if (task.Status == "Completed")
+                            {
+                                <span class="badge bg-success">
+                                    Approved
+                                </span>
+                            }
+                            else
+                            {
+                                <span class="text-muted small">
+                                    Awaiting Student Submission
+                                </span>
+                            }
+                        </td>
+                    </tr>
+                }
+            </tbody>
+        </table>
+    </div>
+}

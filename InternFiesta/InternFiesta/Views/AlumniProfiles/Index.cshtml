@@ -1,0 +1,166 @@
+﻿
+@model InternFiesta.Models.AlumniProfile
+
+@{
+    ViewData["Title"] = "My Profile";
+
+    bool hasDetails = Model != null &&
+    (
+        !string.IsNullOrWhiteSpace(Model.Industry) ||
+        !string.IsNullOrWhiteSpace(Model.JobTitle) ||
+        !string.IsNullOrWhiteSpace(Model.CompanyName) ||
+        !string.IsNullOrWhiteSpace(Model.About) ||
+        !string.IsNullOrWhiteSpace(Model.Skills) ||
+        !string.IsNullOrWhiteSpace(Model.LinkedInUrl)
+    );
+}
+
+<div class="container-fluid px-0">
+
+    <div class="d-flex justify-content-between
+                align-items-center flex-wrap gap-3 mb-4">
+
+        <div>
+            <h2>My Profile</h2>
+            <p class="text-muted">
+                Your personal and professional information.
+            </p>
+        </div>
+
+        @if (hasDetails)
+        {
+            <a asp-controller="AlumniProfiles"
+               asp-action="Edit"
+               class="btn btn-primary">
+                Edit Profile
+            </a>
+        }
+    </div>
+
+    @if (!hasDetails)
+    {
+        <div class="card border-0 shadow-sm">
+            <div class="card-body text-center p-5">
+
+                <h4>Welcome to InternFiesta</h4>
+
+                <p class="text-muted">
+                    Add your professional information when
+                    you're ready.
+                </p>
+
+                <a asp-controller="AlumniProfiles"
+                   asp-action="Edit"
+                   class="btn btn-primary">
+                    Set Up Profile
+                </a>
+
+            </div>
+        </div>
+    }
+    else
+    {
+        <div class="card border-0 shadow-sm mb-4">
+            <div class="card-body p-4">
+
+                <div class="d-flex justify-content-between
+                            align-items-start flex-wrap gap-3">
+
+                    <div>
+                        <h3>@ViewBag.FullName</h3>
+
+                        @if (!string.IsNullOrWhiteSpace(Model!.Industry))
+                        {
+                            <p class="text-muted">
+                                @Model.Industry
+                            </p>
+                        }
+                    </div>
+
+                    <span class="badge
+                        @(Model!.IsVisibleToStudents
+                            ? "bg-success" : "bg-secondary")">
+
+                        @(Model.IsVisibleToStudents
+                            ? "Visible to Students"
+                            : "Private Profile")
+                    </span>
+
+                </div>
+
+                <hr />
+
+                <div class="row g-4">
+
+                    @if (!string.IsNullOrWhiteSpace(Model!.JobTitle))
+                    {
+                        <div class="col-md-6">
+                            <h6 class="text-muted">Job Title</h6>
+                            <p>@Model.JobTitle</p>
+                        </div>
+                    }
+
+                    @if (!string.IsNullOrWhiteSpace(Model!.CompanyName))
+                    {
+                        <div class="col-md-6">
+                            <h6 class="text-muted">
+                                Company / Organization
+                            </h6>
+                            <p>@Model.CompanyName</p>
+                        </div>
+                    }
+
+                    @if (!string.IsNullOrWhiteSpace(Model!.About))
+                    {
+                        <div class="col-12">
+                            <h6 class="text-muted">About</h6>
+                            <p>@Model.About</p>
+                        </div>
+                    }
+
+                    @if (!string.IsNullOrWhiteSpace(Model!.Skills))
+                    {
+                        <div class="col-12">
+                            <h6 class="text-muted">Skills</h6>
+                            <p>@Model.Skills</p>
+                        </div>
+                    }
+
+                    @if (!string.IsNullOrWhiteSpace(Model!.LinkedInUrl))
+                    {
+                        <div class="col-12">
+                            <h6 class="text-muted">LinkedIn</h6>
+
+                            <a href="@Model.LinkedInUrl"
+                               target="_blank"
+                               rel="noopener noreferrer">
+                                View LinkedIn Profile
+                            </a>
+                        </div>
+                    }
+
+                </div>
+            </div>
+        </div>
+
+        <div class="card border-0 shadow-sm">
+            <div class="card-body p-4">
+
+                <h5>Privacy &amp; Mentoring</h5>
+
+                <p>
+                    <strong>Profile:</strong>
+                    @(Model!.IsVisibleToStudents
+                        ? "Visible to Students" : "Private")
+                </p>
+
+                <p>
+                    <strong>Mentoring:</strong>
+                    @(Model.IsAvailableForMentoring
+                        ? "Available" : "Not Available")
+                </p>
+
+            </div>
+        </div>
+    }
+</div>

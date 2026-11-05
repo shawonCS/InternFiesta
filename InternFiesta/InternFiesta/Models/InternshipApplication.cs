@@ -1,4 +1,5 @@
-﻿using System.ComponentModel.DataAnnotations.Schema;
+﻿using System.ComponentModel.DataAnnotations;
+using System.ComponentModel.DataAnnotations.Schema;
 namespace InternFiesta.Models
 {
     public class InternshipApplication
@@ -17,5 +18,7 @@ namespace InternFiesta.Models
         public DateTime AppliedAt { get; set; } = DateTime.Now;
 
         public InternshipPosting? InternshipPosting { get; set; }
+        [StringLength(1000)]
+        public string? RejectionReason { get; set; }
     }
 }

@@ -1,0 +1,126 @@
+﻿@model List<InternFiesta.Models.InternshipApplication>
+
+@{
+    ViewData["Title"] = "Selected Students";
+
+    var facultyAssignedIds =
+        ViewBag.FacultyAssignedIds as HashSet<int>
+        ?? new HashSet<int>();
+}
+
+<div class="page-heading">
+    <h2>Selected Students</h2>
+
+    <p>
+        View your selected interns and assign internship tasks.
+    </p>
+</div>
+
+@if (Model.Count == 0)
+{
+    <div class="alert alert-info">
+        No students have been selected yet.
+    </div>
+}
+else
+{
+    <div class="row g-3">
+        @foreach (var application in Model)
+        {
+            var hasFaculty =
+                facultyAssignedIds.Contains(application.Id);
+
+            <div class="col-md-6">
+                <div class="card h-100">
+                    <div class="card-body">
+
+                        <div class="d-flex align-items-center gap-3 mb-3">
+
+                            @if (application.Student != null &&
+                                 !string.IsNullOrWhiteSpace(
+                                     application.Student.ProfilePhotoFileName))
+                            {
+                                <img src="@Url.Action(
+                                         "Photo",
+                                         "ProfilePhotos",
+                                         new { id = application.Student.Id })"
+                                     alt="Student Profile"
+                                     class="rounded-circle border"
+                                     style="width:60px;height:60px;object-fit:cover;" />
+                            }
+                            else
+                            {
+                                <div class="rounded-circle bg-secondary text-white d-flex align-items-center justify-content-center"
+                                     style="width:60px;height:60px;">
+                                    @(string.IsNullOrWhiteSpace(
+                                        application.Student?.FullName)
+                                        ? "S"
+                                        : application.Student.FullName.Substring(0, 1).ToUpper())
+                                </div>
+                            }
+
+                            <div>
+                                <h5 class="mb-1">
+                                    @(application.Student?.FullName
+                                        ?? "Student")
+                                </h5>
+
+                                <small class="text-muted">
+                                    @(application.Student?.Email
+                                        ?? "Not provided")
+                                </small>
+                            </div>
+                        </div>
+
+                        <p>
+                            <strong>Internship:</strong>
+                            @(application.InternshipPosting?.Title ?? "N/A")
+                        </p>
+
+                        <p>
+                            <strong>Status:</strong>
+                            <span class="badge bg-success">
+                                Selected
+                            </span>
+                        </p>
+
+                        <p>
+                            <strong>Faculty Supervisor:</strong>
+
+                            @if (hasFaculty)
+                            {
+                                <span class="badge bg-success">
+                                    Assigned
+                                </span>
+                            }
+                            else
+                            {
+                                <span class="badge bg-warning text-dark">
+                                    Not Assigned
+                                </span>
+                            }
+                        </p>
+
+                        @if (hasFaculty)
+                        {
+                            <a asp-controller="CompanyTasks"
+                               asp-action="Index"
+                               asp-route-applicationId="@application.Id"
+                               class="btn btn-primary">
+                                Assign / View Tasks
+                            </a>
+                        }
+                        else
+                        {
+                            <p class="text-muted small mb-0">
+                                Task assignment will be available
+                                after the coordinator assigns a faculty supervisor.
+                            </p>
+                        }
+
+                    </div>
+                </div>
+            </div>
+        }
+    </div>
+}
